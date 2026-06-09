@@ -1,0 +1,40 @@
+{
+  "placeholderImages": [
+    {
+      "id": "baby-clothes-1",
+      "description": "Adorable baby outfit",
+      "imageUrl": "https://images.unsplash.com/photo-1560506840-ec148e82a604?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxiYWJ5JTIwY2xvdGhlc3xlbnwwfHx8fDE3NzIyNzcwOTZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "baby clothes"
+    },
+    {
+      "id": "wooden-toy-1",
+      "description": "Handmade wooden truck",
+      "imageUrl": "https://images.unsplash.com/photo-1596066190600-3af9aadaaea1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHx3b29kZW4lMjB0b3lzfGVufDB8fHx8MTc3MjI3NzA5NXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "wooden toys"
+    },
+    {
+      "id": "stroller-1",
+      "description": "Modern compact stroller",
+      "imageUrl": "https://images.unsplash.com/photo-1714392512700-4cab9e51710b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxiYWJ5JTIwc3Ryb2xsZXJ8ZW58MHx8fHwxNzcyMjc3MDk2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "baby stroller"
+    },
+    {
+      "id": "kids-shoes-1",
+      "description": "Cute blue sneakers",
+      "imageUrl": "https://images.unsplash.com/photo-1560358863-c333c7318cb9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxraWRzJTIwc25lYWtlcnN8ZW58MHx8fHwxNzcyMjc3MDk2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "kids sneakers"
+    },
+    {
+      "id": "baby-crib-1",
+      "description": "White wooden crib",
+      "imageUrl": "https://images.unsplash.com/photo-1543346242-2b8e41fb91ca?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8YmFieSUyMGNyaWJ8ZW58MHx8fHwxNzcyMjc3MDk2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "baby crib"
+    },
+    {
+      "id": "toddler-jacket-1",
+      "description": "Warm winter jacket",
+      "imageUrl": "https://images.unsplash.com/photo-1578019857395-bcfccf0ffb30?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHx0b2RkbGVyJTIwamFja2V0fGVufDB8fHx8MTc3MjI3NzA5Nnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "toddler jacket"
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 350 100% 99%; /* #FFF9FA */
+    --foreground: 350 20% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 350 20% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 350 20% 10%;
+    --primary: 349 100% 86%; /* #FFB7C5 */
+    --primary-foreground: 350 20% 20%;
+    --secondary: 348 40% 96%; /* #F9F1F2 - earthy-cream */
+    --secondary-foreground: 350 20% 20%;
+    --muted: 350 6% 52%; /* #8A7E7F - earthy-gray */
+    --muted-foreground: 350 10% 45%;
+    --accent: 340 82% 76%; /* #F48FB1 - primary-dark */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 350 20% 92%;
+    --input: 350 20% 92%;
+    --ring: 349 100% 86%;
+    --radius: 1.25rem;
+  }
+  .dark {
+    --background: 350 10% 9%; /* #1A1617 */
+    --foreground: 350 10% 98%;
+    --card: 350 10% 12%;
+    --card-foreground: 350 10% 98%;
+    --popover: 350 10% 12%;
+    --popover-foreground: 350 10% 98%;
+    --primary: 340 82% 76%;
+    --primary-foreground: 350 10% 10%;
+    --secondary: 350 10% 15%;
+    --secondary-foreground: 350 10% 98%;
+    --muted: 350 6% 52%;
+    --muted-foreground: 350 10% 65%;
+    --accent: 349 100% 86%;
+    --accent-foreground: 350 10% 10%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 350 10% 15%;
+    --input: 350 10% 15%;
+    --ring: 340 82% 76%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-background text-foreground font-body;
+    touch-action: manipulation;
+  }
+}
+
+@layer utilities {
+  .pb-safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pt-safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.ios-shadow {
+  box-shadow: 0 10px 25px -5px rgba(255, 183, 197, 0.2);
+}
+
+.animate-swipe-right {
+  animation: swipe-right 0.5s ease-out forwards;
+}
+
+.animate-swipe-left {
+  animation: swipe-left 0.5s ease-out forwards;
+}
+
+@keyframes swipe-right {
+  0% { transform: translateX(0) rotate(0); opacity: 1; }
+  100% { transform: translateX(200%) rotate(20deg); opacity: 0; }
+}
+
+@keyframes swipe-left {
+  0% { transform: translateX(0) rotate(0); opacity: 1; }
+  100% { transform: translateX(-200%) rotate(-20deg); opacity: 0; }
+}

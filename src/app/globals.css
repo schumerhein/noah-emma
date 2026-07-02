@@ -26,6 +26,54 @@
     --ring: 349 100% 86%;
     --radius: 1.25rem;
   }
+  /* Jongen: lichtblauw thema — html[data-gender] heeft hogere specificiteit dan :root */
+  html[data-gender="jongen"] {
+    --background: 204 100% 99%;
+    --foreground: 204 20% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 204 20% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 204 20% 10%;
+    --primary: 204 89% 85%; /* #b6e3f4 lichtblauw */
+    --primary-foreground: 204 30% 20%;
+    --secondary: 204 40% 96%;
+    --secondary-foreground: 204 20% 20%;
+    --muted: 204 6% 52%;
+    --muted-foreground: 204 10% 45%;
+    --accent: 204 70% 60%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 204 20% 90%;
+    --input: 204 20% 90%;
+    --ring: 204 89% 85%;
+    --radius: 1.25rem;
+  }
+
+  /* Meisje: lichtroze thema (expliciet, zelfde als :root maar hogere specificiteit) */
+  html[data-gender="meisje"] {
+    --background: 350 100% 99%;
+    --foreground: 350 20% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 350 20% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 350 20% 10%;
+    --primary: 349 100% 86%; /* #FFB7C5 lichtroze */
+    --primary-foreground: 350 20% 20%;
+    --secondary: 348 40% 96%;
+    --secondary-foreground: 350 20% 20%;
+    --muted: 350 6% 52%;
+    --muted-foreground: 350 10% 45%;
+    --accent: 340 82% 76%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 350 20% 92%;
+    --input: 350 20% 92%;
+    --ring: 349 100% 86%;
+    --radius: 1.25rem;
+  }
+
   .dark {
     --background: 350 10% 9%; /* #1A1617 */
     --foreground: 350 10% 98%;

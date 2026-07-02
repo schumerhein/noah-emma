@@ -1,334 +1,850 @@
-
 "use client";
 
-import { useState } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { useToast } from "@/hooks/use-toast";
-import {
-  Settings,
-  ShieldCheck,
-  PiggyBank,
-  Leaf,
-  Heart,
-  ChevronRight,
-  Baby,
-  Edit2,
-  TrendingUp,
-  Bell,
-  CreditCard,
-  LogOut,
-  CircleHelp as HelpCircle,
-  Users,
-  Gift,
-  Plus,
-  Save,
-  Check,
-  Wallet,
-  Smartphone,
-  Mail,
-  Zap,
-  Rocket,
-  Info
-} from "lucide-react";
-import Link from "next/link";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
+import { cn } from "@/lib/utils";
+import Image from "next/image";
+import Link from "next/link";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from "@/components/ui/sheet";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Heart, ChevronRight, Baby, Edit2, LogOut, Bell, Package, Star, Plus, X, Check, Settings, Umbrella,
+  HelpCircle, Headphones, Gift, Sliders, FileText, Cookie, CheckCircle2
+} from "lucide-react";
+import { slaActiefKindOp, leesActiefKind } from "@/components/ThemeProvider";
 import { Switch } from "@/components/ui/switch";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useToast } from "@/hooks/use-toast";
 
-interface Child {
+type Profile = {
   id: string;
-  name: string;
-  size: string;
-  age: string;
+  naam: string | null;
+  stad: string | null;
+  bio: string | null;
+  avatar_url: string | null;
+  totaal_verkopen: number | null;
+  gemiddelde_beoordeling: number | null;
+  lid_sinds: string | null;
+  vakantiestand: boolean | null;
+};
+
+type Kind = {
+  id: string;
+  naam: string | null;
+  geboortedatum: string;
+  lengte: number | null;
+  maat: string | null;
+  geslacht: string | null;
+};
+
+type Listing = {
+  id: string;
+  titel: string;
+  prijs: number;
+  foto_urls: string[];
+  conditie: string;
+  actief: boolean;
+  likes: number;
+};
+
+type Favoriet = {
+  id: string;
+  listing_id: string;
+  listings: Listing | null;
+};
+
+type Review = {
+  id: string;
+  reviewer_id: string;
+  beoordeling: number;
+  tekst: string | null;
+  created_at: string;
+  reviewer: { naam: string | null } | null;
+  listings: { titel: string | null } | null;
+};
+
+function berekenLeeftijd(geboortedatum: string): string {
+  const geb = new Date(geboortedatum);
+  const nu = new Date();
+  const maanden = (nu.getFullYear() - geb.getFullYear()) * 12 + (nu.getMonth() - geb.getMonth());
+  if (maanden < 24) return `${maanden} mnd`;
+  return `${Math.floor(maanden / 12)} jaar`;
 }
 
-const AVAILABLE_SIZES = ["50", "56", "62", "68", "74", "80", "86", "92", "98", "104", "110", "116", "122", "128"];
-
 export default function ProfilePage() {
-  const { toast } = useToast();
   const router = useRouter();
+  const { toast } = useToast();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [kinderen, setKinderen] = useState<Kind[]>([]);
+  const [mijneItems, setMijneItems] = useState<Listing[]>([]);
+  const [favorieten, setFavorieten] = useState<Favoriet[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [maatBewerken, setMaatBewerken] = useState<string | null>(null); // id van kind dat bewerkt wordt
+  const [nieuweMaat, setNieuweMaat] = useState("");
+  const [actieveTab, setActieveTab] = useState<"items" | "favorieten" | "reviews">("favorieten");
+  const [vakantiestand, setVakantiestand] = useState(false);
+  const [actiefKindId, setActiefKindId] = useState<string | null>(null);
+  const [bewerken, setBewerken] = useState(false);
+  const [bewerktNaam, setBewerktNaam] = useState("");
+  const [bewerktStad, setBewerktStad] = useState("");
+  const [bewerktBio, setBewerktBio] = useState("");
+  const [opslaan, setOpslaan] = useState(false);
+  const [avatarUploaden, setAvatarUploaden] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
-  const [children, setChildren] = useState<Child[]>([
-    { id: "1", name: "Lotte", size: "98", age: "3 jaar" }
-  ]);
+  useEffect(() => {
+    laadProfiel();
+    // Lees actief kind uit localStorage
+    const actief = leesActiefKind();
+    if (actief) setActiefKindId(actief.id);
 
-  const [isChildSheetOpen, setIsChildSheetOpen] = useState(false);
-  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [isPaymentsOpen, setIsPaymentsOpen] = useState(false);
+    // Herlaad favorieten bij kindwissel
+    const onWissel = (e: Event) => {
+      const nieuwKind = (e as CustomEvent<{ id: string }>).detail;
+      setActiefKindId(nieuwKind.id);
+      laadFavorieten(nieuwKind.id);
+    };
+    window.addEventListener("kind-gewisseld", onWissel);
+    return () => window.removeEventListener("kind-gewisseld", onWissel);
+  }, []);
 
-  const [editingChild, setEditingChild] = useState<Child | null>(null);
-  const [childFormData, setChildFormData] = useState({ name: "", size: "", age: "" });
-  const [iban, setIban] = useState("NL91 ABNA 0412 3456 78");
-  const [notifs, setNotifs] = useState({
-    orders: true,
-    likes: true,
-    growth: true,
-    marketing: false
-  });
+  const laadFavorieten = async (kindId: string | null) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    let query = supabase
+      .from("favorites")
+      .select("id, listing_id, listings(id, titel, prijs, foto_urls, conditie, actief, likes)")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+    if (kindId) query = query.eq("kind_id", kindId);
+    const { data } = await query;
+    if (data) setFavorieten(data as unknown as Favoriet[]);
+  };
 
-  const handleAction = (label: string) => {
-    if (label === "Vrienden Uitnodigen") {
-      toast({
-        title: "Deel de liefde!",
-        description: "Je unieke uitnodigingslink is gekopieerd. Deel deze met je vrienden!",
-      });
+  const laadProfiel = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { router.push("/login"); return; }
+
+    // Bepaal actief kind voor favorieten filter
+    const actief = leesActiefKind();
+    const actiefId = actief?.id ?? null;
+
+    const [profileRes, kinderenRes, itemsRes, favorietenRes, reviewsRes] = await Promise.all([
+      supabase.from("profiles").select("*").eq("id", user.id).single(),
+      supabase.from("children").select("id, naam, geboortedatum, lengte, maat, geslacht").eq("user_id", user.id).order("created_at"),
+      supabase.from("listings").select("id, titel, prijs, foto_urls, conditie, actief, likes")
+        .eq("user_id", user.id).order("created_at", { ascending: false }),
+      (() => {
+        let q = supabase
+          .from("favorites")
+          .select("id, listing_id, listings(id, titel, prijs, foto_urls, conditie, actief, likes)")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
+        if (actiefId) q = q.eq("kind_id", actiefId);
+        return q;
+      })(),
+      supabase.from("reviews")
+        .select("id, reviewer_id, beoordeling, tekst, created_at, reviewer:profiles!reviews_reviewer_id_fkey(naam), listings(titel)")
+        .eq("reviewed_id", user.id)
+        .order("created_at", { ascending: false }),
+    ]);
+
+    if (profileRes.data) {
+      setProfile(profileRes.data);
+      setBewerktNaam(profileRes.data.naam || "");
+      setBewerktStad(profileRes.data.stad || "");
+      setBewerktBio(profileRes.data.bio || "");
+      setVakantiestand(profileRes.data.vakantiestand === true);
+    }
+    if (kinderenRes.data) {
+      setKinderen(kinderenRes.data);
+      // Stel actief kind in als er nog geen is
+      const opgeslagen = leesActiefKind();
+      if (!opgeslagen && kinderenRes.data.length > 0) {
+        const eerste = kinderenRes.data[0];
+        slaActiefKindOp({ id: eerste.id, naam: eerste.naam, maat: eerste.maat || "86", geslacht: eerste.geslacht });
+        setActiefKindId(eerste.id);
+      } else if (opgeslagen) {
+        setActiefKindId(opgeslagen.id);
+      }
+    }
+    if (itemsRes.data) setMijneItems(itemsRes.data);
+    if (favorietenRes.data) setFavorieten(favorietenRes.data as unknown as Favoriet[]);
+    if (reviewsRes.data) setReviews(reviewsRes.data as unknown as Review[]);
+    setLoading(false);
+  };
+
+  const slaProfielOp = async () => {
+    if (!profile) return;
+    setOpslaan(true);
+    await supabase.from("profiles").update({
+      naam: bewerktNaam,
+      stad: bewerktStad,
+      bio: bewerktBio,
+    }).eq("id", profile.id);
+    setProfile(prev => prev ? { ...prev, naam: bewerktNaam, stad: bewerktStad, bio: bewerktBio } : prev);
+    setBewerken(false);
+    setOpslaan(false);
+    toast({ title: "Profiel opgeslagen ✓" });
+  };
+
+  const verwijderFavoriet = async (favorietId: string) => {
+    await supabase.from("favorites").delete().eq("id", favorietId);
+    setFavorieten(prev => prev.filter(f => f.id !== favorietId));
+  };
+
+  const toggleVakantiestand = async (aan: boolean) => {
+    if (!profile) return;
+    setVakantiestand(aan);
+    await supabase.from("profiles").update({ vakantiestand: aan }).eq("id", profile.id);
+    toast({ title: aan ? "🌴 Vakantiestand ingeschakeld" : "Vakantiestand uitgeschakeld" });
+  };
+
+  const uitloggen = async () => {
+    await supabase.auth.signOut();
+    router.push("/login");
+  };
+
+  const selecteerKind = (kind: Kind) => {
+    const actiefKind = { id: kind.id, naam: kind.naam, maat: kind.maat || "86", geslacht: kind.geslacht };
+    slaActiefKindOp(actiefKind);
+    setActiefKindId(kind.id);
+    laadFavorieten(kind.id);
+    toast({ title: `${kind.naam || "Kind"} geselecteerd ✓` });
+  };
+
+  const slaKindMaatOp = async (kindId: string, maat: string) => {
+    await supabase.from("children").update({ maat }).eq("id", kindId);
+    const bijgewerkt = kinderen.map(k => k.id === kindId ? { ...k, maat } : k);
+    setKinderen(bijgewerkt);
+    setMaatBewerken(null);
+    // Als dit het actieve kind is, update ook localStorage
+    if (kindId === actiefKindId) {
+      const kind = bijgewerkt.find(k => k.id === kindId);
+      if (kind) slaActiefKindOp({ id: kind.id, naam: kind.naam, maat, geslacht: kind.geslacht });
+    }
+    toast({ title: `Maat bijgewerkt naar ${maat} ✓` });
+  };
+
+  const uploadAvatar = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !profile) return;
+    setAvatarUploaden(true);
+
+    const ext = file.name.split(".").pop();
+    const pad = `${profile.id}/avatar.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(pad, file, { upsert: true, contentType: file.type });
+
+    if (uploadError) {
+      toast({ title: "Upload mislukt", description: uploadError.message });
+      setAvatarUploaden(false);
       return;
     }
-    if (label === "Meldingen") {
-      setIsNotificationsOpen(true);
-      return;
-    }
-    if (label === "Betalingen & Bankrekening") {
-      setIsPaymentsOpen(true);
-      return;
-    }
-    toast({
-      title: label,
-      description: "Deze functie is binnenkort beschikbaar.",
-    });
+
+    const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(pad);
+    const url = `${publicUrl}?t=${Date.now()}`;
+
+    await supabase.from("profiles").update({ avatar_url: url }).eq("id", profile.id);
+    setProfile(prev => prev ? { ...prev, avatar_url: url } : prev);
+    toast({ title: "Profielfoto bijgewerkt ✓" });
+    setAvatarUploaden(false);
   };
 
-  const openAddChild = () => {
-    setEditingChild(null);
-    setChildFormData({ name: "", size: "98", age: "" });
-    setIsChildSheetOpen(true);
+  const toggleListingActief = async (listing: Listing) => {
+    await supabase.from("listings").update({ actief: !listing.actief }).eq("id", listing.id);
+    setMijneItems(prev => prev.map(l => l.id === listing.id ? { ...l, actief: !l.actief } : l));
   };
 
-  const openEditChild = (child: Child) => {
-    setEditingChild(child);
-    setChildFormData({ name: child.name, size: child.size, age: child.age });
-    setIsChildSheetOpen(true);
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-900">
+        <span className="material-icons-round text-primary text-4xl animate-spin">progress_activity</span>
+      </div>
+    );
+  }
 
-  const saveChild = () => {
-    if (!childFormData.name || !childFormData.size) {
-      toast({ variant: "destructive", title: "Oeps!", description: "Vul een naam en maat in." });
-      return;
-    }
-    if (editingChild) {
-      setChildren(prev => prev.map(c => c.id === editingChild.id ? { ...c, ...childFormData } : c));
-      toast({ title: "Profiel bijgewerkt" });
-    } else {
-      setChildren(prev => [...prev, { id: Math.random().toString(36).substr(2, 9), ...childFormData }]);
-      toast({ title: "Kind toegevoegd" });
-    }
-    setIsChildSheetOpen(false);
-  };
+  if (!profile) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-8 text-center bg-white dark:bg-slate-900">
+        <span className="text-5xl">👤</span>
+        <h2 className="text-xl font-bold">Niet ingelogd</h2>
+        <Link href="/login" className="bg-primary text-white px-6 py-3 rounded-xl font-bold">Inloggen</Link>
+      </div>
+    );
+  }
 
-  const savePayments = () => {
-    toast({ title: "Bankgegevens opgeslagen", description: "Je uitbetalingen worden nu gestort op dit rekeningnummer." });
-    setIsPaymentsOpen(false);
-  };
-
-  const saveNotifications = () => {
-    toast({ title: "Voorkeuren opgeslagen", description: "Je ontvangt nu meldingen op basis van je nieuwe instellingen." });
-    setIsNotificationsOpen(false);
-  };
-
-  const mainChild = children[0];
-  const nextSize = mainChild ? AVAILABLE_SIZES[AVAILABLE_SIZES.indexOf(mainChild.size) + 1] || "Max" : "104";
+  const initialen = (profile.naam || "U").charAt(0).toUpperCase();
+  const actieveItems = mijneItems.filter(i => i.actief);
+  const lidSinds = profile.lid_sinds ? new Date(profile.lid_sinds).getFullYear() : new Date().getFullYear();
 
   return (
-    <div className="bg-background-light dark:bg-background-dark min-h-screen pb-32 font-display text-slate-900 dark:text-slate-100 antialiased">
-      <header className="px-6 pt-12 pb-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-[800] tracking-tight text-slate-800 dark:text-slate-100">Mijn Profiel</h1>
-          <button onClick={() => handleAction("Instellingen")} className="w-10 h-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center text-slate-400 shadow-sm border border-slate-100 dark:border-slate-700 active:scale-95">
-            <Settings className="w-5 h-5" />
-          </button>
+    <div className="bg-background min-h-screen pb-36">
+      {/* Header */}
+      <header className="px-6 pt-14 pb-6 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex items-start justify-between mb-5">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => avatarInputRef.current?.click()}
+              className="relative w-20 h-20 rounded-full shrink-0 group"
+            >
+              <Avatar className="w-20 h-20 border-4 border-primary/20 shadow-md">
+                {profile.avatar_url ? (
+                  <Image src={profile.avatar_url} alt={profile.naam || ""} fill className="object-cover rounded-full" />
+                ) : (
+                  <AvatarFallback className="bg-primary/10 text-primary text-3xl font-black">{initialen}</AvatarFallback>
+                )}
+              </Avatar>
+              {/* Camera overlay */}
+              <div className="absolute inset-0 rounded-full bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                {avatarUploaden
+                  ? <span className="material-icons-round text-white text-xl animate-spin">progress_activity</span>
+                  : <span className="material-icons-round text-white text-xl">photo_camera</span>
+                }
+              </div>
+              {/* Camera badge */}
+              <div className="absolute bottom-0 right-0 w-6 h-6 bg-primary rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+                <span className="material-icons-round text-white text-[12px]">photo_camera</span>
+              </div>
+            </button>
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={uploadAvatar}
+            />
+            <div>
+              {bewerken ? (
+                <input
+                  value={bewerktNaam}
+                  onChange={e => setBewerktNaam(e.target.value)}
+                  className="font-black text-xl text-slate-900 dark:text-white bg-transparent border-b-2 border-primary outline-none w-full"
+                  placeholder="Jouw naam"
+                />
+              ) : (
+                <h1 className="font-black text-xl text-slate-900 dark:text-white">{profile.naam || "Gebruiker"}</h1>
+              )}
+              <div className="flex items-center gap-2 mt-1">
+                {profile.gemiddelde_beoordeling && profile.gemiddelde_beoordeling > 0 ? (
+                  <div className="flex items-center gap-1">
+                    <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
+                    <span className="text-sm font-bold text-slate-600 dark:text-slate-300">{profile.gemiddelde_beoordeling.toFixed(1)}</span>
+                  </div>
+                ) : null}
+                <span className="text-xs text-slate-400">Lid sinds {lidSinds}</span>
+              </div>
+              {bewerken ? (
+                <input
+                  value={bewerktStad}
+                  onChange={e => setBewerktStad(e.target.value)}
+                  className="text-xs text-slate-400 bg-transparent border-b border-slate-200 outline-none mt-1"
+                  placeholder="Stad"
+                />
+              ) : profile.stad ? (
+                <p className="text-xs text-slate-400 mt-1">📍 {profile.stad}</p>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            {bewerken ? (
+              <>
+                <button onClick={() => setBewerken(false)} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                  <X className="w-5 h-5 text-slate-500" />
+                </button>
+                <button onClick={slaProfielOp} disabled={opslaan} className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+                  <Check className="w-5 h-5 text-white" />
+                </button>
+              </>
+            ) : (
+              <button onClick={() => setBewerken(true)} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                <Edit2 className="w-4 h-4 text-slate-500" />
+              </button>
+            )}
+          </div>
         </div>
 
-        <Link href="/profile/seller-view" className="flex items-center gap-4 mb-8 group active:scale-[0.98] transition-all">
-          <div className="relative">
-            <div className="w-20 h-20 rounded-full bg-primary/20 p-1 group-hover:bg-primary/30 transition-colors">
-              <Avatar className="w-full h-full border-none shadow-sm">
-                <AvatarImage src="https://lh3.googleusercontent.com/aida-public/AB6AXuDLV8vvhTMT8FHaBKBnLhUdlPDNc12HmE36JHGEuRotXUV_qsHcKmWE07Ft1TaxgxKxqP8zEupEGiArP8m-qjw7ycI6QLUaKFnJoIExI0x7_isFT22ZAldZRdZoKwluRiAR8AVLFxrv5YARCXsPoTQ0ISsHwWtAGsKDa7ThJJCpOTD19Ua6WnUH4SOiDU0tyWIoAPZ5OTPKBDZsdN68Q0SAta01yiWKN4jR-1jyY_5E2L6WjeW3scM8Mu5GfIQAzp9W29k7SdJgRVU" className="object-cover" />
-                <AvatarFallback>SD</AvatarFallback>
-              </Avatar>
-            </div>
-            <div className="absolute bottom-0 right-0 w-6 h-6 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-md border border-slate-100">
-              <ShieldCheck className="w-3.5 h-3.5 text-primary" />
-            </div>
-          </div>
-          <div className="flex-1">
-            <h2 className="text-xl font-bold group-hover:text-primary transition-colors">Sanne de Vries</h2>
-            <p className="text-sm text-slate-500">Bekijk je winkel & reviews <ChevronRight className="inline-block w-3 h-3 ml-1" /></p>
-          </div>
-        </Link>
+        {bewerken ? (
+          <textarea
+            value={bewerktBio}
+            onChange={e => setBewerktBio(e.target.value)}
+            className="w-full text-sm text-slate-500 bg-slate-50 dark:bg-slate-800 rounded-xl p-3 border border-slate-200 dark:border-slate-700 outline-none resize-none"
+            placeholder="Schrijf iets over jezelf..."
+            rows={2}
+          />
+        ) : profile.bio ? (
+          <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{profile.bio}</p>
+        ) : null}
 
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-primary/10 border border-primary/20 p-4 rounded-2xl shadow-sm">
-            <PiggyBank className="w-6 h-6 text-primary-dark mb-2" />
-            <p className="text-2xl font-extrabold text-primary-dark">€420</p>
-            <p className="text-[11px] font-bold text-slate-500 uppercase">Bespaard</p>
+        {/* Stats */}
+        <div className="grid grid-cols-3 gap-3 mt-5">
+          <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-3 text-center">
+            <p className="text-2xl font-black text-slate-900 dark:text-white">{actieveItems.length}</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Actief</p>
           </div>
-          <div className="bg-primary/10 border border-primary/20 p-4 rounded-2xl shadow-sm">
-            <Leaf className="w-6 h-6 text-primary-dark mb-2" />
-            <p className="text-2xl font-extrabold text-primary-dark">12</p>
-            <p className="text-[11px] font-bold text-slate-500 uppercase">Hergebruikt</p>
+          <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-3 text-center">
+            <p className="text-2xl font-black text-slate-900 dark:text-white">{profile.totaal_verkopen || 0}</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Verkopen</p>
+          </div>
+          <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-3 text-center">
+            <p className="text-2xl font-black text-slate-900 dark:text-white">{favorieten.length}</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Opgeslagen</p>
           </div>
         </div>
       </header>
 
-      <main className="px-6 space-y-6">
-        <Link href="/profile/favorites">
-          <button className="w-full bg-white dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex justify-between items-center group active:scale-[0.98]">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center text-rose-400">
-                <Heart className="w-5 h-5 fill-current" />
-              </div>
-              <span className="font-bold">Mijn Favorieten (24)</span>
-            </div>
-            <ChevronRight className="w-5 h-5 text-slate-300" />
-          </button>
-        </Link>
-
-        {/* Boost Section */}
-        <div className="bg-gradient-to-r from-accent to-primary p-5 rounded-2xl shadow-lg shadow-accent/20 text-white space-y-4">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0">
-              <Rocket className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h4 className="font-bold text-lg">Boost je Verkoop</h4>
-              <p className="text-sm opacity-90 leading-tight mt-1">Verschijn vaker in de swipe-functie en verkoop je items sneller.</p>
-            </div>
-          </div>
-          <div className="flex items-center justify-between bg-white/10 rounded-xl p-3">
-            <div className="flex flex-col">
-              <span className="text-[10px] uppercase font-bold tracking-widest opacity-70">Advertentie Budget</span>
-              <span className="text-xl font-black">€12,50</span>
-            </div>
-            <Link href="/promote/p1">
-              <Button size="sm" className="bg-white text-accent hover:bg-white/90 font-bold rounded-lg border-none">
-                Boost Nu <Zap className="w-3.5 h-3.5 ml-1 fill-current" />
-              </Button>
+      <main className="px-6 pt-6 space-y-6">
+        {/* Kinderen */}
+        <section className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">Mijn kinderen</h2>
+            <Link href="/onboarding/kind" className="flex items-center gap-1 text-xs font-bold text-primary">
+              <Plus className="w-3.5 h-3.5" /> Kind toevoegen
             </Link>
           </div>
-        </div>
 
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <h3 className="font-bold">Mijn Kinderen</h3>
-            <button onClick={openAddChild} className="text-xs font-bold text-primary uppercase flex items-center gap-1">
-              <Plus className="w-3 h-3" /> Toevoegen
+          {kinderen.length === 0 ? (
+            <Link href="/onboarding/kind">
+              <div className="border-2 border-dashed border-primary/30 rounded-2xl p-5 flex items-center gap-4 bg-primary/5 active:scale-[0.98] transition-transform">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Baby className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <p className="font-bold text-slate-700 dark:text-slate-200">Voeg je kind toe</p>
+                  <p className="text-xs text-slate-400">Voor automatisch filteren op de juiste maat</p>
+                </div>
+              </div>
+            </Link>
+          ) : (
+            <div className="space-y-3">
+              {kinderen.map(kind => {
+                const isActief = kind.id === actiefKindId || (!actiefKindId && kinderen[0]?.id === kind.id);
+                const geslachtEmoji = kind.geslacht === "meisje" ? "👧" : kind.geslacht === "jongen" ? "👦" : "🧒";
+                return (
+                  <div key={kind.id} className={cn(
+                    "bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border-2 transition-all",
+                    isActief ? "border-primary shadow-md shadow-primary/10" : "border-slate-100 dark:border-slate-700"
+                  )}>
+                    <div className="p-4 flex items-center gap-3">
+                      {/* Geslacht avatar */}
+                      <div className={cn(
+                        "w-12 h-12 rounded-full flex items-center justify-center text-2xl shrink-0",
+                        isActief ? "bg-primary/15" : "bg-slate-100 dark:bg-slate-700"
+                      )}>
+                        {geslachtEmoji}
+                      </div>
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-bold text-slate-800 dark:text-white">{kind.naam || "Kind"}</p>
+                          {isActief && (
+                            <span className="text-[10px] font-black text-white bg-primary px-2 py-0.5 rounded-full uppercase tracking-wider">
+                              Actief
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-slate-400">
+                          {berekenLeeftijd(kind.geboortedatum)} · {kind.geslacht === "meisje" ? "Meisje" : kind.geslacht === "jongen" ? "Jongen" : "Onbekend"}
+                        </p>
+                      </div>
+
+                      {/* Maat + acties */}
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className={cn("text-xl font-black", isActief ? "text-primary" : "text-slate-400")}>{kind.maat}</span>
+                        <Link href={`/kind/${kind.id}/edit`}>
+                          <button className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                            <span className="material-icons-round text-slate-500 text-sm">edit</span>
+                          </button>
+                        </Link>
+                      </div>
+                    </div>
+
+                    {/* Selecteer knop (als niet actief) */}
+                    {!isActief && (
+                      <div className="px-4 pb-3">
+                        <button
+                          onClick={() => selecteerKind(kind)}
+                          className="w-full h-9 rounded-xl border-2 border-primary/30 text-primary font-bold text-sm flex items-center justify-center gap-1.5 active:bg-primary/5 transition-colors"
+                        >
+                          <CheckCircle2 className="w-4 h-4" />
+                          Schakel naar {kind.naam || "dit kind"}
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Inline maatpicker */}
+                    {maatBewerken === kind.id && (
+                      <div className="px-4 pb-4 space-y-3 border-t border-slate-100 dark:border-slate-700 pt-3">
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Kies de juiste maat</p>
+                        <div className="grid grid-cols-5 gap-1.5">
+                          {["50","56","62","68","74","80","86","92","98","104","110","116","122","128","134"].map(m => (
+                            <button
+                              key={m}
+                              onClick={() => setNieuweMaat(m)}
+                              className={cn(
+                                "py-2.5 rounded-xl text-xs font-bold transition-all border-2",
+                                nieuweMaat === m
+                                  ? "bg-primary text-white border-primary shadow-sm"
+                                  : "bg-slate-50 dark:bg-slate-700 text-slate-500 border-transparent"
+                              )}
+                            >
+                              {m}
+                            </button>
+                          ))}
+                        </div>
+                        <div className="flex gap-2">
+                          <button onClick={() => setMaatBewerken(null)} className="flex-1 h-10 rounded-xl border-2 border-slate-200 text-slate-500 font-bold text-sm">
+                            Annuleren
+                          </button>
+                          <button
+                            onClick={() => slaKindMaatOp(kind.id, nieuweMaat)}
+                            disabled={!nieuweMaat || nieuweMaat === kind.maat}
+                            className="flex-1 h-10 rounded-xl bg-primary text-white font-bold text-sm disabled:opacity-40"
+                          >
+                            Opslaan — Maat {nieuweMaat}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        {/* Mijn items / Favorieten / Reviews tabs */}
+        <section className="space-y-4">
+          <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl">
+            <button onClick={() => setActieveTab("favorieten")}
+              className={cn("flex-1 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5",
+                actieveTab === "favorieten" ? "bg-white dark:bg-slate-700 shadow-sm text-slate-800 dark:text-white" : "text-slate-400")}>
+              <Heart className={cn("w-3.5 h-3.5", actieveTab === "favorieten" ? "fill-primary text-primary" : "")} />
+              <span>Opgeslagen</span>
+              {favorieten.length > 0 && (
+                <span className={cn("text-[10px] font-black px-1.5 py-0.5 rounded-full", actieveTab === "favorieten" ? "bg-primary text-white" : "bg-slate-300 text-slate-600")}>
+                  {favorieten.length}
+                </span>
+              )}
+            </button>
+            <button onClick={() => setActieveTab("items")}
+              className={cn("flex-1 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5",
+                actieveTab === "items" ? "bg-white dark:bg-slate-700 shadow-sm text-slate-800 dark:text-white" : "text-slate-400")}>
+              <Package className={cn("w-3.5 h-3.5", actieveTab === "items" ? "text-primary" : "")} />
+              <span>Mijn items</span>
+              {mijneItems.length > 0 && (
+                <span className={cn("text-[10px] font-black px-1.5 py-0.5 rounded-full", actieveTab === "items" ? "bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-white" : "bg-slate-300 text-slate-600")}>
+                  {mijneItems.length}
+                </span>
+              )}
+            </button>
+            <button onClick={() => setActieveTab("reviews")}
+              className={cn("flex-1 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5",
+                actieveTab === "reviews" ? "bg-white dark:bg-slate-700 shadow-sm text-slate-800 dark:text-white" : "text-slate-400")}>
+              <Star className={cn("w-3.5 h-3.5", actieveTab === "reviews" ? "fill-amber-400 text-amber-400" : "")} />
+              <span>Reviews</span>
+              {reviews.length > 0 && (
+                <span className={cn("text-[10px] font-black px-1.5 py-0.5 rounded-full", actieveTab === "reviews" ? "bg-amber-400 text-white" : "bg-slate-300 text-slate-600")}>
+                  {reviews.length}
+                </span>
+              )}
             </button>
           </div>
-          {children.map((child) => (
-            <div key={child.id} className="bg-white dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-400"><Baby className="w-6 h-6" /></div>
-              <div className="flex-1">
-                <h4 className="font-bold">{child.name}</h4>
-                <p className="text-sm text-slate-500">Maat {child.size} • {child.age}</p>
-              </div>
-              <button onClick={() => openEditChild(child)} className="text-slate-300 hover:text-primary p-2"><Edit2 className="w-5 h-5" /></button>
-            </div>
-          ))}
-        </div>
 
-        {mainChild && (
-          <div className="bg-white dark:bg-slate-800/40 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm space-y-4">
-            <div className="flex items-center gap-2"><TrendingUp className="w-5 h-5 text-primary-dark" /><h3 className="font-bold">Groei Alert</h3></div>
-            <div className="space-y-2">
-              <div className="flex justify-between items-end"><span className="text-sm font-bold">{mainChild.name} groeit bijna naar maat {nextSize}</span><span className="text-[10px] font-bold text-primary-dark bg-primary/10 px-2 py-0.5 rounded-full">85%</span></div>
-              <Progress value={85} className="h-2.5" />
-            </div>
-            <Button onClick={() => openEditChild(mainChild)} className="w-full bg-primary hover:bg-primary/90 text-white font-extrabold h-12 rounded-xl border-none">Nu Aanpassen</Button>
-          </div>
-        )}
-
-        <div className="bg-gradient-to-br from-primary/20 to-accent/10 p-5 rounded-2xl border border-primary/20 shadow-sm space-y-4">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center shadow-sm shrink-0"><Gift className="w-6 h-6 text-primary" /></div>
+          {actieveTab === "items" && (
             <div>
-              <h4 className="font-bold">Gratis Premium</h4>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">Nodig vrienden uit voor <span className="font-extrabold text-primary-dark">3 maanden gratis Premium</span>!</p>
-            </div>
-          </div>
-          <Button onClick={() => handleAction("Vrienden Uitnodigen")} className="w-full bg-primary hover:bg-primary-dark text-white font-extrabold h-12 rounded-xl border-none">Vrienden Uitnodigen</Button>
-        </div>
+              <div className="flex justify-between items-center mb-3">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{actieveItems.length} actief</p>
+                <Link href="/sell" className="text-xs font-bold text-primary flex items-center gap-1">
+                  <Plus className="w-3.5 h-3.5" /> Nieuw item
+                </Link>
+              </div>
 
-        <div className="space-y-2">
-          <h3 className="font-bold ml-1">Instellingen</h3>
-          <div className="bg-white dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800 divide-y divide-slate-50 dark:divide-slate-800 shadow-sm overflow-hidden">
-            {[
-              { icon: Rocket, label: "Mijn Advertenties", href: "/profile/seller-view" },
-              { icon: Bell, label: "Meldingen" },
-              { icon: CreditCard, label: "Betalingen & Bankrekening" },
-              { icon: HelpCircle, label: "Klantenservice", href: "/support" },
-              { icon: Info, label: "Over Noah & Emma", href: "/about" }
-            ].map((item, i) => (
-              <div key={i} onClick={() => item.href ? router.push(item.href) : handleAction(item.label)} className="p-4 flex items-center justify-between cursor-pointer active:bg-slate-50 transition-colors">
-                <div className="flex items-center gap-3"><item.icon className="w-5 h-5 text-slate-400" /><span className="text-sm font-medium">{item.label}</span></div>
+              {mijneItems.length === 0 ? (
+                <div className="text-center py-12 space-y-3">
+                  <span className="text-5xl">📦</span>
+                  <p className="font-bold text-slate-600 dark:text-slate-300">Nog geen items geplaatst</p>
+                  <Link href="/sell" className="inline-block bg-primary text-white px-5 py-2.5 rounded-xl font-bold text-sm">
+                    Eerste item plaatsen
+                  </Link>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  {mijneItems.map(item => (
+                    <div key={item.id} className={cn("bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border shadow-sm relative",
+                      item.actief ? "border-slate-100 dark:border-slate-700" : "border-slate-200 dark:border-slate-600 opacity-60")}>
+                      <Link href={`/product/${item.id}/edit`}>
+                        <div className="relative aspect-square bg-slate-100">
+                          {item.foto_urls?.[0] ? (
+                            <Image src={item.foto_urls[0]} alt={item.titel} fill className="object-cover" />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <span className="material-icons-round text-slate-300 text-3xl">image</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-3">
+                          <p className="font-bold text-xs text-slate-700 dark:text-white line-clamp-1">{item.titel}</p>
+                          <div className="flex justify-between items-center mt-1">
+                            <span className="font-black text-sm text-primary">€{item.prijs.toFixed(2).replace(".", ",")}</span>
+                            <div className="flex items-center gap-1 text-slate-400">
+                              <Heart className="w-3 h-3" />
+                              <span className="text-[10px]">{item.likes}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                      <button onClick={() => toggleListingActief(item)}
+                        className={cn("absolute top-2 right-2 text-[10px] font-bold px-2 py-1 rounded-full",
+                          item.actief ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-500")}>
+                        {item.actief ? "Actief" : "Verborgen"}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {actieveTab === "reviews" && (
+            <div className="space-y-3">
+              {reviews.length === 0 ? (
+                <div className="text-center py-12 space-y-3">
+                  <div className="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center mx-auto">
+                    <Star className="w-8 h-8 text-amber-200" />
+                  </div>
+                  <p className="font-bold text-slate-600 dark:text-slate-300">Nog geen beoordelingen</p>
+                  <p className="text-sm text-slate-400">Na een transactie kunnen kopers en verkopers<br />elkaar een beoordeling geven.</p>
+                </div>
+              ) : (
+                <>
+                  {/* Overzicht sterren */}
+                  <div className="bg-amber-50 dark:bg-amber-900/20 rounded-2xl p-4 flex items-center gap-4">
+                    <div className="text-center">
+                      <p className="text-4xl font-black text-amber-600">
+                        {profile.gemiddelde_beoordeling ? Number(profile.gemiddelde_beoordeling).toFixed(1) : "—"}
+                      </p>
+                      <div className="flex justify-center mt-1">
+                        {[1,2,3,4,5].map(s => (
+                          <span key={s} className={s <= Math.round(profile.gemiddelde_beoordeling || 0) ? "text-amber-400" : "text-slate-200"}>★</span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-bold text-amber-800 dark:text-amber-300 text-sm">{reviews.length} {reviews.length === 1 ? "beoordeling" : "beoordelingen"}</p>
+                      <p className="text-xs text-amber-600/70 dark:text-amber-400/70 mt-0.5">Gemiddelde van alle reviews</p>
+                    </div>
+                  </div>
+
+                  {/* Individuele reviews */}
+                  {reviews.map(review => (
+                    <div key={review.id} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-4 space-y-2">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-sm font-black text-primary shrink-0">
+                            {(review.reviewer?.naam || "?").charAt(0).toUpperCase()}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-bold text-sm text-slate-800 dark:text-white truncate">
+                              {review.reviewer?.naam || "Anoniem"}
+                            </p>
+                            {review.listings?.titel && (
+                              <p className="text-[10px] text-slate-400 truncate">Over: {review.listings.titel}</p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex shrink-0">
+                          {[1,2,3,4,5].map(s => (
+                            <span key={s} className={cn("text-sm", s <= review.beoordeling ? "text-amber-400" : "text-slate-200")}>★</span>
+                          ))}
+                        </div>
+                      </div>
+                      {review.tekst && (
+                        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed pl-12">
+                          "{review.tekst}"
+                        </p>
+                      )}
+                      <p className="text-[10px] text-slate-300 pl-12">
+                        {new Date(review.created_at).toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" })}
+                      </p>
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
+          )}
+
+          {actieveTab === "favorieten" && (
+            <div>
+              {favorieten.length === 0 ? (
+                <div className="text-center py-12 space-y-4">
+                  <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                    <Heart className="w-10 h-10 text-primary/40" />
+                  </div>
+                  <p className="font-bold text-slate-600 dark:text-slate-300">Nog niets opgeslagen</p>
+                  <div className="space-y-2 text-sm text-slate-400 max-w-xs mx-auto">
+                    <p>💛 Swipe rechts op de homepage om producten op te slaan</p>
+                    <p>🤍 Of tik op het hartje op een productpagina</p>
+                  </div>
+                  <Link href="/" className="inline-block bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm mt-2">
+                    Producten ontdekken
+                  </Link>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  {favorieten.map(fav => {
+                    const item = fav.listings;
+                    if (!item) return null;
+                    return (
+                      <div key={fav.id} className="relative">
+                        <Link href={`/product/${fav.listing_id}`}>
+                          <div className="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-700 shadow-sm">
+                            <div className="relative aspect-square bg-slate-100">
+                              {item.foto_urls?.[0] ? (
+                                <Image src={item.foto_urls[0]} alt={item.titel} fill className="object-cover" />
+                              ) : (
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <span className="material-icons-round text-slate-300 text-3xl">image</span>
+                                </div>
+                              )}
+                            </div>
+                            <div className="p-3">
+                              <p className="font-bold text-xs text-slate-700 dark:text-white line-clamp-1">{item.titel}</p>
+                              <span className="font-black text-sm text-primary">€{item.prijs.toFixed(2).replace(".", ",")}</span>
+                            </div>
+                          </div>
+                        </Link>
+                        <button onClick={() => verwijderFavoriet(fav.id)}
+                          className="absolute top-2 right-2 w-7 h-7 bg-white dark:bg-slate-700 rounded-full flex items-center justify-center shadow-sm">
+                          <X className="w-3.5 h-3.5 text-slate-500" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+
+        {/* Account menu */}
+        <section className="space-y-2 pb-4">
+          {/* Primaire acties */}
+          <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 pb-1">Mijn account</h2>
+          {[
+            { icon: <Bell className="w-5 h-5" />, label: "Notificaties", href: "/notificaties" },
+            { icon: <Package className="w-5 h-5" />, label: "Bestellingen", href: "/orders" },
+            { icon: <Settings className="w-5 h-5" />, label: "Instellingen", href: "/instellingen" },
+          ].map(({ icon, label, href }) => (
+            <Link key={label} href={href}>
+              <div className="flex items-center gap-4 p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 active:scale-[0.98] transition-transform mb-2">
+                <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500">
+                  {icon}
+                </div>
+                <span className="flex-1 font-semibold text-slate-700 dark:text-slate-200">{label}</span>
                 <ChevronRight className="w-4 h-4 text-slate-300" />
               </div>
-            ))}
+            </Link>
+          ))}
+
+          {/* Ontdekken & personaliseren */}
+          <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 pt-4 pb-1">Ontdekken</h2>
+          {[
+            { icon: <Sliders className="w-5 h-5" />, label: "Personaliseer je feed", href: "/feed-voorkeuren", sub: "Categorieën, merken en leden" },
+            { icon: <Gift className="w-5 h-5" />, label: "Doneer aan een goed doel", href: "/donaties", sub: "Een deel van je opbrengst doneren" },
+          ].map(({ icon, label, href, sub }) => (
+            <Link key={label} href={href}>
+              <div className="flex items-center gap-4 p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 active:scale-[0.98] transition-transform mb-2">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                  {icon}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="font-semibold text-slate-700 dark:text-slate-200 block">{label}</span>
+                  <span className="text-xs text-slate-400">{sub}</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-300" />
+              </div>
+            </Link>
+          ))}
+
+          {/* Help */}
+          <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 pt-4 pb-1">Hulp</h2>
+          {[
+            { icon: <HelpCircle className="w-5 h-5" />, label: "Veelgestelde vragen", href: "/faq", sub: "Antwoorden op je vragen" },
+            { icon: <Headphones className="w-5 h-5" />, label: "Helpdesk", href: "/helpdesk", sub: "Neem contact op met ons" },
+          ].map(({ icon, label, href, sub }) => (
+            <Link key={label} href={href}>
+              <div className="flex items-center gap-4 p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 active:scale-[0.98] transition-transform mb-2">
+                <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500">
+                  {icon}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="font-semibold text-slate-700 dark:text-slate-200 block">{label}</span>
+                  <span className="text-xs text-slate-400">{sub}</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-300" />
+              </div>
+            </Link>
+          ))}
+
+          {/* Juridisch & info */}
+          <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 pt-4 pb-1">Info</h2>
+          {[
+            { icon: <FileText className="w-5 h-5" />, label: "Wettelijke gegevens", href: "/wettelijk", sub: "Voorwaarden en privacy" },
+            { icon: <Cookie className="w-5 h-5" />, label: "Mijn voorkeuren", href: "/voorkeuren", sub: "Cookievoorkeuren beheren" },
+          ].map(({ icon, label, href, sub }) => (
+            <Link key={label} href={href}>
+              <div className="flex items-center gap-4 p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 active:scale-[0.98] transition-transform mb-2">
+                <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500">
+                  {icon}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="font-semibold text-slate-700 dark:text-slate-200 block">{label}</span>
+                  <span className="text-xs text-slate-400">{sub}</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-300" />
+              </div>
+            </Link>
+          ))}
+
+          {/* Vakantiestand */}
+          <div className={cn(
+            "flex items-center gap-4 p-4 rounded-2xl border transition-all",
+            vakantiestand
+              ? "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800"
+              : "bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700"
+          )}>
+            <div className={cn(
+              "w-10 h-10 rounded-xl flex items-center justify-center",
+              vakantiestand ? "bg-amber-100 dark:bg-amber-800" : "bg-slate-100 dark:bg-slate-700"
+            )}>
+              <Umbrella className={cn("w-5 h-5", vakantiestand ? "text-amber-600" : "text-slate-500")} />
+            </div>
+            <div className="flex-1">
+              <p className={cn("font-semibold text-sm", vakantiestand ? "text-amber-800 dark:text-amber-200" : "text-slate-700 dark:text-slate-200")}>
+                Vakantiestand
+              </p>
+              <p className="text-xs text-slate-400">Jouw advertenties zijn tijdelijk niet zichtbaar</p>
+            </div>
+            <Switch
+              checked={vakantiestand}
+              onCheckedChange={toggleVakantiestand}
+              className="data-[state=checked]:bg-amber-500"
+            />
           </div>
-        </div>
+
+          <button onClick={uitloggen} className="w-full flex items-center gap-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-2xl border border-red-100 dark:border-red-900/30 active:scale-[0.98] transition-transform mt-2">
+            <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900/40 flex items-center justify-center text-red-500">
+              <LogOut className="w-5 h-5" />
+            </div>
+            <span className="font-bold text-red-600 dark:text-red-400">Uitloggen</span>
+          </button>
+        </section>
       </main>
-
-      {/* Kind Sheet */}
-      <Sheet open={isChildSheetOpen} onOpenChange={setIsChildSheetOpen}>
-        <SheetContent side="bottom" className="h-[70vh] rounded-t-3xl border-none font-display">
-          <SheetHeader><SheetTitle>{editingChild ? "Kind Bewerken" : "Kind Toevoegen"}</SheetTitle></SheetHeader>
-          <div className="space-y-6 py-6">
-            <div className="space-y-2"><Label>Naam</Label><Input value={childFormData.name} onChange={e => setChildFormData(prev => ({ ...prev, name: e.target.value }))} className="rounded-xl h-12" /></div>
-            <div className="space-y-2"><Label>Huidige Kledingmaat</Label><Select value={childFormData.size} onValueChange={val => setChildFormData(prev => ({ ...prev, size: val }))}><SelectTrigger className="rounded-xl h-12"><SelectValue /></SelectTrigger><SelectContent>{AVAILABLE_SIZES.map(s => (<SelectItem key={s} value={s}>Maat {s}</SelectItem>))}</SelectContent></Select></div>
-            <div className="space-y-2"><Label>Leeftijd</Label><Input value={childFormData.age} onChange={e => setChildFormData(prev => ({ ...prev, age: e.target.value }))} className="rounded-xl h-12" /></div>
-          </div>
-          <SheetFooter><Button onClick={saveChild} className="w-full bg-primary text-white font-extrabold h-14 rounded-xl border-none"><Save className="w-5 h-5 mr-2" /> Opslaan</Button></SheetFooter>
-        </SheetContent>
-      </Sheet>
-
-      {/* Meldingen Sheet */}
-      <Sheet open={isNotificationsOpen} onOpenChange={setIsNotificationsOpen}>
-        <SheetContent side="bottom" className="h-[60vh] rounded-t-3xl border-none font-display">
-          <SheetHeader><SheetTitle>Meldingen</SheetTitle><SheetDescription>Bepaal welke updates je wilt ontvangen.</SheetDescription></SheetHeader>
-          <div className="space-y-6 py-8">
-            <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Smartphone className="w-5 h-5 text-slate-400" /><div><p className="font-bold text-sm">Bestellingen</p><p className="text-xs text-slate-500">Updates over je aan- en verkopen</p></div></div><Switch checked={notifs.orders} onCheckedChange={v => setNotifs(p => ({...p, orders: v}))} /></div>
-            <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Heart className="w-5 h-5 text-slate-400" /><div><p className="font-bold text-sm">Nieuwe Likes</p><p className="text-xs text-slate-500">Wanneer iemand je item leuk vindt</p></div></div><Switch checked={notifs.likes} onCheckedChange={v => setNotifs(p => ({...p, likes: v}))} /></div>
-            <div className="flex items-center justify-between"><div className="flex items-center gap-3"><TrendingUp className="w-5 h-5 text-slate-400" /><div><p className="font-bold text-sm">Groei Alerts</p><p className="text-xs text-slate-500">Meldingen over de maat van je kind</p></div></div><Switch checked={notifs.growth} onCheckedChange={v => setNotifs(p => ({...p, growth: v}))} /></div>
-          </div>
-          <SheetFooter><Button onClick={saveNotifications} className="w-full bg-primary text-white font-extrabold h-14 rounded-xl border-none">Instellingen Opslaan</Button></SheetFooter>
-        </SheetContent>
-      </Sheet>
-
-      {/* Betalingen Sheet */}
-      <Sheet open={isPaymentsOpen} onOpenChange={setIsPaymentsOpen}>
-        <SheetContent side="bottom" className="h-[75vh] rounded-t-3xl border-none font-display">
-          <SheetHeader><SheetTitle>Betalingen & Uitbetaling</SheetTitle><SheetDescription>Beheer je bankrekening voor uitbetalingen.</SheetDescription></SheetHeader>
-          <div className="space-y-8 py-8">
-            <div className="bg-slate-50 dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700 space-y-4">
-              <div className="flex items-center gap-3 text-primary"><Wallet className="w-6 h-6" /><h4 className="font-bold">Uitbetalingsrekening</h4></div>
-              <div className="space-y-2"><Label>IBAN Rekeningnummer</Label><Input value={iban} onChange={e => setIban(e.target.value)} className="rounded-xl h-12 font-mono" /></div>
-              <p className="text-[10px] text-slate-400 leading-relaxed uppercase font-bold tracking-wider">Het geld van je verkopen wordt binnen 2 werkdagen na bevestiging op deze rekening gestort.</p>
-            </div>
-            <div className="space-y-4">
-              <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400">Gekoppelde Betaalmethodes</h4>
-              <div className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 border rounded-xl shadow-sm"><div className="flex items-center gap-3"><div className="w-10 h-6 bg-blue-600 rounded flex items-center justify-center text-[8px] font-black text-white">iDEAL</div><p className="text-sm font-bold">ABN AMRO **** 4291</p></div><Check className="w-4 h-4 text-primary" /></div>
-            </div>
-          </div>
-          <SheetFooter><Button onClick={savePayments} className="w-full bg-primary text-white font-extrabold h-14 rounded-xl border-none">Bankgegevens Opslaan</Button></SheetFooter>
-        </SheetContent>
-      </Sheet>
     </div>
   );
 }

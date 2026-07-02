@@ -10,13 +10,17 @@ const SECTIES = [
   },
   {
     titel: "Welke cookies gebruiken wij?",
-    tekst: `Noah & Emma maakt uitsluitend gebruik van functionele cookies. Dit zijn cookies die strikt noodzakelijk zijn voor het werken van de applicatie.
+    tekst: `Noah & Emma gebruikt standaard alleen functionele cookies. Dit zijn cookies die strikt noodzakelijk zijn voor het werken van de applicatie.
 
 **Functionele cookies (noodzakelijk)**
 • Sessiecookie: Houdt bij dat je bent ingelogd, zodat je niet bij elke pagina opnieuw hoeft in te loggen. Vervalt wanneer je de browser afsluit of na 30 dagen.
 • Voorkeurscookie: Onthoudt jouw instellingen zoals donkere modus. Vervalt na 1 jaar.
 
-Wij plaatsen GEEN tracking cookies, analytics cookies van derden, of advertentiecookies.`,
+**Optionele cookies (alleen met jouw toestemming)**
+• Analytische cookies: Helpen ons begrijpen hoe de app gebruikt wordt, zodat we hem kunnen verbeteren. Gegevens zijn geanonimiseerd.
+• Personalisatiecookies: Maken een gepersonaliseerde feed en relevante aanbevelingen mogelijk.
+
+Optionele cookies staan standaard UIT. Je beheert ze via Profiel → Mijn voorkeuren. Wij plaatsen nooit advertentiecookies en verkopen nooit gegevens aan derden.`,
   },
   {
     titel: "Third-party diensten",
@@ -25,7 +29,7 @@ Wij plaatsen GEEN tracking cookies, analytics cookies van derden, of advertentie
 • **Supabase**: onze database- en authenticatieprovider. Supabase plaatst technische cookies voor sessiebeheer. Zie supabase.com/privacy voor hun beleid.
 • **DiceBear**: voor het genereren van avatars. DiceBear is een statische API en plaatst geen cookies.
 
-Er worden geen analytische cookies van Google Analytics, Facebook Pixel of vergelijkbare diensten gebruikt.`,
+Er worden geen advertentie- of trackingcookies van Google Ads, Facebook Pixel of vergelijkbare diensten gebruikt.`,
   },
   {
     titel: "Cookies beheren",
@@ -71,7 +75,7 @@ export default function CookiesPage() {
           <div>
             <p className="font-bold text-sm text-emerald-800 dark:text-emerald-200">Wij houden het simpel</p>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-              Noah & Emma gebruikt alleen de cookies die strikt noodzakelijk zijn. Geen tracking, geen advertenties, geen data verkoop.
+              Noah & Emma gebruikt standaard alleen noodzakelijke cookies. Optionele cookies staan uit tot jij ze aanzet. Geen advertenties, geen dataverkoop.
             </p>
           </div>
         </div>

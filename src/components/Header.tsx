@@ -36,20 +36,15 @@ export function Header() {
     pathname.startsWith("/product/") ||
     pathname === "/profile" ||
     pathname === "/profile/favorites" ||
-    pathname === "/profile/seller-view" ||
     pathname === "/profile/edit" ||
     pathname.startsWith("/promote/") ||
     pathname === "/messages" ||
     pathname.startsWith("/messages/") ||
     pathname === "/sell" ||
-    pathname === "/checkout" ||
     pathname === "/premium" ||
     pathname === "/support" ||
     pathname === "/support/faq" ||
     pathname === "/support/ai-chat" ||
-    pathname === "/request-sent" ||
-    pathname === "/about" ||
-    pathname.startsWith("/sales-request/") ||
     pathname.startsWith("/search/results") ||
     pathname.startsWith("/orders/") ||
     pathname.startsWith("/onboarding/") ||

@@ -54,9 +54,13 @@ export default function KindOnboardingPage() {
 
   const leeftijdMaanden = geboortedatum ? berekenLeeftijdInMaanden(geboortedatum) : 0;
   const gesuggeerdeMaat = geboortedatum ? schatMaatOpLeeftijd(leeftijdMaanden) : null;
+  // App is voor kinderen van 0–12 jaar
+  const kindTeOud = geboortedatum ? leeftijdMaanden >= 13 * 12 : false;
+  const minGeboortedatum = new Date(new Date().setFullYear(new Date().getFullYear() - 13)).toISOString().split("T")[0];
   const activeMaat = gekozenMaat ?? gesuggeerdeMaat ?? "86";
 
   const handleOpslaan = async () => {
+    if (kindTeOud) return;
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push("/login"); return; }
@@ -234,10 +238,17 @@ export default function KindOnboardingPage() {
                 type="date"
                 value={geboortedatum}
                 onChange={e => setGeboortedatum(e.target.value)}
+                min={minGeboortedatum}
                 max={new Date().toISOString().split("T")[0]}
                 className="w-full h-14 px-5 rounded-2xl border-2 border-slate-100 bg-white text-slate-800 font-semibold focus:border-primary outline-none transition-all text-lg"
               />
             </div>
+
+            {kindTeOud && (
+              <div className="bg-red-50 border border-red-200 rounded-2xl px-4 py-3">
+                <p className="text-sm font-bold text-red-600">Noah &amp; Emma is voor kinderen van 0 t/m 12 jaar. Controleer de geboortedatum.</p>
+              </div>
+            )}
 
             {geboortedatum && gesuggeerdeMaat && (
               <div className="bg-white rounded-2xl border border-primary/20 p-4 flex items-center justify-between">

@@ -26,6 +26,16 @@ export default function KindBewerkenPage({ params }: { params: Promise<{ id: str
   const [geboortedatum, setGeboortedatum] = useState("");
   const [maat, setMaat] = useState("86");
 
+  // App is voor kinderen van 0–12 jaar
+  const kindTeOud = (() => {
+    if (!geboortedatum) return false;
+    const geb = new Date(geboortedatum);
+    const nu = new Date();
+    const maanden = (nu.getFullYear() - geb.getFullYear()) * 12 + (nu.getMonth() - geb.getMonth());
+    return maanden >= 13 * 12;
+  })();
+  const minGeboortedatum = new Date(new Date().setFullYear(new Date().getFullYear() - 13)).toISOString().split("T")[0];
+
   useEffect(() => { laadKind(); }, [id]);
 
   const laadKind = async () => {
@@ -49,6 +59,10 @@ export default function KindBewerkenPage({ params }: { params: Promise<{ id: str
   };
 
   const slaOp = async () => {
+    if (kindTeOud) {
+      toast({ title: "Controleer de geboortedatum", description: "Noah & Emma is voor kinderen van 0 t/m 12 jaar." });
+      return;
+    }
     setOpslaan(true);
     const { error } = await supabase.from("children").update({
       naam: naam || null,
@@ -156,9 +170,13 @@ export default function KindBewerkenPage({ params }: { params: Promise<{ id: str
             type="date"
             value={geboortedatum}
             onChange={e => setGeboortedatum(e.target.value)}
+            min={minGeboortedatum}
             max={new Date().toISOString().split("T")[0]}
             className="w-full h-12 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-sm outline-none focus:border-primary"
           />
+          {kindTeOud && (
+            <p className="text-xs font-bold text-red-500 mt-1">Noah &amp; Emma is voor kinderen van 0 t/m 12 jaar.</p>
+          )}
         </div>
 
         {/* Maat */}

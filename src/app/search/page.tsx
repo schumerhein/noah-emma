@@ -336,7 +336,7 @@ export default function SearchPage() {
                 )}
               </button>
             </SheetTrigger>
-            <SheetContent side="bottom" className="h-[92vh] rounded-t-3xl flex flex-col">
+            <SheetContent side="bottom" className="h-[92vh] rounded-t-3xl flex flex-col max-w-md mx-auto">
               <SheetHeader className="px-6 pt-2 pb-4 shrink-0">
                 <SheetTitle className="text-xl font-black">Filters</SheetTitle>
               </SheetHeader>
@@ -489,7 +489,7 @@ export default function SearchPage() {
                   )}
                   <SheetClose asChild>
                     <Button className="flex-1 h-12 bg-primary text-white font-bold rounded-2xl border-none">
-                      {resultaten.length > 0 ? `${resultaten.length} resultaten` : "Zoeken"}
+                      {resultaten.length > 0 ? `${resultaten.length} ${resultaten.length === 1 ? "resultaat" : "resultaten"}` : "Zoeken"}
                     </Button>
                   </SheetClose>
                 </div>
@@ -556,7 +556,7 @@ export default function SearchPage() {
             </div>
           ) : (
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">{resultaten.length} resultaten</p>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">{resultaten.length} {resultaten.length === 1 ? "resultaat" : "resultaten"}</p>
               <div className="grid grid-cols-2 gap-3">
                 {resultaten.map(item => (
                   <Link key={item.id} href={`/product/${item.id}`}>

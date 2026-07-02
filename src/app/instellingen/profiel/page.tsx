@@ -24,6 +24,7 @@ export default function ProfielInstellingenPage() {
   const [toonStadSuggesties, setToonStadSuggesties] = useState(false);
   const [bio, setBio] = useState("");
   const [geboortedatum, setGeboortedatum] = useState("");
+  const [geboortedatumKolomBestaat, setGeboortedatumKolomBestaat] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -31,7 +32,8 @@ export default function ProfielInstellingenPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push("/login"); return; }
       setUserId(user.id);
-      const { data } = await supabase.from("profiles").select("naam, stad, bio, avatar_url, geboortedatum").eq("id", user.id).single();
+      // select("*") zodat de pagina blijft werken als een kolom (nog) niet bestaat
+      const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
       if (data) {
         setNaam(data.naam || "");
         setStad(data.stad || "");
@@ -39,6 +41,7 @@ export default function ProfielInstellingenPage() {
         setBio(data.bio || "");
         setAvatarUrl(data.avatar_url || null);
         setGeboortedatum(data.geboortedatum || "");
+        setGeboortedatumKolomBestaat("geboortedatum" in data);
       }
       setLaden(false);
     })();
@@ -60,12 +63,14 @@ export default function ProfielInstellingenPage() {
   const slaOp = async () => {
     if (!userId || !naam.trim()) return;
     setOpslaan(true);
-    await supabase.from("profiles").update({
+    const updateData: Record<string, string | null> = {
       naam: naam.trim(),
       stad: stad || null,
       bio: bio.trim() || null,
-      geboortedatum: geboortedatum || null,
-    }).eq("id", userId);
+    };
+    // Alleen meesturen als de kolom in de database bestaat
+    if (geboortedatumKolomBestaat) updateData.geboortedatum = geboortedatum || null;
+    await supabase.from("profiles").update(updateData).eq("id", userId);
     setOpslaan(false);
     toast({ title: "Profiel opgeslagen ✓" });
     router.back();

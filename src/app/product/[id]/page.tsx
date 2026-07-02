@@ -35,6 +35,7 @@ type Listing = {
   created_at: string;
   user_id: string;
   ai_model: "noah" | "emma" | null;
+  actief?: boolean;
   gepromoot?: boolean;
   verzending_mogelijk?: boolean;
   verzendkosten?: number | null;
@@ -382,9 +383,17 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               </div>
             )}
 
+            {/* Verkocht banner */}
+            {listing.actief === false && (
+              <div className="bg-slate-900 dark:bg-white rounded-2xl px-4 py-3 flex items-center gap-3">
+                <Check className="w-5 h-5 text-emerald-400 dark:text-emerald-600 shrink-0" />
+                <p className="text-sm font-bold text-white dark:text-slate-900">Dit artikel is verkocht</p>
+              </div>
+            )}
+
             {/* Prijs — hero */}
             <div className="flex items-baseline gap-1">
-              <span className="text-5xl font-black text-primary leading-none">€{listing.prijs.toFixed(2).replace(".", ",")}</span>
+              <span className={cn("text-5xl font-black leading-none", listing.actief === false ? "text-slate-300 line-through" : "text-primary")}>€{listing.prijs.toFixed(2).replace(".", ",")}</span>
             </div>
 
             {/* Titel */}
@@ -706,6 +715,11 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 Artikel aanpassen
               </button>
             </Link>
+          </div>
+        ) : listing.actief === false ? (
+          <div className="h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center gap-2 text-slate-400 font-bold">
+            <Check className="w-4 h-4" />
+            Verkocht
           </div>
         ) : (
           <div className="flex gap-3">

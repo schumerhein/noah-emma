@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 import { Baby, ChevronRight, Calendar, ArrowLeft, Sparkles, Check } from "lucide-react";
 
-const MAATLIJST = ["50", "56", "62", "68", "74", "80", "86", "92", "98", "104", "110", "116", "122", "128", "134", "140"];
+const MAATLIJST = ["50", "56", "62", "68", "74", "80", "86", "92", "98", "104", "110", "116", "122", "128", "134", "140", "146", "152", "158/164"];
 
 function schatMaatOpLeeftijd(maanden: number): string {
   if (maanden <= 1)  return "50";

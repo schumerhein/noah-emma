@@ -508,7 +508,7 @@ export default function SellPage() {
           <div className="space-y-3">
             <label className="text-sm font-bold text-slate-500">Maat</label>
             <div className="grid grid-cols-4 gap-2">
-              {["56", "62", "68", "74", "80", "86", "92", "98", "104", "110", "116", "128"].map(s => (
+              {["50", "56", "62", "68", "74", "80", "86", "92", "98", "104", "110", "116", "122", "128", "134", "140", "146", "152", "158/164"].map(s => (
                 <button key={s} onClick={() => setSize(s)} className={cn(
                   "py-2.5 rounded-xl text-xs font-bold transition-all",
                   size === s ? "bg-pink-50 text-primary-dark border-2 border-primary" : "bg-slate-50 dark:bg-slate-800 text-slate-500"

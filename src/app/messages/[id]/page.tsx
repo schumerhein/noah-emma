@@ -165,6 +165,10 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
       await supabase.from("listings").update({ actief: false }).eq("id", conversation.listing.id);
     }
 
+    // Verhoog de verkoopteller van de verkoper
+    const { data: profiel } = await supabase.from("profiles").select("totaal_verkopen").eq("id", currentUserId).single();
+    await supabase.from("profiles").update({ totaal_verkopen: (profiel?.totaal_verkopen || 0) + 1 }).eq("id", currentUserId);
+
     // Stuur een systeembericht in het gesprek
     await supabase.from("messages").insert({
       conversation_id: id,

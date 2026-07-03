@@ -753,7 +753,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         ) : (
           <div className="flex gap-3">
             <button
-              onClick={() => setToonBodModal(true)}
+              onClick={() => {
+                if (!currentUserId) {
+                  toast({ title: "Log in om een bod te doen" });
+                  router.push("/login");
+                  return;
+                }
+                setToonBodModal(true);
+              }}
               className="flex items-center justify-center gap-2 h-14 px-4 rounded-2xl border-2 border-primary/30 text-primary font-bold text-sm bg-primary/5 active:scale-95 transition-transform shrink-0"
             >
               <TrendingDown className="w-4 h-4" />

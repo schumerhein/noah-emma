@@ -45,6 +45,7 @@ type Listing = {
   actief: boolean;
   likes: number;
   moderatie_status?: string;
+  verkocht?: boolean;
 };
 
 type Favoriet = {
@@ -138,7 +139,7 @@ export default function ProfilePage() {
       (() => {
         let q = supabase
           .from("favorites")
-          .select("id, listing_id, listings(id, titel, prijs, foto_urls, conditie, actief, likes)")
+          .select("id, listing_id, listings(*)")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false });
         if (actiefId) q = q.eq("kind_id", actiefId);
@@ -721,6 +722,14 @@ export default function ProfilePage() {
                               ) : (
                                 <div className="absolute inset-0 flex items-center justify-center">
                                   <span className="material-icons-round text-slate-300 text-3xl">image</span>
+                                </div>
+                              )}
+                              {/* Verkocht of niet meer beschikbaar */}
+                              {(item.verkocht === true || item.actief === false) && (
+                                <div className="absolute inset-0 bg-white/50 dark:bg-slate-900/50 flex items-center justify-center">
+                                  <span className="bg-slate-900 text-white text-[10px] font-bold px-2.5 py-1 rounded-full">
+                                    {item.verkocht === true ? "Verkocht" : "Niet beschikbaar"}
+                                  </span>
                                 </div>
                               )}
                             </div>

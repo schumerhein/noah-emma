@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { haalGeblokkeerdeIds, filterZichtbaar } from "@/lib/zichtbaarheid";
 import { leesActiefKind, type ActiefKind } from "@/components/ThemeProvider";
+import { useToast } from "@/hooks/use-toast";
 import { X, Zap, Crown } from "lucide-react";
 
 type Listing = {
@@ -33,10 +34,19 @@ type Listing = {
 
 export default function Home() {
   const router = useRouter();
+  const { toast } = useToast();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [kind, setKind] = useState<ActiefKind | null>(null);
-  const [filterOpKind, setFilterOpKind] = useState(true);
+  // Onthoud de filterkeuze van de gebruiker tussen sessies
+  const [filterOpKind, setFilterOpKindState] = useState(true);
+  const setFilterOpKind = (updater: boolean | ((prev: boolean) => boolean)) => {
+    setFilterOpKindState(prev => {
+      const nieuw = typeof updater === "function" ? updater(prev) : updater;
+      try { localStorage.setItem("filter_op_kind", nieuw ? "1" : "0"); } catch {}
+      return nieuw;
+    });
+  };
   const [swiping, setSwiping] = useState<"left" | "right" | null>(null);
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -55,6 +65,12 @@ export default function Home() {
     if (actief) setKind(actief);
     else laadKindFallback();
     checkPremiumEnSwipes();
+
+    // Herstel de bewaarde filterkeuze
+    try {
+      const bewaard = localStorage.getItem("filter_op_kind");
+      if (bewaard !== null) setFilterOpKindState(bewaard === "1");
+    } catch {}
 
     const onWissel = (e: Event) => {
       const nieuwKind = (e as CustomEvent<ActiefKind>).detail;
@@ -178,6 +194,12 @@ export default function Home() {
             { user_id: user.id, listing_id: current.id, kind_id: actiefKind?.id ?? null },
             { onConflict: "user_id,listing_id" }
           );
+      } else {
+        // Gast: like wordt niet bewaard — verwijs één keer naar inloggen
+        toast({
+          title: "Log in om favorieten te bewaren",
+          description: "Als gast worden je likes niet opgeslagen.",
+        });
       }
     }
 

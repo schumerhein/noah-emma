@@ -123,6 +123,8 @@ type Listing = {
   foto_urls: string[];
   user_id?: string;
   moderatie_status?: string;
+  actief?: boolean;
+  verkocht?: boolean;
   profiles?: { naam: string | null; stad: string | null };
 };
 
@@ -200,11 +202,12 @@ export default function SearchPage() {
     setLadenResultaten(true);
     setHeeftGezocht(true);
 
+    // Geen actief-filter in de query: verkochte items tonen we mét badge.
+    // Handmatig verborgen items filteren we hieronder alsnog weg.
     let query = supabase
       .from("listings")
       .select("*, profiles(naam, stad)")
-      .eq("actief", true)
-      .limit(50);
+      .limit(60);
 
     if (sort === "prijs_laag") query = query.order("prijs", { ascending: true });
     else if (sort === "prijs_hoog") query = query.order("prijs", { ascending: false });
@@ -225,7 +228,12 @@ export default function SearchPage() {
       haalGeblokkeerdeIds(),
       supabase.auth.getUser(),
     ]);
-    setResultaten(filterZichtbaar((data as Listing[]) || [], geblokkeerd, user?.id));
+    const zichtbaar = filterZichtbaar((data as Listing[]) || [], geblokkeerd, user?.id)
+      // Beschikbare items tonen, plus verkochte items (met badge); handmatig verborgen items niet
+      .filter(l => l.actief !== false || l.verkocht === true)
+      // Verkochte items achteraan
+      .sort((a, b) => Number(a.verkocht === true) - Number(b.verkocht === true));
+    setResultaten(zichtbaar);
     setLadenResultaten(false);
   }, [filters, sortering]);
 
@@ -579,6 +587,11 @@ export default function SearchPage() {
                         <span className="absolute top-2 left-2 bg-white/90 dark:bg-slate-900/90 text-[10px] font-bold px-2 py-0.5 rounded-full text-slate-600">
                           {item.conditie}
                         </span>
+                        {item.verkocht === true && (
+                          <div className="absolute inset-0 bg-white/50 dark:bg-slate-900/50 flex items-center justify-center">
+                            <span className="bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-full">Verkocht</span>
+                          </div>
+                        )}
                         {item.kleur && (
                           <span className="absolute top-2 right-2 w-5 h-5 rounded-full border-2 border-white shadow-sm"
                             style={{ backgroundColor: KLEUREN.find(k => k.naam === item.kleur)?.hex || "#ccc" }} />

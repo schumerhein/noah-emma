@@ -160,9 +160,15 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
       afgerond_door: currentUserId,
     }).eq("id", id);
 
-    // Zet listing op inactief (verkocht)
+    // Zet listing op verkocht en inactief
     if (conversation.listing?.id) {
-      await supabase.from("listings").update({ actief: false }).eq("id", conversation.listing.id);
+      const { error: verkochtError } = await supabase.from("listings")
+        .update({ actief: false, verkocht: true })
+        .eq("id", conversation.listing.id);
+      // Fallback als de verkocht-kolom (nog) niet bestaat
+      if (verkochtError) {
+        await supabase.from("listings").update({ actief: false }).eq("id", conversation.listing.id);
+      }
     }
 
     // Verhoog de verkoopteller van de verkoper

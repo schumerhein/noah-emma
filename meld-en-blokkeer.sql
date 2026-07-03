@@ -28,7 +28,7 @@ alter table public.blocks enable row level security;
 drop policy if exists "Gebruikers zien eigen blokkades" on public.blocks;
 create policy "Gebruikers zien eigen blokkades"
   on public.blocks for select
-  using (auth.uid() = blokkeerder_id);
+  using (auth.uid() = blokkeerder_id or auth.uid() = geblokkeerd_id);
 
 drop policy if exists "Gebruikers blokkeren zelf" on public.blocks;
 create policy "Gebruikers blokkeren zelf"

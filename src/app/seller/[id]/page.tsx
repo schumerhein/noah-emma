@@ -4,6 +4,7 @@ import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, Star, Package, Heart, MapPin, Calendar, UserPlus, UserCheck, Flag, Ban, X, MoreVertical } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { filterZichtbaar } from "@/lib/zichtbaarheid";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -72,12 +73,12 @@ export default function SellerPage({ params }: { params: Promise<{ id: string }>
 
     const [profileRes, listingsRes, reviewsRes] = await Promise.all([
       supabase.from("profiles").select("id, naam, stad, bio, avatar_url, gemiddelde_beoordeling, totaal_verkopen, aantalvolgers, lid_sinds, vakantiestand").eq("id", id).single(),
-      supabase.from("listings").select("id, titel, prijs, maat, foto_urls, likes").eq("user_id", id).eq("actief", true).order("created_at", { ascending: false }),
+      supabase.from("listings").select("*").eq("user_id", id).eq("actief", true).order("created_at", { ascending: false }),
       supabase.from("reviews").select("id, beoordeling, tekst, created_at, reviewer:profiles!reviews_reviewer_id_fkey(naam)").eq("reviewed_id", id).order("created_at", { ascending: false }),
     ]);
 
     if (profileRes.data) setSeller(profileRes.data as SellerProfile);
-    if (listingsRes.data) setListings(listingsRes.data);
+    if (listingsRes.data) setListings(filterZichtbaar(listingsRes.data as (Listing & { user_id?: string; moderatie_status?: string })[], new Set(), user?.id));
     if (reviewsRes.data) setReviews(reviewsRes.data as unknown as Review[]);
 
     // Check of al volgend + of geblokkeerd

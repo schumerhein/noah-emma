@@ -36,6 +36,8 @@ type Listing = {
   user_id: string;
   ai_model: "noah" | "emma" | null;
   actief?: boolean;
+  moderatie_status?: string;
+  moderatie_reden?: string | null;
   gepromoot?: boolean;
   verzending_mogelijk?: boolean;
   verzendkosten?: number | null;
@@ -216,6 +218,21 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       toast({ title: "Dit is jouw eigen advertentie" });
       return;
     }
+    // Geblokkeerde gebruikers kunnen geen contact opnemen (beide richtingen)
+    const { data: blokkade } = await supabase
+      .from("blocks")
+      .select("id, blokkeerder_id")
+      .or(`and(blokkeerder_id.eq.${currentUserId},geblokkeerd_id.eq.${listing.user_id}),and(blokkeerder_id.eq.${listing.user_id},geblokkeerd_id.eq.${currentUserId})`)
+      .limit(1);
+    if (blokkade && blokkade.length > 0) {
+      const zelfGeblokkeerd = blokkade[0].blokkeerder_id === currentUserId;
+      toast({
+        variant: "destructive",
+        title: zelfGeblokkeerd ? "Je hebt deze verkoper geblokkeerd" : "Contact niet mogelijk",
+        description: zelfGeblokkeerd ? "Deblokkeer de verkoper via diens profiel om contact op te nemen." : "Deze verkoper accepteert geen berichten van jou.",
+      });
+      return;
+    }
     // Stuur door naar berichtenpagina met verkoper info
     router.push(`/messages?verkoper=${listing.user_id}&listing=${listing.id}`);
   };
@@ -383,8 +400,20 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               </div>
             )}
 
+            {/* Moderatiestatus banner (alleen zichtbaar voor de eigenaar) */}
+            {eigenProduct && listing.moderatie_status === "wachtend" && (
+              <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 rounded-2xl px-4 py-3">
+                <p className="text-sm font-bold text-amber-800 dark:text-amber-300">⏳ In behandeling — je advertentie wordt beoordeeld en is daarna zichtbaar voor anderen.</p>
+              </div>
+            )}
+            {eigenProduct && listing.moderatie_status === "afgekeurd" && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-2xl px-4 py-3">
+                <p className="text-sm font-bold text-red-700 dark:text-red-300">Afgekeurd{listing.moderatie_reden ? `: ${listing.moderatie_reden}` : ""}. Pas je advertentie aan en plaats opnieuw.</p>
+              </div>
+            )}
+
             {/* Verkocht banner */}
-            {listing.actief === false && (
+            {listing.actief === false && listing.moderatie_status !== "afgekeurd" && (
               <div className="bg-slate-900 dark:bg-white rounded-2xl px-4 py-3 flex items-center gap-3">
                 <Check className="w-5 h-5 text-emerald-400 dark:text-emerald-600 shrink-0" />
                 <p className="text-sm font-bold text-white dark:text-slate-900">Dit artikel is verkocht</p>

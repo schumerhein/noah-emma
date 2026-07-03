@@ -52,7 +52,7 @@ Verboden producten (niet limitatief):
 • Niet-kinderartikelen (het platform is uitsluitend voor kinderproducten).
 
 Verboden afbeeldingen:
-• Foto's met herkenbare gezichten van kinderen zijn strikt verboden. Noah & Emma maakt gebruik van AI-moderatie om dit te detecteren en verwijdert dergelijke advertenties.`,
+• Foto's met herkenbare gezichten van kinderen zijn strikt verboden. Elke advertentie wordt vóór publicatie beoordeeld (handmatig en/of automatisch); advertenties die deze regel overtreden worden geweigerd of verwijderd.`,
   },
   {
     titel: "6. Transacties",

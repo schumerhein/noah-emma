@@ -234,7 +234,7 @@ export default function SellPage() {
 
       if (insertError) throw insertError;
 
-      toast({ title: "Product geplaatst! 🎉", description: "Je advertentie staat nu live." });
+      toast({ title: "Product geplaatst! 🎉", description: "Je advertentie wordt kort beoordeeld en is daarna zichtbaar voor iedereen." });
       router.push("/");
 
     } catch (err) {

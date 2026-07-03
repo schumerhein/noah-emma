@@ -6,6 +6,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { haalGeblokkeerdeIds, filterZichtbaar } from "@/lib/zichtbaarheid";
 import { leesActiefKind, type ActiefKind } from "@/components/ThemeProvider";
 import { X, Zap, Crown } from "lucide-react";
 
@@ -135,8 +136,13 @@ export default function Home() {
       queryNormaal = queryNormaal.neq("categorie", "Jongenskleding");
     }
 
-    const [{ data: promoted }, { data: normaal }] = await Promise.all([queryPromoted, queryNormaal]);
-    const combined = [...(promoted || []), ...(normaal || [])];
+    const [{ data: promoted }, { data: normaal }, geblokkeerd, { data: { user } }] = await Promise.all([
+      queryPromoted,
+      queryNormaal,
+      haalGeblokkeerdeIds(),
+      supabase.auth.getUser(),
+    ]);
+    const combined = filterZichtbaar([...(promoted || []), ...(normaal || [])], geblokkeerd, user?.id);
     setListings(combined as Listing[]);
     setLoading(false);
   };

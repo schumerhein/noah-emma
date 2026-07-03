@@ -40,7 +40,7 @@ Wij verkopen jouw gegevens nooit aan derden.`,
 • Wij verbieden het plaatsen van herkenbare foto's van kinderen.
 • Advertenties mogen uitsluitend productfoto's bevatten (zonder gezichten van kinderen).
 • Kindgegevens (naam, geboortedatum) worden uitsluitend gebruikt voor maatadviezen en zijn niet zichtbaar voor andere gebruikers.
-• AI-moderatie detecteert en verwijdert foto's met kindgezichten automatisch.`,
+• Elke advertentie wordt vóór publicatie beoordeeld (handmatig en/of automatisch). Foto's met herkenbare kindergezichten worden geweigerd of verwijderd.`,
   },
   {
     titel: "5. Hoe lang bewaren wij jouw gegevens?",

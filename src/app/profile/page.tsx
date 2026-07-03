@@ -44,6 +44,7 @@ type Listing = {
   conditie: string;
   actief: boolean;
   likes: number;
+  moderatie_status?: string;
 };
 
 type Favoriet = {
@@ -132,7 +133,7 @@ export default function ProfilePage() {
     const [profileRes, kinderenRes, itemsRes, favorietenRes, reviewsRes] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", user.id).single(),
       supabase.from("children").select("id, naam, geboortedatum, lengte, maat, geslacht").eq("user_id", user.id).order("created_at"),
-      supabase.from("listings").select("id, titel, prijs, foto_urls, conditie, actief, likes")
+      supabase.from("listings").select("*")
         .eq("user_id", user.id).order("created_at", { ascending: false }),
       (() => {
         let q = supabase
@@ -603,6 +604,17 @@ export default function ProfilePage() {
                           item.actief ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-500")}>
                         {item.actief ? "Actief" : "Verborgen"}
                       </button>
+                      {/* Moderatiestatus */}
+                      {item.moderatie_status === "wachtend" && (
+                        <span className="absolute top-2 left-2 text-[10px] font-bold px-2 py-1 rounded-full bg-amber-100 text-amber-700">
+                          ⏳ In behandeling
+                        </span>
+                      )}
+                      {item.moderatie_status === "afgekeurd" && (
+                        <span className="absolute top-2 left-2 text-[10px] font-bold px-2 py-1 rounded-full bg-red-100 text-red-600">
+                          Afgekeurd
+                        </span>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -739,6 +751,9 @@ export default function ProfilePage() {
             { icon: <Bell className="w-5 h-5" />, label: "Notificaties", href: "/notificaties" },
             { icon: <Package className="w-5 h-5" />, label: "Bestellingen", href: "/orders" },
             { icon: <Settings className="w-5 h-5" />, label: "Instellingen", href: "/instellingen" },
+            ...((profile as Profile & { is_admin?: boolean }).is_admin
+              ? [{ icon: <CheckCircle2 className="w-5 h-5" />, label: "Moderatie (beheer)", href: "/admin/moderatie" }]
+              : []),
           ].map(({ icon, label, href }) => (
             <Link key={label} href={href}>
               <div className="flex items-center gap-4 p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 active:scale-[0.98] transition-transform mb-2">

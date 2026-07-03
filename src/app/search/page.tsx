@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
+import { haalGeblokkeerdeIds, filterZichtbaar } from "@/lib/zichtbaarheid";
 import Image from "next/image";
 
 // ── Constants ──────────────────────────────────────────────────────────────
@@ -120,6 +121,8 @@ type Listing = {
   merk: string | null;
   kleur: string | null;
   foto_urls: string[];
+  user_id?: string;
+  moderatie_status?: string;
   profiles?: { naam: string | null; stad: string | null };
 };
 
@@ -217,8 +220,12 @@ export default function SearchPage() {
     if (f.minPrijs) query = query.gte("prijs", parseFloat(f.minPrijs));
     if (f.maxPrijs) query = query.lte("prijs", parseFloat(f.maxPrijs));
 
-    const { data } = await query;
-    setResultaten((data as Listing[]) || []);
+    const [{ data }, geblokkeerd, { data: { user } }] = await Promise.all([
+      query,
+      haalGeblokkeerdeIds(),
+      supabase.auth.getUser(),
+    ]);
+    setResultaten(filterZichtbaar((data as Listing[]) || [], geblokkeerd, user?.id));
     setLadenResultaten(false);
   }, [filters, sortering]);
 

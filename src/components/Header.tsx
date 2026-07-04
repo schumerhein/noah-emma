@@ -58,7 +58,6 @@ export function Header() {
     pathname === "/cookies" ||
     pathname === "/faq" ||
     pathname === "/helpdesk" ||
-    pathname === "/donaties" ||
     pathname === "/feed-voorkeuren" ||
     pathname === "/wettelijk" ||
     pathname === "/voorkeuren" ||

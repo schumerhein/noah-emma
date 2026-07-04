@@ -8,7 +8,7 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   Heart, ChevronRight, Baby, Edit2, LogOut, Bell, Package, Star, Plus, X, Check, Settings, Umbrella,
-  HelpCircle, Headphones, Gift, Sliders, FileText, Cookie, CheckCircle2
+  HelpCircle, Headphones, Sliders, FileText, Cookie, CheckCircle2
 } from "lucide-react";
 import { slaActiefKindOp, leesActiefKind } from "@/components/ThemeProvider";
 import { Switch } from "@/components/ui/switch";
@@ -779,7 +779,6 @@ export default function ProfilePage() {
           <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 pt-4 pb-1">Ontdekken</h2>
           {[
             { icon: <Sliders className="w-5 h-5" />, label: "Personaliseer je feed", href: "/feed-voorkeuren", sub: "Categorieën, merken en leden" },
-            { icon: <Gift className="w-5 h-5" />, label: "Doneer aan een goed doel", href: "/donaties", sub: "Een deel van je opbrengst doneren" },
           ].map(({ icon, label, href, sub }) => (
             <Link key={label} href={href}>
               <div className="flex items-center gap-4 p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 active:scale-[0.98] transition-transform mb-2">

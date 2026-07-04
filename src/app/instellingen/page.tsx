@@ -46,6 +46,7 @@ export default function InstellingenPage() {
         { label: "Profielgegevens", href: "/instellingen/profiel" },
         { label: "Accountinstellingen", href: "/instellingen/account" },
         { label: "Beveiliging", href: "/instellingen/beveiliging" },
+        { label: "Taal", href: "/instellingen/taal" },
       ],
     },
     {

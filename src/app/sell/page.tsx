@@ -90,12 +90,17 @@ export default function SellPage() {
 
     setProcessingIndices(prev => new Set(prev).add(index));
     try {
-      const { front, back } = await compositeAllAngles(dataUrl, model, sizeRef.current);
+      const { front, back, kledingGedetecteerd } = await compositeAllAngles(dataUrl, model, sizeRef.current);
       const processedFile = dataUrlToFile(front, file.name);
       setImagePreviews(prev => { const n = [...prev]; n[index] = front; return n; });
       setImageFiles(prev => { const n = [...prev]; n[index] = processedFile; return n; });
       setBackComposites(prev => { const n = [...prev]; n[index] = back; return n; });
-      toast({ title: `✨ ${model === 'noah' ? 'Noah' : 'Emma'} presenteert jouw item!`, description: "Draai om voor- én achterkant te zien." });
+      toast({
+        title: `✨ ${model === 'noah' ? 'Noah' : 'Emma'} presenteert jouw item!`,
+        description: kledingGedetecteerd
+          ? "Kleding automatisch herkend en uitgeknipt ✂️"
+          : "Draai om voor- én achterkant te zien.",
+      });
     } catch {
       // Fallback: gebruik origineel
       setImagePreviews(prev => { const n = [...prev]; n[index] = dataUrl; return n; });

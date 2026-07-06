@@ -1,6 +1,7 @@
 'use client';
 
 import { getFullBodySvg, berekenLichaam } from './avatarFullBodySvg';
+import { bepaalKledingCrop, type KledingCrop } from './kledingDetectie';
 
 /**
  * Kleding-op-avatar compositie.
@@ -75,12 +76,17 @@ function shirtClipPath(maat: string): Path2D {
   return p;
 }
 
-/** Teken de kledingfoto passend in de shirtzone (cover, middenband van de foto) */
+/**
+ * Teken de kledingfoto passend in de shirtzone.
+ * Met een gedetecteerde crop (kind draagt de kleding) wordt exact het
+ * kledingstuk gebruikt; anders de middenband van de foto.
+ */
 function tekenKledingInShirt(
   ctx: CanvasRenderingContext2D,
   clothingImg: HTMLImageElement,
   maat: string,
   gespiegeld: boolean,
+  crop: KledingCrop | null,
 ) {
   const { m, s, offX, offY } = avatarTransform(maat);
   const zoneX = offX + (m.cx - m.schouderB / 2) * s;
@@ -88,9 +94,10 @@ function tekenKledingInShirt(
   const zoneW = m.schouderB * s;
   const zoneH = (m.heupY - m.schouderY + 10) * s;
 
-  const srcY = Math.floor(clothingImg.height * PHOTO_TOP_SKIP);
-  const srcH = Math.floor(clothingImg.height * (1 - PHOTO_TOP_SKIP - PHOTO_BOTTOM_SKIP));
-  const srcW = clothingImg.width;
+  const srcX = crop ? Math.floor(crop.sx) : 0;
+  const srcY = crop ? Math.floor(crop.sy) : Math.floor(clothingImg.height * PHOTO_TOP_SKIP);
+  const srcH = crop ? Math.floor(crop.sh) : Math.floor(clothingImg.height * (1 - PHOTO_TOP_SKIP - PHOTO_BOTTOM_SKIP));
+  const srcW = crop ? Math.floor(crop.sw) : clothingImg.width;
 
   const schaal = Math.max(zoneW / srcW, zoneH / srcH);
   const destW = srcW * schaal;
@@ -104,9 +111,9 @@ function tekenKledingInShirt(
   if (gespiegeld) {
     ctx.translate(CANVAS_W, 0);
     ctx.scale(-1, 1);
-    ctx.drawImage(clothingImg, 0, srcY, srcW, srcH, CANVAS_W - destX - destW, destY, destW, destH);
+    ctx.drawImage(clothingImg, srcX, srcY, srcW, srcH, CANVAS_W - destX - destW, destY, destW, destH);
   } else {
-    ctx.drawImage(clothingImg, 0, srcY, srcW, srcH, destX, destY, destW, destH);
+    ctx.drawImage(clothingImg, srcX, srcY, srcW, srcH, destX, destY, destW, destH);
   }
 
   // Zachte schaduw langs de randen → stof-op-lijfje gevoel
@@ -132,6 +139,7 @@ async function maakCompositie(
   avatarType: 'noah' | 'emma',
   maat: string,
   aanzicht: 'voor' | 'achter',
+  crop: KledingCrop | null,
 ): Promise<string> {
   const canvas = document.createElement('canvas');
   canvas.width = CANVAS_W;
@@ -165,7 +173,7 @@ async function maakCompositie(
 
   // 3. Kledingstuk in de shirtzone
   const clothingImg = await loadImage(clothingDataUrl);
-  tekenKledingInShirt(ctx, clothingImg, maat, aanzicht === 'achter');
+  tekenKledingInShirt(ctx, clothingImg, maat, aanzicht === 'achter', crop);
 
   // 4. Armen, nek en hoofd er weer overheen
   const voorgrondSvg = getFullBodySvg(avatarType, maat, { aanzicht, laag: 'voorgrond', uid: `f${uid}` });
@@ -183,23 +191,29 @@ export async function compositeClothingOnAvatar(
   avatarType: 'noah' | 'emma',
   maat: string = '86',
 ): Promise<{ result: string }> {
-  const result = await maakCompositie(clothingDataUrl, avatarType, maat, 'voor');
+  const img = await loadImage(clothingDataUrl);
+  const crop = await bepaalKledingCrop(img);
+  const result = await maakCompositie(clothingDataUrl, avatarType, maat, 'voor', crop);
   return { result };
 }
 
 /**
  * Genereer voor- én achterkant.
+ * Detecteert eerst automatisch waar het kledingstuk in de foto zit
+ * (gezichtsdetectie → kledingzone), daarna beide composities.
  */
 export async function compositeAllAngles(
   clothingDataUrl: string,
   avatarType: 'noah' | 'emma',
   maat: string = '86',
-): Promise<{ front: string; back: string }> {
+): Promise<{ front: string; back: string; kledingGedetecteerd: boolean }> {
+  const img = await loadImage(clothingDataUrl);
+  const crop = await bepaalKledingCrop(img);
   const [front, back] = await Promise.all([
-    maakCompositie(clothingDataUrl, avatarType, maat, 'voor'),
-    maakCompositie(clothingDataUrl, avatarType, maat, 'achter'),
+    maakCompositie(clothingDataUrl, avatarType, maat, 'voor', crop),
+    maakCompositie(clothingDataUrl, avatarType, maat, 'achter', crop),
   ]);
-  return { front, back };
+  return { front, back, kledingGedetecteerd: !!crop };
 }
 
 /**

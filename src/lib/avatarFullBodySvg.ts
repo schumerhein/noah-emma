@@ -183,7 +183,8 @@ export function getFullBodySvg(naam: 'noah' | 'emma', maat: string, opties: SvgO
 
   // Emma: haardos achter + staartjes (beide aanzichten)
   if (!isNoah) {
-    hoofd += `<ellipse cx="${r1(cx)}" cy="${r1(hoofdCy + hoofdRy * 0.18)}" rx="${r1(hoofdRx * 1.1)}" ry="${r1(hoofdRy * 1.08)}" fill="url(#haar-${uid})"/>`;
+    // Haardos achter het gezicht — blijft boven de kaaklijn (geen "baard"-effect)
+    hoofd += `<ellipse cx="${r1(cx)}" cy="${r1(hoofdCy - hoofdRy * 0.04)}" rx="${r1(hoofdRx * 1.09)}" ry="${r1(hoofdRy * 0.98)}" fill="url(#haar-${uid})"/>`;
     for (const kant of [-1, 1]) {
       const sx = cx + kant * hoofdRx * 1.16;
       const sy = hoofdCy + hoofdRy * 0.28;

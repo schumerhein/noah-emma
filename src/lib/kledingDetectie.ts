@@ -33,6 +33,13 @@ async function laadModellen(): Promise<void> {
   return modellenLadenPromise;
 }
 
+export interface GezichtBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface KledingCrop {
   sx: number;
   sy: number;
@@ -43,35 +50,47 @@ export interface KledingCrop {
 }
 
 /**
- * Bepaal de beste uitsnede van het kledingstuk in de foto.
- * Retourneert null als er geen gezicht gevonden is.
+ * Detecteer het gezicht in een foto. Retourneert null als er geen gezicht is.
  */
-export async function bepaalKledingCrop(img: HTMLImageElement): Promise<KledingCrop | null> {
+export async function detecteerGezicht(img: HTMLImageElement): Promise<GezichtBox | null> {
   try {
     await laadModellen();
     const faceapi = await import('face-api.js');
-
     const detectie = await faceapi.detectSingleFace(
       img,
       new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.3 })
     );
     if (!detectie) return null;
-
     const f = detectie.box;
-
-    // Kledingzone onder het gezicht
-    const gewensteBreedte = f.width * 4.4;
-    const sw = Math.min(img.width, gewensteBreedte);
-    const sx = Math.max(0, Math.min(img.width - sw, f.x + f.width / 2 - sw / 2));
-    const sy = Math.min(img.height - 20, f.y + f.height * 1.2);
-    const sh = Math.min(img.height - sy, f.height * 3.4);
-
-    // Te weinig ruimte onder het gezicht → onbruikbaar
-    if (sh < f.height * 1.2) return null;
-
-    return { sx, sy, sw, sh, viaGezicht: true };
+    return { x: f.x, y: f.y, width: f.width, height: f.height };
   } catch {
-    // Detectie mislukt (bijv. geen netwerk voor modelbestanden) → fallback
     return null;
   }
+}
+
+/**
+ * Bereken de kledingzone onder een gedetecteerd gezicht.
+ */
+export function kledingCropUitGezicht(f: GezichtBox, imgW: number, imgH: number): KledingCrop | null {
+  // Kledingzone onder het gezicht — strak om het kledingstuk
+  const gewensteBreedte = f.width * 3.4;
+  const sw = Math.min(imgW, gewensteBreedte);
+  const sx = Math.max(0, Math.min(imgW - sw, f.x + f.width / 2 - sw / 2));
+  const sy = Math.min(imgH - 20, f.y + f.height * 1.15);
+  const sh = Math.min(imgH - sy, f.height * 2.9);
+
+  // Te weinig ruimte onder het gezicht → onbruikbaar
+  if (sh < f.height * 1.2) return null;
+
+  return { sx, sy, sw, sh, viaGezicht: true };
+}
+
+/**
+ * Bepaal de beste uitsnede van het kledingstuk in de foto.
+ * Retourneert null als er geen gezicht gevonden is.
+ */
+export async function bepaalKledingCrop(img: HTMLImageElement): Promise<KledingCrop | null> {
+  const f = await detecteerGezicht(img);
+  if (!f) return null;
+  return kledingCropUitGezicht(f, img.width, img.height);
 }

@@ -98,7 +98,7 @@ export default function SellPage() {
       toast({
         title: `✨ ${model === 'noah' ? 'Noah' : 'Emma'} presenteert jouw item!`,
         description: kledingGedetecteerd
-          ? "Kleding automatisch herkend en uitgeknipt ✂️"
+          ? `Gezicht vervangen door ${model === 'noah' ? 'Noah' : 'Emma'} — foto blijft verder intact ✓`
           : "Draai om voor- én achterkant te zien.",
       });
     } catch {

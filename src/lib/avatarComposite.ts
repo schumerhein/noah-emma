@@ -1,7 +1,7 @@
 'use client';
 
 import { getFullBodySvg, berekenLichaam } from './avatarFullBodySvg';
-import { bepaalKledingCrop, type KledingCrop } from './kledingDetectie';
+import { detecteerGezicht, kledingCropUitGezicht, type KledingCrop, type GezichtBox } from './kledingDetectie';
 
 /**
  * Kleding-op-avatar compositie.
@@ -39,12 +39,21 @@ function loadSvgAsImage(svgString: string): Promise<HTMLImageElement> {
   });
 }
 
-/** Schaal + positie van de avatar op het canvas */
+/**
+ * Schaal + positie van de avatar op het canvas.
+ * De avatar vult het beeld altijd ruim (~94% van de hoogte),
+ * ongeacht de maat — een baby staat dus even groot in beeld als een kind van 12.
+ */
 function avatarTransform(maat: string) {
   const m = berekenLichaam(maat);
-  const s = (CANVAS_H - 26) / m.H;
+  // Werkelijke hoogte van de avatar binnen de viewBox (incl. haar)
+  const avatarTop = m.hoofdCy - m.hoofdRy * 1.4;
+  const avatarBodem = m.grondY + 10;
+  const lichaamH = avatarBodem - avatarTop;
+  const s = (CANVAS_H * 0.94) / lichaamH;
   const offX = (CANVAS_W - m.W * s) / 2;
-  const offY = 14;
+  // Grond onderaan het canvas uitlijnen
+  const offY = CANVAS_H - avatarBodem * s - CANVAS_H * 0.02;
   return { m, s, offX, offY };
 }
 
@@ -103,7 +112,9 @@ function tekenKledingInShirt(
   const destW = srcW * schaal;
   const destH = srcH * schaal;
   const destX = zoneX + (zoneW - destW) / 2;
-  const destY = zoneY + (zoneH - destH) / 2;
+  // Bovenkant van de kleding uitlijnen met de schouders (niet centreren):
+  // zo valt de kraag/schouderpartij van het kledingstuk op de juiste plek
+  const destY = zoneY;
 
   ctx.save();
   ctx.clip(shirtClipPath(maat));
@@ -186,21 +197,87 @@ async function maakCompositie(
 /**
  * Voorkant-compositie (compatibel met bestaande aanroepen).
  */
+/**
+ * Vervang het gezicht van het echte kind door het hoofd van Noah/Emma.
+ * De rest van de foto (kleding, houding, licht) blijft volledig intact.
+ */
+async function vervangGezichtOverlay(
+  img: HTMLImageElement,
+  gezicht: GezichtBox,
+  avatarType: 'noah' | 'emma',
+  maat: string,
+): Promise<string> {
+  // Fotogrootte begrenzen voor performance
+  const MAX = 1100;
+  const fotoSchaal = Math.min(1, MAX / Math.max(img.width, img.height));
+  const cw = Math.round(img.width * fotoSchaal);
+  const ch = Math.round(img.height * fotoSchaal);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = cw;
+  canvas.height = ch;
+  const ctx = canvas.getContext('2d')!;
+  ctx.drawImage(img, 0, 0, cw, ch);
+
+  // Avatar op hoge resolutie rasteren zodat het hoofd scherp blijft
+  const RES = 4;
+  const m = berekenLichaam(maat);
+  const svg = getFullBodySvg(avatarType, maat, { aanzicht: 'voor', laag: 'alles', uid: 'kop' })
+    .replace(`width="${m.W}" height="${m.H}"`, `width="${m.W * RES}" height="${m.H * RES}"`);
+  const svgImg = await loadSvgAsImage(svg);
+
+  // Hoofdregio binnen de avatar (incl. haar, oren, staartjes/strikjes)
+  const kopLinks = (m.cx - m.hoofdRx * 1.55) * RES;
+  const kopTop = (m.hoofdCy - m.hoofdRy * 1.45) * RES;
+  const kopBreed = (m.hoofdRx * 3.1) * RES;
+  const kopHoog = (m.hoofdRy * 2.62) * RES;
+
+  // Plaatsing over het echte gezicht: royaal, zodat haar/oren van het
+  // echte kind volledig bedekt zijn. Kin uitlijnen met de kin op de foto.
+  const f = {
+    x: gezicht.x * fotoSchaal,
+    y: gezicht.y * fotoSchaal,
+    width: gezicht.width * fotoSchaal,
+    height: gezicht.height * fotoSchaal,
+  };
+  const destW = f.width * 2.05;
+  const destH = destW * (kopHoog / kopBreed);
+  const destX = f.x + f.width / 2 - destW / 2;
+  const destBodem = f.y + f.height * 1.12;
+  const destY = destBodem - destH;
+
+  // Zachte schaduw achter het hoofd voor natuurlijke overgang
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.18)';
+  ctx.shadowBlur = f.width * 0.12;
+  ctx.drawImage(svgImg, kopLinks, kopTop, kopBreed, kopHoog, destX, destY, destW, destH);
+  ctx.restore();
+
+  return canvas.toDataURL('image/jpeg', 0.92);
+}
+
 export async function compositeClothingOnAvatar(
   clothingDataUrl: string,
   avatarType: 'noah' | 'emma',
   maat: string = '86',
 ): Promise<{ result: string }> {
   const img = await loadImage(clothingDataUrl);
-  const crop = await bepaalKledingCrop(img);
-  const result = await maakCompositie(clothingDataUrl, avatarType, maat, 'voor', crop);
+  const gezicht = await detecteerGezicht(img);
+  if (gezicht) {
+    const result = await vervangGezichtOverlay(img, gezicht, avatarType, maat);
+    return { result };
+  }
+  const result = await maakCompositie(clothingDataUrl, avatarType, maat, 'voor', null);
   return { result };
 }
 
 /**
  * Genereer voor- én achterkant.
- * Detecteert eerst automatisch waar het kledingstuk in de foto zit
- * (gezichtsdetectie → kledingzone), daarna beide composities.
+ *
+ * - Foto van een kind dat de kleding draagt → gezicht wordt vervangen door
+ *   het hoofd van Noah/Emma (foto blijft intact); achterkant = kledingstuk
+ *   op het avatar-lijfje.
+ * - Productfoto zonder gezicht → kledingstuk op het avatar-lijfje, beide kanten.
  */
 export async function compositeAllAngles(
   clothingDataUrl: string,
@@ -208,12 +285,22 @@ export async function compositeAllAngles(
   maat: string = '86',
 ): Promise<{ front: string; back: string; kledingGedetecteerd: boolean }> {
   const img = await loadImage(clothingDataUrl);
-  const crop = await bepaalKledingCrop(img);
+  const gezicht = await detecteerGezicht(img);
+
+  if (gezicht) {
+    const crop = kledingCropUitGezicht(gezicht, img.width, img.height);
+    const [front, back] = await Promise.all([
+      vervangGezichtOverlay(img, gezicht, avatarType, maat),
+      maakCompositie(clothingDataUrl, avatarType, maat, 'achter', crop),
+    ]);
+    return { front, back, kledingGedetecteerd: true };
+  }
+
   const [front, back] = await Promise.all([
-    maakCompositie(clothingDataUrl, avatarType, maat, 'voor', crop),
-    maakCompositie(clothingDataUrl, avatarType, maat, 'achter', crop),
+    maakCompositie(clothingDataUrl, avatarType, maat, 'voor', null),
+    maakCompositie(clothingDataUrl, avatarType, maat, 'achter', null),
   ]);
-  return { front, back, kledingGedetecteerd: !!crop };
+  return { front, back, kledingGedetecteerd: false };
 }
 
 /**

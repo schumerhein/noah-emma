@@ -153,13 +153,15 @@ export function getFullBodySvg(naam: 'noah' | 'emma', maat: string, opties: SvgO
   }
 
   // ============ ARMEN + HANDJES ============
+  // In de 'voorgrond'-laag (over de kleding heen) GEEN witte mouwtjes:
+  // het kledingstuk zelf vormt daar de mouw.
   let armen = '';
   for (const kant of [-1, 1]) {
     const px = cx + kant * armStartX;
     armen += `<g transform="rotate(${r1(kant * armRot)} ${r1(px)} ${r1(schouderY + 8)})">
       <rect x="${r1(px - armDikte / 2)}" y="${r1(schouderY + 6)}" width="${r1(armDikte)}" height="${r1(armL)}" rx="${r1(armDikte / 2)}" fill="${huid}"/>
       <circle cx="${r1(px)}" cy="${r1(schouderY + 6 + armL)}" r="${r1(armDikte * 0.62)}" fill="${huidLicht}"/>
-      <rect x="${r1(px - armDikte / 2 - 2.5)}" y="${r1(schouderY + 4)}" width="${r1(armDikte + 5)}" height="${r1(lerp(22, 28, t))}" rx="${r1((armDikte + 5) / 2)}" fill="url(#shirt-${uid})" stroke="#E2E8F0" stroke-width="0.8"/>
+      ${laag === 'alles' ? `<rect x="${r1(px - armDikte / 2 - 2.5)}" y="${r1(schouderY + 4)}" width="${r1(armDikte + 5)}" height="${r1(lerp(22, 28, t))}" rx="${r1((armDikte + 5) / 2)}" fill="url(#shirt-${uid})" stroke="#E2E8F0" stroke-width="0.8"/>` : ''}
     </g>`;
   }
 

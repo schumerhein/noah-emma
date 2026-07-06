@@ -5,31 +5,8 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 import { Baby, ChevronRight, Calendar, ArrowLeft, Sparkles, Check } from "lucide-react";
-
-const MAATLIJST = ["50", "56", "62", "68", "74", "80", "86", "92", "98", "104", "110", "116", "122", "128", "134", "140", "146", "152", "158/164"];
-
-function schatMaatOpLeeftijd(maanden: number): string {
-  if (maanden <= 1)  return "50";
-  if (maanden <= 3)  return "56";
-  if (maanden <= 6)  return "62";
-  if (maanden <= 9)  return "68";
-  if (maanden <= 12) return "74";
-  if (maanden <= 18) return "80";
-  if (maanden <= 24) return "86";
-  if (maanden <= 36) return "92";
-  if (maanden <= 48) return "98";
-  if (maanden <= 60) return "104";
-  if (maanden <= 72) return "110";
-  if (maanden <= 84) return "116";
-  if (maanden <= 96) return "122";
-  return "128";
-}
-
-function berekenLeeftijdInMaanden(geboortedatum: string): number {
-  const geb = new Date(geboortedatum);
-  const nu = new Date();
-  return (nu.getFullYear() - geb.getFullYear()) * 12 + (nu.getMonth() - geb.getMonth());
-}
+// Eén bron voor de groeicurve: dezelfde logica als de groeifunctie op het profiel
+import { GROEI_MAATLIJST as MAATLIJST, schatMaatOpLeeftijd, leeftijdInMaanden as berekenLeeftijdInMaanden } from "@/lib/groei";
 
 function formatLeeftijd(maanden: number): string {
   if (maanden < 0) return "Nog niet geboren";

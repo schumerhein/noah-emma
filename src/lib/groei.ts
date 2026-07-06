@@ -15,26 +15,32 @@ export function leeftijdInMaanden(geboortedatum: string): number {
   return Math.max(0, (nu.getFullYear() - geb.getFullYear()) * 12 + (nu.getMonth() - geb.getMonth()));
 }
 
-/** Verwachte kledingmaat bij een leeftijd (gemiddelde groeicurve) */
+/**
+ * Verwachte kledingmaat bij een leeftijd.
+ * Gebaseerd op de gemiddelde lengte van Nederlandse kinderen
+ * (maat = lichaamslengte in cm, afgerond naar de eerstvolgende maat):
+ * geboorte ±50 cm, 1 jaar ±76 cm, 2 jaar ±88 cm, 4 jaar ±104 cm,
+ * 6 jaar ±119 cm, 8 jaar ±131 cm, 10 jaar ±142 cm, 12 jaar ±155 cm.
+ */
 export function schatMaatOpLeeftijd(maanden: number): string {
-  if (maanden <= 1) return "50";
-  if (maanden <= 3) return "56";
-  if (maanden <= 6) return "62";
-  if (maanden <= 9) return "68";
-  if (maanden <= 12) return "74";
-  if (maanden <= 18) return "80";
-  if (maanden <= 24) return "86";
-  if (maanden <= 36) return "92";
-  if (maanden <= 48) return "98";
-  if (maanden <= 60) return "104";
-  if (maanden <= 72) return "110";
-  if (maanden <= 84) return "116";
-  if (maanden <= 96) return "122";
-  if (maanden <= 108) return "128";
-  if (maanden <= 120) return "134";
-  if (maanden <= 132) return "140";
-  if (maanden <= 144) return "146";
-  if (maanden <= 156) return "152";
+  if (maanden <= 1) return "50";    // pasgeboren ±50 cm
+  if (maanden <= 2) return "56";
+  if (maanden <= 4) return "62";
+  if (maanden <= 6) return "68";    // half jaar ±67 cm
+  if (maanden <= 9) return "74";
+  if (maanden <= 12) return "80";   // 1 jaar ±76 cm
+  if (maanden <= 18) return "86";
+  if (maanden <= 24) return "92";   // 2 jaar ±88 cm
+  if (maanden <= 36) return "98";
+  if (maanden <= 48) return "104";  // 4 jaar ±104 cm
+  if (maanden <= 60) return "110";
+  if (maanden <= 72) return "116";  // 6 jaar ±119 cm → 116/122
+  if (maanden <= 84) return "122";
+  if (maanden <= 96) return "128";  // 8 jaar ±131 cm
+  if (maanden <= 108) return "134";
+  if (maanden <= 120) return "140"; // 10 jaar ±142 cm
+  if (maanden <= 132) return "146";
+  if (maanden <= 144) return "152"; // 12 jaar ±155 cm
   return "158/164";
 }
 

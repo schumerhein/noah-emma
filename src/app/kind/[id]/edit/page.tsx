@@ -7,8 +7,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { slaActiefKindOp, leesActiefKind } from "@/components/ThemeProvider";
-
-const MAATLIJST = ["50","56","62","68","74","80","86","92","98","104","110","116","122","128","134","140","146","152","158/164"];
+import { GROEI_MAATLIJST as MAATLIJST, schatMaatOpLeeftijd, leeftijdInMaanden, lengteBijMaat } from "@/lib/groei";
 
 type Geslacht = "meisje" | "jongen";
 
@@ -69,6 +68,7 @@ export default function KindBewerkenPage({ params }: { params: Promise<{ id: str
       geslacht: geslacht,
       geboortedatum: geboortedatum || null,
       maat,
+      lengte: lengteBijMaat(maat),
     }).eq("id", id);
 
     if (error) {
@@ -169,11 +169,24 @@ export default function KindBewerkenPage({ params }: { params: Promise<{ id: str
           <input
             type="date"
             value={geboortedatum}
-            onChange={e => setGeboortedatum(e.target.value)}
+            onChange={e => {
+              const datum = e.target.value;
+              setGeboortedatum(datum);
+              // Groeifunctie: maat automatisch mee laten bewegen met de nieuwe leeftijd
+              if (datum) {
+                const nieuweMaat = schatMaatOpLeeftijd(leeftijdInMaanden(datum));
+                if (MAATLIJST.includes(nieuweMaat)) setMaat(nieuweMaat);
+              }
+            }}
             min={minGeboortedatum}
             max={new Date().toISOString().split("T")[0]}
             className="w-full h-12 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-sm outline-none focus:border-primary"
           />
+          {geboortedatum && !kindTeOud && (
+            <p className="text-xs text-slate-400 mt-1">
+              Maat en lengte (±{lengteBijMaat(schatMaatOpLeeftijd(leeftijdInMaanden(geboortedatum)))} cm) bewegen automatisch mee — je kunt de maat hieronder altijd handmatig aanpassen.
+            </p>
+          )}
           {kindTeOud && (
             <p className="text-xs font-bold text-red-500 mt-1">Noah &amp; Emma is voor kinderen van 0 t/m 12 jaar.</p>
           )}

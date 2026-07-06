@@ -11,7 +11,7 @@ import {
   HelpCircle, Headphones, Sliders, FileText, Cookie, CheckCircle2
 } from "lucide-react";
 import { slaActiefKindOp, leesActiefKind } from "@/components/ThemeProvider";
-import { groeiCheck } from "@/lib/groei";
+import { groeiCheck, lengteBijMaat } from "@/lib/groei";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
@@ -217,7 +217,8 @@ export default function ProfilePage() {
   };
 
   const slaKindMaatOp = async (kindId: string, maat: string) => {
-    await supabase.from("children").update({ maat }).eq("id", kindId);
+    // Maat én geschatte lengte bijwerken (groeifunctie)
+    await supabase.from("children").update({ maat, lengte: lengteBijMaat(maat) }).eq("id", kindId);
     const bijgewerkt = kinderen.map(k => k.id === kindId ? { ...k, maat } : k);
     setKinderen(bijgewerkt);
     setMaatBewerken(null);

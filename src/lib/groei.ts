@@ -45,6 +45,16 @@ export function schatMaatOpLeeftijd(maanden: number): string {
 }
 
 /**
+ * Geschatte lichaamslengte (cm) bij een maat.
+ * Kledingmaat ≈ lengte; bij "158/164" nemen we 160.
+ */
+export function lengteBijMaat(maat: string): number {
+  if (maat === "158/164") return 160;
+  const n = parseInt(maat, 10);
+  return Number.isFinite(n) ? n : 86;
+}
+
+/**
  * Controleer of een kind uit zijn ingestelde maat gegroeid is.
  * Retourneert de verwachte maat als die GROTER is dan de huidige, anders null.
  * (We stellen nooit een kleinere maat voor — ouders weten het zelf het best.)

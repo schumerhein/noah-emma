@@ -11,6 +11,7 @@ import {
   HelpCircle, Headphones, Sliders, FileText, Cookie, CheckCircle2
 } from "lucide-react";
 import { slaActiefKindOp, leesActiefKind } from "@/components/ThemeProvider";
+import { groeiCheck } from "@/lib/groei";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
@@ -425,6 +426,7 @@ export default function ProfilePage() {
               {kinderen.map(kind => {
                 const isActief = kind.id === actiefKindId || (!actiefKindId && kinderen[0]?.id === kind.id);
                 const geslachtEmoji = kind.geslacht === "meisje" ? "👧" : kind.geslacht === "jongen" ? "👦" : "🧒";
+                const groeiMaat = groeiCheck(kind.geboortedatum, kind.maat);
                 return (
                   <div key={kind.id} className={cn(
                     "bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border-2 transition-all",
@@ -464,6 +466,22 @@ export default function ProfilePage() {
                         </Link>
                       </div>
                     </div>
+
+                    {/* Groeifunctie: kind is uit de ingestelde maat gegroeid */}
+                    {groeiMaat && (
+                      <div className="mx-4 mb-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl px-3 py-2.5 flex items-center gap-2.5">
+                        <span className="text-lg shrink-0">🌱</span>
+                        <p className="text-xs font-bold text-emerald-800 dark:text-emerald-300 flex-1">
+                          {kind.naam || "Je kind"} is gegroeid! Verwachte maat: {groeiMaat}
+                        </p>
+                        <button
+                          onClick={() => slaKindMaatOp(kind.id, groeiMaat)}
+                          className="shrink-0 bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg active:scale-95 transition-transform"
+                        >
+                          Bijwerken
+                        </button>
+                      </div>
+                    )}
 
                     {/* Selecteer knop (als niet actief) */}
                     {!isActief && (

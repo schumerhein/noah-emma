@@ -47,6 +47,7 @@ export default function SellPage() {
   const [mainCategory, setMainCategory] = useState<string>("");
   const [subCategory, setSubCategory] = useState<string>("");
   const [size, setSize] = useState("68");
+  const sizeRef = useRef("68");
   const [condition, setCondition] = useState("Nieuw met prijskaartje");
   const [price, setPrice] = useState("");
   const [merk, setMerk] = useState("");
@@ -89,7 +90,7 @@ export default function SellPage() {
 
     setProcessingIndices(prev => new Set(prev).add(index));
     try {
-      const { front, back } = await compositeAllAngles(dataUrl, model);
+      const { front, back } = await compositeAllAngles(dataUrl, model, sizeRef.current);
       const processedFile = dataUrlToFile(front, file.name);
       setImagePreviews(prev => { const n = [...prev]; n[index] = front; return n; });
       setImageFiles(prev => { const n = [...prev]; n[index] = processedFile; return n; });
@@ -146,6 +147,16 @@ export default function SellPage() {
       setSelectedImageIndex(selectedImageIndex - 1);
     }
   };
+
+  // Maat gewijzigd: avatar groeit mee → herverwerk composities
+  useEffect(() => {
+    sizeRef.current = size;
+    if (aiModelRef.current === "none" || originalPreviews.length === 0) return;
+    for (let i = 0; i < originalPreviews.length; i++) {
+      processImage(originalPreviews[i], originalFiles[i], i, aiModelRef.current);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [size]);
 
   // Wissel AI model: herverwerk alle bestaande afbeeldingen
   const handleAiModelChange = async (newModel: "none" | "noah" | "emma") => {

@@ -1,29 +1,22 @@
 'use client';
 
-import { getNoahHeadSvg, getEmmaHeadSvg, getNoahBackSvg, getEmmaBackSvg } from './avatarHeadSvg';
+import { getFullBodySvg, berekenLichaam } from './avatarFullBodySvg';
 
 /**
- * Canvas-afmetingen voor de avatar+kleding compositie.
- * Portret formaat: 400×520px
+ * Kleding-op-avatar compositie.
+ *
+ * De geüploade kledingfoto wordt in de shirtzone van de full-body avatar
+ * "gestanst" (clip op de rompvorm), waarna armen, nek en hoofd er weer
+ * overheen worden getekend. Resultaat: Noah of Emma draagt het kledingstuk —
+ * in de gekozen maat, voor- én achterkant. Geen echte kinderfoto's zichtbaar.
  */
+
 const CANVAS_W = 400;
 const CANVAS_H = 520;
 
-/** De avatar-hoofd SVG is 400×220 (viewBox), maar we renderen hem groter. */
-const AVATAR_H = 260;
-
-/**
- * Vanaf welk Y-punt begint de kleding-foto op het canvas.
- * Overlapping met avatar-schouders zorgt voor vloeiende overgang.
- */
-const CLOTHING_START_Y = 205;
-
-/**
- * Hoeveel van de bovenkant van de kledingfoto we overslaan.
- * Dit verbergt het gezicht/hoofd van het kind in de foto.
- * Gezichten zitten doorgaans in de bovenste 40% van portretfoto's.
- */
-const PHOTO_SKIP_FRACTION = 0.42;
+/** Welk deel van de kledingfoto we gebruiken (band uit het midden). */
+const PHOTO_TOP_SKIP = 0.30;   // bovenste 30% overslaan (daar zit vaak een gezicht)
+const PHOTO_BOTTOM_SKIP = 0.08;
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -45,186 +38,166 @@ function loadSvgAsImage(svgString: string): Promise<HTMLImageElement> {
   });
 }
 
+/** Schaal + positie van de avatar op het canvas */
+function avatarTransform(maat: string) {
+  const m = berekenLichaam(maat);
+  const s = (CANVAS_H - 26) / m.H;
+  const offX = (CANVAS_W - m.W * s) / 2;
+  const offY = 14;
+  return { m, s, offX, offY };
+}
+
 /**
- * Teken de kledingfoto in het onderste deel van het canvas.
- * Slaat de bovenste PHOTO_SKIP_FRACTION van de foto over zodat
- * het gezicht van het kind niet zichtbaar is.
+ * Bouw het clip-pad van de shirtzone (zelfde vorm als de romp,
+ * iets naar binnen zodat de shirtrand zichtbaar blijft).
  */
-function drawClothingPhoto(
+function shirtClipPath(maat: string): Path2D {
+  const { m, s, offX, offY } = avatarTransform(maat);
+  const X = (x: number) => offX + x * s;
+  const Y = (y: number) => offY + y * s;
+  const inzet = 3;
+
+  const cx = m.cx;
+  const sb = m.schouderB / 2 - inzet;
+  const hb = m.heupB / 2 - inzet;
+  const top = m.schouderY + 1;
+  const bodem = m.heupY + 3;
+
+  const p = new Path2D();
+  p.moveTo(X(cx - sb), Y(top + 12));
+  p.quadraticCurveTo(X(cx - sb), Y(top), X(cx - sb + 14), Y(top));
+  p.lineTo(X(cx + sb - 14), Y(top));
+  p.quadraticCurveTo(X(cx + sb), Y(top), X(cx + sb), Y(top + 12));
+  p.quadraticCurveTo(X(cx + hb + 5), Y((top + bodem) / 2 + 10), X(cx + hb - 2), Y(bodem));
+  p.quadraticCurveTo(X(cx), Y(bodem + 8), X(cx - hb + 2), Y(bodem));
+  p.quadraticCurveTo(X(cx - hb - 5), Y((top + bodem) / 2 + 10), X(cx - sb), Y(top + 12));
+  p.closePath();
+  return p;
+}
+
+/** Teken de kledingfoto passend in de shirtzone (cover, middenband van de foto) */
+function tekenKledingInShirt(
   ctx: CanvasRenderingContext2D,
   clothingImg: HTMLImageElement,
-  mirrored = false,
+  maat: string,
+  gespiegeld: boolean,
 ) {
-  const clothingZoneH = CANVAS_H - CLOTHING_START_Y;
+  const { m, s, offX, offY } = avatarTransform(maat);
+  const zoneX = offX + (m.cx - m.schouderB / 2) * s;
+  const zoneY = offY + m.schouderY * s;
+  const zoneW = m.schouderB * s;
+  const zoneH = (m.heupY - m.schouderY + 10) * s;
 
-  // Sla de bovenste 42% van de foto over (waar het gezicht zit)
-  const srcY = Math.floor(clothingImg.height * PHOTO_SKIP_FRACTION);
-  const srcH = clothingImg.height - srcY;
+  const srcY = Math.floor(clothingImg.height * PHOTO_TOP_SKIP);
+  const srcH = Math.floor(clothingImg.height * (1 - PHOTO_TOP_SKIP - PHOTO_BOTTOM_SKIP));
   const srcW = clothingImg.width;
 
-  // Schaal de gecropte sectie zodat deze de clothingZone vult
-  const scaleX = CANVAS_W / srcW;
-  const scaleY = clothingZoneH / srcH;
-  const scale = Math.max(scaleX, scaleY);
-
-  const destW = srcW * scale;
-  const destH = srcH * scale;
-  const destX = (CANVAS_W - destW) / 2;
-  const destY = CLOTHING_START_Y; // plak boven aan de clothingZone
+  const schaal = Math.max(zoneW / srcW, zoneH / srcH);
+  const destW = srcW * schaal;
+  const destH = srcH * schaal;
+  const destX = zoneX + (zoneW - destW) / 2;
+  const destY = zoneY + (zoneH - destH) / 2;
 
   ctx.save();
-  ctx.beginPath();
-  ctx.rect(0, CLOTHING_START_Y, CANVAS_W, clothingZoneH);
-  ctx.clip();
+  ctx.clip(shirtClipPath(maat));
 
-  if (mirrored) {
+  if (gespiegeld) {
     ctx.translate(CANVAS_W, 0);
     ctx.scale(-1, 1);
-    ctx.drawImage(
-      clothingImg,
-      0, srcY, srcW, srcH,
-      CANVAS_W - destX - destW, destY, destW, destH,
-    );
+    ctx.drawImage(clothingImg, 0, srcY, srcW, srcH, CANVAS_W - destX - destW, destY, destW, destH);
   } else {
-    ctx.drawImage(
-      clothingImg,
-      0, srcY, srcW, srcH,
-      destX, destY, destW, destH,
-    );
+    ctx.drawImage(clothingImg, 0, srcY, srcW, srcH, destX, destY, destW, destH);
   }
+
+  // Zachte schaduw langs de randen → stof-op-lijfje gevoel
+  const rand = ctx.createLinearGradient(zoneX, 0, zoneX + zoneW, 0);
+  rand.addColorStop(0, 'rgba(15,23,42,0.16)');
+  rand.addColorStop(0.12, 'rgba(15,23,42,0)');
+  rand.addColorStop(0.88, 'rgba(15,23,42,0)');
+  rand.addColorStop(1, 'rgba(15,23,42,0.16)');
+  ctx.fillStyle = rand;
+  ctx.fillRect(zoneX, zoneY, zoneW, zoneH);
+
+  const onder = ctx.createLinearGradient(0, zoneY + zoneH - 24, 0, zoneY + zoneH);
+  onder.addColorStop(0, 'rgba(15,23,42,0)');
+  onder.addColorStop(1, 'rgba(15,23,42,0.12)');
+  ctx.fillStyle = onder;
+  ctx.fillRect(zoneX, zoneY + zoneH - 24, zoneW, 24);
 
   ctx.restore();
 }
 
-/**
- * Maak een 3D-avatar compositie: het kledingstuk wordt getoond in het
- * onderste deel van het canvas, met de Noah of Emma avatar bovenin.
- *
- * @param clothingDataUrl - De originele kledingfoto als dataUrl
- * @param avatarType     - 'noah' of 'emma'
- * @returns De gecomponeerde afbeelding als dataUrl (400×520 JPEG)
- */
-export async function compositeClothingOnAvatar(
+async function maakCompositie(
   clothingDataUrl: string,
   avatarType: 'noah' | 'emma',
-): Promise<{ result: string }> {
-  const canvas = document.createElement('canvas');
-  canvas.width = CANVAS_W;
-  canvas.height = CANVAS_H;
-  const ctx = canvas.getContext('2d')!;
-
-  // 1. Achtergrond: lichte gradient
-  const bg = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
-  bg.addColorStop(0, '#f0f4ff');
-  bg.addColorStop(0.4, '#f5f8ff');
-  bg.addColorStop(1, '#eef2fb');
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-
-  // 2. Kledingfoto in het onderste deel (gezicht overgeslagen)
-  const clothingImg = await loadImage(clothingDataUrl);
-  drawClothingPhoto(ctx, clothingImg, false);
-
-  // 3. Gradient overgang boven kleding (naadloze blend met achtergrond)
-  const fadeIn = ctx.createLinearGradient(0, CLOTHING_START_Y, 0, CLOTHING_START_Y + 80);
-  fadeIn.addColorStop(0, 'rgba(245,248,255,1)');
-  fadeIn.addColorStop(1, 'rgba(245,248,255,0)');
-  ctx.fillStyle = fadeIn;
-  ctx.fillRect(0, CLOTHING_START_Y, CANVAS_W, 80);
-
-  // 4. Avatar hoofd+schouders bovenop (groter dan voorheen)
-  const uid = Math.random().toString(36).slice(2);
-  const avatarSvg = avatarType === 'noah'
-    ? getNoahHeadSvg(CANVAS_W, AVATAR_H, uid)
-    : getEmmaHeadSvg(CANVAS_W, AVATAR_H, uid);
-
-  const avatarImg = await loadSvgAsImage(avatarSvg);
-  ctx.drawImage(avatarImg, 0, 0, CANVAS_W, AVATAR_H);
-
-  // 5. Subtiele schaduw onder avatar schouders → geeft diepte
-  const shadowGrad = ctx.createLinearGradient(0, AVATAR_H - 10, 0, AVATAR_H + 35);
-  shadowGrad.addColorStop(0, 'rgba(0,0,0,0)');
-  shadowGrad.addColorStop(0.5, 'rgba(0,0,0,0.07)');
-  shadowGrad.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = shadowGrad;
-  ctx.fillRect(30, AVATAR_H - 10, CANVAS_W - 60, 45);
-
-  return { result: canvas.toDataURL('image/jpeg', 0.92) };
-}
-
-/**
- * Maak de achterkant-compositie:
- * - Kleding gespiegeld + licht donkerder (simulate rug-belichting)
- * - Achterkant avatar (haar, nek, schouders) bovenop
- */
-async function compositeBackView(
-  clothingDataUrl: string,
-  avatarType: 'noah' | 'emma',
+  maat: string,
+  aanzicht: 'voor' | 'achter',
 ): Promise<string> {
   const canvas = document.createElement('canvas');
   canvas.width = CANVAS_W;
   canvas.height = CANVAS_H;
   const ctx = canvas.getContext('2d')!;
+  const { m, s, offX, offY } = avatarTransform(maat);
+  const uid = Math.random().toString(36).slice(2);
 
-  // Achtergrond
+  // 1. Zachte studio-achtergrond
   const bg = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
-  bg.addColorStop(0, '#eef2ff');
-  bg.addColorStop(1, '#e8ecf8');
+  if (aanzicht === 'voor') {
+    bg.addColorStop(0, avatarType === 'noah' ? '#eef6ff' : '#fff2f5');
+    bg.addColorStop(1, avatarType === 'noah' ? '#e3eefb' : '#fde9ee');
+  } else {
+    bg.addColorStop(0, avatarType === 'noah' ? '#e6f0fb' : '#fdecf1');
+    bg.addColorStop(1, avatarType === 'noah' ? '#dbe8f7' : '#f9e2e9');
+  }
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
-  // Kleding: horizontaal gespiegeld + gezicht overgeslagen
-  const clothingImg = await loadImage(clothingDataUrl);
-  drawClothingPhoto(ctx, clothingImg, true);
-
-  // Donkere overlay voor "rug-licht" gevoel
-  const clothingZoneH = CANVAS_H - CLOTHING_START_Y;
-  ctx.save();
+  // Subtiele vloer-ellips
+  ctx.fillStyle = 'rgba(15,23,42,0.05)';
   ctx.beginPath();
-  ctx.rect(0, CLOTHING_START_Y, CANVAS_W, clothingZoneH);
-  ctx.clip();
-  ctx.fillStyle = 'rgba(20,30,60,0.18)';
-  ctx.fillRect(0, CLOTHING_START_Y, CANVAS_W, clothingZoneH);
-  ctx.restore();
+  ctx.ellipse(CANVAS_W / 2, offY + m.grondY * s + 6, 120, 16, 0, 0, Math.PI * 2);
+  ctx.fill();
 
-  // Gradient overgang
-  const fadeIn = ctx.createLinearGradient(0, CLOTHING_START_Y, 0, CLOTHING_START_Y + 80);
-  fadeIn.addColorStop(0, 'rgba(238,242,255,1)');
-  fadeIn.addColorStop(1, 'rgba(238,242,255,0)');
-  ctx.fillStyle = fadeIn;
-  ctx.fillRect(0, CLOTHING_START_Y, CANVAS_W, 80);
+  // 2. Volledige avatar (basis)
+  const basisSvg = getFullBodySvg(avatarType, maat, { aanzicht, laag: 'alles', uid: `b${uid}` });
+  const basisImg = await loadSvgAsImage(basisSvg);
+  ctx.drawImage(basisImg, offX, offY, m.W * s, m.H * s);
 
-  // Avatar achterkant
-  const uid = Math.random().toString(36).slice(2);
-  const backSvg = avatarType === 'noah'
-    ? getNoahBackSvg(CANVAS_W, AVATAR_H, uid)
-    : getEmmaBackSvg(CANVAS_W, AVATAR_H, uid);
+  // 3. Kledingstuk in de shirtzone
+  const clothingImg = await loadImage(clothingDataUrl);
+  tekenKledingInShirt(ctx, clothingImg, maat, aanzicht === 'achter');
 
-  const avatarImg = await loadSvgAsImage(backSvg);
-  ctx.drawImage(avatarImg, 0, 0, CANVAS_W, AVATAR_H);
-
-  // Schaduw
-  const shadowGrad = ctx.createLinearGradient(0, AVATAR_H - 10, 0, AVATAR_H + 35);
-  shadowGrad.addColorStop(0, 'rgba(0,0,0,0)');
-  shadowGrad.addColorStop(0.5, 'rgba(0,0,0,0.07)');
-  shadowGrad.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = shadowGrad;
-  ctx.fillRect(30, AVATAR_H - 10, CANVAS_W - 60, 45);
+  // 4. Armen, nek en hoofd er weer overheen
+  const voorgrondSvg = getFullBodySvg(avatarType, maat, { aanzicht, laag: 'voorgrond', uid: `f${uid}` });
+  const voorgrondImg = await loadSvgAsImage(voorgrondSvg);
+  ctx.drawImage(voorgrondImg, offX, offY, m.W * s, m.H * s);
 
   return canvas.toDataURL('image/jpeg', 0.92);
 }
 
 /**
- * Genereer zowel de voorkant- als achterkant-compositie.
- * Retourneert beide als dataUrl strings.
+ * Voorkant-compositie (compatibel met bestaande aanroepen).
+ */
+export async function compositeClothingOnAvatar(
+  clothingDataUrl: string,
+  avatarType: 'noah' | 'emma',
+  maat: string = '86',
+): Promise<{ result: string }> {
+  const result = await maakCompositie(clothingDataUrl, avatarType, maat, 'voor');
+  return { result };
+}
+
+/**
+ * Genereer voor- én achterkant.
  */
 export async function compositeAllAngles(
   clothingDataUrl: string,
   avatarType: 'noah' | 'emma',
+  maat: string = '86',
 ): Promise<{ front: string; back: string }> {
   const [front, back] = await Promise.all([
-    compositeClothingOnAvatar(clothingDataUrl, avatarType).then(r => r.result),
-    compositeBackView(clothingDataUrl, avatarType),
+    maakCompositie(clothingDataUrl, avatarType, maat, 'voor'),
+    maakCompositie(clothingDataUrl, avatarType, maat, 'achter'),
   ]);
   return { front, back };
 }

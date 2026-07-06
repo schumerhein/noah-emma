@@ -219,20 +219,23 @@ async function vervangGezichtOverlay(
   const ctx = canvas.getContext('2d')!;
   ctx.drawImage(img, 0, 0, cw, ch);
 
-  // Avatar op hoge resolutie rasteren zodat het hoofd scherp blijft
+  // Avatar op hoge resolutie rasteren zodat het hoofd scherp blijft.
+  // Laag 'hoofd' = alléén het hoofd, dus zonder nek/schouders van de avatar.
   const RES = 4;
   const m = berekenLichaam(maat);
-  const svg = getFullBodySvg(avatarType, maat, { aanzicht: 'voor', laag: 'alles', uid: 'kop' })
+  const svg = getFullBodySvg(avatarType, maat, { aanzicht: 'voor', laag: 'hoofd', uid: 'kop' })
     .replace(`width="${m.W}" height="${m.H}"`, `width="${m.W * RES}" height="${m.H * RES}"`);
   const svgImg = await loadSvgAsImage(svg);
 
-  // Hoofdregio binnen de avatar (incl. haar, oren, staartjes/strikjes)
-  const kopLinks = (m.cx - m.hoofdRx * 1.55) * RES;
+  // Hoofdregio binnen de avatar (incl. haar en Emma's staartjes/strikjes)
+  const kopLinks = (m.cx - m.hoofdRx * 1.6) * RES;
   const kopTop = (m.hoofdCy - m.hoofdRy * 1.45) * RES;
-  const kopBreed = (m.hoofdRx * 3.1) * RES;
-  const kopHoog = (m.hoofdRy * 2.62) * RES;
+  const kopBreed = (m.hoofdRx * 3.2) * RES;
+  const kopHoog = (m.hoofdRy * 3.15) * RES;
+  // Waar de kin zit binnen de uitsnede (fractie van de hoogte)
+  const kinFractie = 2.47 / 3.15;
 
-  // Plaatsing over het echte gezicht: royaal, zodat haar/oren van het
+  // Plaatsing over het echte gezicht: royaal, zodat hoofd én haar van het
   // echte kind volledig bedekt zijn. Kin uitlijnen met de kin op de foto.
   const f = {
     x: gezicht.x * fotoSchaal,
@@ -240,11 +243,11 @@ async function vervangGezichtOverlay(
     width: gezicht.width * fotoSchaal,
     height: gezicht.height * fotoSchaal,
   };
-  const destW = f.width * 2.05;
+  const destW = f.width * 2.2;
   const destH = destW * (kopHoog / kopBreed);
   const destX = f.x + f.width / 2 - destW / 2;
-  const destBodem = f.y + f.height * 1.12;
-  const destY = destBodem - destH;
+  const kinY = f.y + f.height * 1.1;
+  const destY = kinY - destH * kinFractie;
 
   // Zachte schaduw achter het hoofd voor natuurlijke overgang
   ctx.save();

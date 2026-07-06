@@ -66,8 +66,12 @@ export function berekenLichaam(maat: string): LichaamMaten {
 interface SvgOpties {
   /** 'voor' toont het gezicht, 'achter' de achterkant (haar) */
   aanzicht?: 'voor' | 'achter';
-  /** 'alles' = hele avatar; 'voorgrond' = alleen armen+hoofd+nek (voor over kleding heen) */
-  laag?: 'alles' | 'voorgrond';
+  /**
+   * 'alles' = hele avatar;
+   * 'voorgrond' = armen+hoofd+nek (voor over kleding heen);
+   * 'hoofd' = alléén het hoofd (voor gezicht-vervangen op echte foto's — geen nek/schouders)
+   */
+  laag?: 'alles' | 'voorgrond' | 'hoofd';
   uid?: string;
 }
 
@@ -156,7 +160,7 @@ export function getFullBodySvg(naam: 'noah' | 'emma', maat: string, opties: SvgO
   // In de 'voorgrond'-laag (over de kleding heen) GEEN witte mouwtjes:
   // het kledingstuk zelf vormt daar de mouw.
   let armen = '';
-  for (const kant of [-1, 1]) {
+  for (const kant of laag === 'hoofd' ? [] : [-1, 1]) {
     const px = cx + kant * armStartX;
     armen += `<g transform="rotate(${r1(kant * armRot)} ${r1(px)} ${r1(schouderY + 8)})">
       <rect x="${r1(px - armDikte / 2)}" y="${r1(schouderY + 6)}" width="${r1(armDikte)}" height="${r1(armL)}" rx="${r1(armDikte / 2)}" fill="${huid}"/>
@@ -177,8 +181,8 @@ export function getFullBodySvg(naam: 'noah' | 'emma', maat: string, opties: SvgO
       fill="url(#shirt-${uid})" stroke="#E2E8F0" stroke-width="1"/>
     ${aanzicht === 'voor' ? `<path d="M ${r1(cx - 15)} ${r1(schouderY - 1)} Q ${r1(cx)} ${r1(schouderY + 9)} ${r1(cx + 15)} ${r1(schouderY - 1)}" fill="none" stroke="#DFE5EC" stroke-width="2.5" stroke-linecap="round"/>` : ''}` : '';
 
-  // ============ NEK ============
-  const nek = `<path d="M ${r1(cx - 10)} ${r1(schouderY - nekH - 8)} L ${r1(cx + 10)} ${r1(schouderY - nekH - 8)} L ${r1(cx + 9)} ${r1(schouderY + 2)} Q ${r1(cx)} ${r1(schouderY + 6)} ${r1(cx - 9)} ${r1(schouderY + 2)} Z" fill="${huidDonker}"/>`;
+  // ============ NEK (niet in de hoofd-laag) ============
+  const nek = laag === 'hoofd' ? '' : `<path d="M ${r1(cx - 10)} ${r1(schouderY - nekH - 8)} L ${r1(cx + 10)} ${r1(schouderY - nekH - 8)} L ${r1(cx + 9)} ${r1(schouderY + 2)} Q ${r1(cx)} ${r1(schouderY + 6)} ${r1(cx - 9)} ${r1(schouderY + 2)} Z" fill="${huidDonker}"/>`;
 
   // ============ HOOFD ============
   let hoofd = '';

@@ -32,8 +32,7 @@ export default function ProfielInstellingenPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push("/login"); return; }
       setUserId(user.id);
-      // select("*") zodat de pagina blijft werken als een kolom (nog) niet bestaat
-      const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+      const { data } = await supabase.from("profiles").select("naam, stad, bio, avatar_url, geboortedatum").eq("id", user.id).single();
       if (data) {
         setNaam(data.naam || "");
         setStad(data.stad || "");

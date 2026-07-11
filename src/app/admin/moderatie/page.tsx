@@ -51,7 +51,7 @@ export default function ModeratiePage() {
     if (!user) { router.push("/login"); return; }
 
     // Alleen admins mogen hier komen
-    const { data: profiel } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+    const { data: profiel } = await supabase.from("profiles").select("is_admin").eq("id", user.id).single();
     if (!profiel?.is_admin) {
       setIsAdmin(false);
       setLaden(false);

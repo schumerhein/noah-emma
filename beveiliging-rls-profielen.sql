@@ -77,3 +77,23 @@ drop policy if exists "Gebruiker verwijdert eigen favoriet" on public.favorites;
 create policy "Gebruiker verwijdert eigen favoriet"
   on public.favorites for delete
   using (auth.uid() = user_id);
+
+-- ============================================
+-- AANVULLING 11 jul 2026: bovenstaande revoke van alleen de
+-- e-mailkolom bleek geen effect te hebben. Postgres kan een
+-- kolom niet "aftrekken" van een tabelbrede toegang die er al was
+-- (GRANT SELECT ON profiles TO anon/authenticated dekt standaard
+-- alle kolommen). Daarom hier expliciet opnieuw instellen: precies
+-- welke kolommen wél leesbaar zijn (alles, behalve email).
+-- ============================================
+
+revoke select on public.profiles from anon, authenticated;
+
+grant select (
+  id, naam, avatar_url, stad, bio, verified, created_at,
+  aantalvolgers, gemiddelde_beoordeling, totaal_beoordelingen,
+  totaal_verkopen, lid_sinds, vakantiestand, is_premium,
+  premium_verloopdatum, geboortedatum, is_admin
+) on public.profiles to anon, authenticated;
+
+notify pgrst, 'reload schema';

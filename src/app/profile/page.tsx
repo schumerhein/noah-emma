@@ -133,7 +133,7 @@ export default function ProfilePage() {
     const actiefId = actief?.id ?? null;
 
     const [profileRes, kinderenRes, itemsRes, favorietenRes, reviewsRes] = await Promise.all([
-      supabase.from("profiles").select("*").eq("id", user.id).single(),
+      supabase.from("profiles").select("id, naam, stad, bio, avatar_url, lid_sinds, gemiddelde_beoordeling, totaal_verkopen, vakantiestand").eq("id", user.id).single(),
       supabase.from("children").select("id, naam, geboortedatum, lengte, maat, geslacht").eq("user_id", user.id).order("created_at"),
       supabase.from("listings").select("*")
         .eq("user_id", user.id).order("created_at", { ascending: false }),

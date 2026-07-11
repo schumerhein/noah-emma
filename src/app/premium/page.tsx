@@ -5,5 +5,5 @@ import { PremiumModal } from "@/components/PremiumModal";
 
 export default function PremiumPage() {
   const router = useRouter();
-  return <PremiumModal open onClose={() => router.back()} />;
+  return <PremiumModal open onClose={() => router.push("/")} />;
 }

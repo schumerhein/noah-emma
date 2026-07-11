@@ -22,7 +22,9 @@ export function Navigation() {
     pathname.startsWith("/kind/") ||
     pathname.startsWith("/product/") ||
     pathname.startsWith("/onboarding/") ||
-    pathname === "/sell"
+    pathname === "/sell" ||
+    pathname === "/premium" ||
+    pathname.startsWith("/promote/")
   ) return null;
 
   return (

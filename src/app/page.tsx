@@ -9,6 +9,7 @@ import { supabase } from "@/lib/supabase";
 import { haalGeblokkeerdeIds, filterZichtbaar } from "@/lib/zichtbaarheid";
 import { leesActiefKind, type ActiefKind } from "@/components/ThemeProvider";
 import { useToast } from "@/hooks/use-toast";
+import { PremiumModal } from "@/components/PremiumModal";
 import { X, Zap, Crown } from "lucide-react";
 
 type Listing = {
@@ -58,7 +59,6 @@ export default function Home() {
   const [swipesVandaag, setSwipesVandaag] = useState(0);
   const SWIPE_LIMIET = 10;
   const [toonPremiumModal, setToonPremiumModal] = useState(false);
-  const [premiumActiveren, setPremiumActiveren] = useState(false);
 
   useEffect(() => {
     const actief = leesActiefKind();
@@ -212,24 +212,6 @@ export default function Home() {
     }, 400);
   };
 
-  const activeerPremium = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) { router.push("/login"); return; }
-
-    setPremiumActiveren(true);
-    try {
-      const res = await fetch("/api/betalen/premium", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
-      const data = await res.json();
-      if (!res.ok || !data.checkoutUrl) throw new Error(data.error || "Betaling starten mislukt");
-      window.location.href = data.checkoutUrl;
-    } catch {
-      setPremiumActiveren(false);
-    }
-  };
-
   const onPointerDown = (e: React.PointerEvent) => {
     if (swiping) return;
     setIsDragging(true);
@@ -295,12 +277,13 @@ export default function Home() {
             </button>
           )}
           {isPremium && (
-            <Link href="/premium">
-              <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-amber-50 border border-amber-200 active:scale-95 transition-transform">
-                <Crown className="w-3.5 h-3.5 text-amber-500" />
-                <span className="text-xs font-bold text-amber-700">Premium</span>
-              </div>
-            </Link>
+            <button
+              onClick={() => setToonPremiumModal(true)}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-amber-50 border border-amber-200 active:scale-95 transition-transform"
+            >
+              <Crown className="w-3.5 h-3.5 text-amber-500" />
+              <span className="text-xs font-bold text-amber-700">Premium</span>
+            </button>
           )}
           {kind && (
             <button
@@ -491,73 +474,7 @@ export default function Home() {
         )}
       </main>
 
-      {/* Premium Modal */}
-      {toonPremiumModal && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm px-4 pb-8">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden">
-            {/* Gradient header */}
-            <div className="bg-gradient-to-br from-amber-400 to-amber-600 p-8 text-center">
-              <Crown className="w-12 h-12 text-white mx-auto mb-3" />
-              <h2 className="text-2xl font-black text-white">Noah & Emma Premium</h2>
-              <p className="text-amber-100 text-sm mt-1 font-medium">Onbeperkt ontdekken, overal zoeken</p>
-            </div>
-
-            <div className="p-6 space-y-4">
-              {swipesVandaag >= SWIPE_LIMIET && (
-                <div className="bg-amber-50 dark:bg-amber-900/20 rounded-2xl p-4 text-center">
-                  <p className="text-amber-800 dark:text-amber-300 font-bold text-sm">
-                    Je hebt je {SWIPE_LIMIET} gratis swipes voor vandaag gebruikt
-                  </p>
-                  <p className="text-amber-600 dark:text-amber-400 text-xs mt-1">Upgrade voor onbeperkt swipen</p>
-                </div>
-              )}
-
-              <div className="space-y-3">
-                {[
-                  { icon: "all_inclusive", tekst: "Onbeperkt swipen elke dag" },
-                  { icon: "search", tekst: "Zoekpagina volledig ontgrendeld" },
-                  { icon: "notifications_active", tekst: "Zoekwaarschuwingen & alerts" },
-                  { icon: "bolt", tekst: "Prioriteit in klantenservice" },
-                ].map(v => (
-                  <div key={v.icon} className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
-                      <span className="material-icons-round text-amber-600 text-[18px]">{v.icon}</span>
-                    </div>
-                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{v.tekst}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="text-center pt-2">
-                <p className="text-3xl font-black text-slate-900 dark:text-white">€4,99</p>
-                <p className="text-xs text-slate-400 font-medium">per maand · elk moment opzegbaar</p>
-              </div>
-
-              <button
-                onClick={activeerPremium}
-                disabled={premiumActiveren}
-                className="w-full h-14 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-white font-black text-base shadow-lg shadow-amber-500/30 active:scale-[0.98] transition-all disabled:opacity-60 flex items-center justify-center gap-2"
-              >
-                {premiumActiveren ? (
-                  <span className="material-icons-round animate-spin text-sm">progress_activity</span>
-                ) : (
-                  <>
-                    <Crown className="w-5 h-5" />
-                    Premium activeren
-                  </>
-                )}
-              </button>
-
-              <button
-                onClick={() => setToonPremiumModal(false)}
-                className="w-full text-center text-sm text-slate-400 font-medium py-2"
-              >
-                Misschien later
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <PremiumModal open={toonPremiumModal} onClose={() => setToonPremiumModal(false)} />
     </div>
   );
 }

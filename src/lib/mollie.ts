@@ -11,7 +11,7 @@ export const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-export const PREMIUM_PRIJS = 5.0;
+export const PREMIUM_PRIJS = 4.99;
 const PREMIUM_INTERVAL = "1 month";
 
 export const BOOST_TIERS = {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Search as SearchIcon, SlidersHorizontal, X, Check, ChevronLeft, Bell, BellOff, ArrowUpDown, Crown, Lock } from "lucide-react";
+import { Search as SearchIcon, SlidersHorizontal, X, Check, ChevronLeft, Bell, BellOff, ArrowUpDown } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
@@ -10,6 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { haalGeblokkeerdeIds, filterZichtbaar } from "@/lib/zichtbaarheid";
+import { PremiumModal } from "@/components/PremiumModal";
 import Image from "next/image";
 
 // ── Constants ──────────────────────────────────────────────────────────────
@@ -165,7 +166,6 @@ export default function SearchPage() {
   const [waarschuwingBezig, setWaarschuwingBezig] = useState(false);
   const [filters, setFilters] = useState<Filters>(INIT_FILTERS);
   const [isPremium, setIsPremium] = useState<boolean | null>(null);
-  const [premiumActiveren, setPremiumActiveren] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -176,24 +176,6 @@ export default function SearchPage() {
       setIsPremium(premium || false);
     })();
   }, []);
-
-  const activeerPremium = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) { router.push("/login"); return; }
-
-    setPremiumActiveren(true);
-    try {
-      const res = await fetch("/api/betalen/premium", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
-      const data = await res.json();
-      if (!res.ok || !data.checkoutUrl) throw new Error(data.error || "Betaling starten mislukt");
-      window.location.href = data.checkoutUrl;
-    } catch {
-      setPremiumActiveren(false);
-    }
-  };
 
   const zoek = useCallback(async (
     term: string,
@@ -677,53 +659,7 @@ export default function SearchPage() {
         )}
       </main>
 
-      {/* Premium lock overlay */}
-      {isPremium === false && (
-        <div className="absolute inset-0 z-30 flex flex-col items-center justify-end pb-20 px-6"
-          style={{ background: "linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.7) 30%, rgba(255,255,255,0.97) 60%)" }}>
-          <div className="w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden">
-            <div className="bg-gradient-to-br from-amber-400 to-amber-600 py-6 px-6 text-center">
-              <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3">
-                <Lock className="w-7 h-7 text-white" />
-              </div>
-              <h2 className="text-xl font-black text-white">Zoeken is Premium</h2>
-              <p className="text-amber-100 text-sm mt-1">Upgrade voor volledige zoektoegang</p>
-            </div>
-            <div className="p-5 space-y-4">
-              <div className="space-y-2.5">
-                {[
-                  { icon: "search", tekst: "Zoeken op naam, merk & categorie" },
-                  { icon: "tune", tekst: "Alle filters: maat, kleur, prijs" },
-                  { icon: "all_inclusive", tekst: "Onbeperkt swipen in Ontdekken" },
-                  { icon: "notifications_active", tekst: "Zoekwaarschuwingen instellen" },
-                ].map(v => (
-                  <div key={v.icon} className="flex items-center gap-3">
-                    <div className="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-                      <span className="material-icons-round text-amber-600 text-[15px]">{v.icon}</span>
-                    </div>
-                    <span className="text-sm font-medium text-slate-700">{v.tekst}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="text-center">
-                <span className="text-2xl font-black text-slate-900">€5,00</span>
-                <span className="text-xs text-slate-400 font-medium"> / maand</span>
-              </div>
-              <button
-                onClick={activeerPremium}
-                disabled={premiumActiveren}
-                className="w-full h-13 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-white font-black text-base shadow-lg shadow-amber-500/30 active:scale-[0.98] transition-all disabled:opacity-60 flex items-center justify-center gap-2"
-              >
-                {premiumActiveren ? (
-                  <span className="material-icons-round animate-spin text-sm">progress_activity</span>
-                ) : (
-                  <><Crown className="w-5 h-5" /> Premium activeren</>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <PremiumModal open={isPremium === false} onClose={() => router.back()} />
     </div>
   );
 }

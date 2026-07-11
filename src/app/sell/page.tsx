@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Camera, ArrowRight, Loader2, Plus, Sparkles, ChevronRight, ChevronLeft, Check, Crown, Zap, Wand2 } from "lucide-react";
+import { X, Camera, ArrowRight, Loader2, Plus, Sparkles, ChevronRight, ChevronLeft, Check, Crown, Wand2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
@@ -56,8 +56,6 @@ export default function SellPage() {
   const [catSheetOpen, setCatSheetOpen] = useState(false);
   const [catStap, setCatStap] = useState<"hoofd" | "sub">("hoofd");
   const [loading, setLoading] = useState(false);
-  const [gepromoot, setGepromoot] = useState(false);
-  const [promotieDuur, setPromotieDuur] = useState<3 | 7 | null>(null);
   const [aiModel, setAiModel] = useState<"none" | "noah" | "emma">("none");
   const [kindMaat, setKindMaat] = useState("86");
   const aiModelRef = useRef<"none" | "noah" | "emma">("none");
@@ -241,10 +239,6 @@ export default function SellPage() {
         foto_urls: fotoUrls,
         ai_model: aiModel === "none" ? null : aiModel,
         bieden_toegestaan: allowBidding,
-        gepromoot: gepromoot && promotieDuur !== null,
-        promotie_verloopdatum: gepromoot && promotieDuur ? (() => {
-          const d = new Date(); d.setDate(d.getDate() + promotieDuur); return d.toISOString();
-        })() : null,
         actief: true,
       });
 
@@ -597,69 +591,13 @@ export default function SellPage() {
         </section>
 
         {/* Advertentieruimte */}
-        <div className={cn(
-          "rounded-2xl border-2 overflow-hidden transition-all",
-          gepromoot && promotieDuur ? "border-amber-400 bg-amber-50 dark:bg-amber-900/10" : "border-slate-100 dark:border-slate-800"
-        )}>
-          <div className="p-4 flex items-center gap-3">
-            <div className={cn(
-              "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
-              gepromoot && promotieDuur ? "bg-amber-400" : "bg-slate-100 dark:bg-slate-800"
-            )}>
-              <Crown className={cn("w-5 h-5", gepromoot && promotieDuur ? "text-white" : "text-slate-400")} />
-            </div>
-            <div>
-              <p className="font-bold text-sm text-slate-900 dark:text-white">Advertentieruimte inkopen</p>
-              <p className="text-xs text-slate-400">Direct bovenaan in Ontdekken</p>
-            </div>
+        <div className="rounded-2xl border-2 border-slate-100 dark:border-slate-800 p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-slate-100 dark:bg-slate-800">
+            <Crown className="w-5 h-5 text-slate-400" />
           </div>
-          <div className="px-4 pb-4 space-y-2">
-            {([
-              { dagen: 3, prijs: "€2,99", label: "3 dagen" },
-              { dagen: 7, prijs: "€4,99", label: "7 dagen" },
-            ] as const).map(optie => {
-              const isActief = gepromoot && promotieDuur === optie.dagen;
-              return (
-                <button
-                  key={optie.dagen}
-                  type="button"
-                  onClick={() => {
-                    if (isActief) { setGepromoot(false); setPromotieDuur(null); }
-                    else { setGepromoot(true); setPromotieDuur(optie.dagen); }
-                  }}
-                  className={cn(
-                    "w-full flex items-center justify-between px-4 py-3 rounded-xl border-2 transition-all",
-                    isActief ? "border-amber-400 bg-amber-50 dark:bg-amber-900/20" : "border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800"
-                  )}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={cn(
-                      "w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0",
-                      isActief ? "border-amber-500 bg-amber-500" : "border-slate-300"
-                    )}>
-                      {isActief && <Check className="w-3 h-3 text-white" />}
-                    </div>
-                    <div className="text-left">
-                      <p className={cn("text-sm font-bold", isActief ? "text-amber-800 dark:text-amber-300" : "text-slate-700 dark:text-slate-200")}>
-                        {optie.label} zichtbaarheid
-                      </p>
-                      <p className="text-xs text-slate-400">Gouden badge · Altijd bovenaan</p>
-                    </div>
-                  </div>
-                  <span className={cn("text-sm font-black shrink-0", isActief ? "text-amber-700" : "text-slate-900 dark:text-white")}>
-                    {optie.prijs}
-                  </span>
-                </button>
-              );
-            })}
-            {gepromoot && promotieDuur && (
-              <div className="flex items-center gap-2 bg-amber-100 dark:bg-amber-900/20 rounded-xl px-3 py-2">
-                <Zap className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">
-                  Promotie actief voor {promotieDuur} dagen. Betaling via Mollie (binnenkort).
-                </p>
-              </div>
-            )}
+          <div>
+            <p className="font-bold text-sm text-slate-900 dark:text-white">Advertentieruimte inkopen</p>
+            <p className="text-xs text-slate-400">Kan na het plaatsen via je profiel &rarr; advertentie &rarr; Boost</p>
           </div>
         </div>
 

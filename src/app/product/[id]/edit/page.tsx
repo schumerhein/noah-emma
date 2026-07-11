@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Camera, X, Loader2, Trash2, Check, Crown, Zap } from "lucide-react";
+import { ChevronLeft, Camera, X, Loader2, Trash2, Check, Crown } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
@@ -153,10 +153,6 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
       kleur: kleur || null,
       bieden_toegestaan: biedenToegestaan,
       actief,
-      gepromoot: gepromoot && promotieDuur !== null,
-      promotie_verloopdatum: gepromoot && promotieDuur ? (() => {
-        const d = new Date(); d.setDate(d.getDate() + promotieDuur); return d.toISOString();
-      })() : null,
       foto_urls: bestaandeFotos,
     }).eq("id", id);
 
@@ -330,77 +326,27 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
         </div>
 
         {/* Promoot sectie */}
-        <div className={cn(
-          "rounded-2xl border-2 overflow-hidden transition-all",
-          gepromoot && promotieDuur ? "border-amber-400 bg-amber-50 dark:bg-amber-900/10" : "border-slate-100 dark:border-slate-800"
-        )}>
-          {/* Header */}
-          <div className="p-4 flex items-center gap-3">
-            <div className={cn(
-              "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
-              gepromoot && promotieDuur ? "bg-amber-400" : "bg-slate-100 dark:bg-slate-800"
-            )}>
-              <Crown className={cn("w-5 h-5", gepromoot && promotieDuur ? "text-white" : "text-slate-400")} />
-            </div>
-            <div>
-              <p className="font-bold text-sm text-slate-900 dark:text-white">Advertentieruimte inkopen</p>
-              <p className="text-xs text-slate-400 mt-0.5">Verschijn als eerste in Ontdekken</p>
-            </div>
+        <button
+          type="button"
+          onClick={() => router.push(`/promote/${id}`)}
+          className={cn(
+            "w-full rounded-2xl border-2 overflow-hidden transition-all p-4 flex items-center gap-3 text-left",
+            gepromoot ? "border-amber-400 bg-amber-50 dark:bg-amber-900/10" : "border-slate-100 dark:border-slate-800"
+          )}
+        >
+          <div className={cn(
+            "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
+            gepromoot ? "bg-amber-400" : "bg-slate-100 dark:bg-slate-800"
+          )}>
+            <Crown className={cn("w-5 h-5", gepromoot ? "text-white" : "text-slate-400")} />
           </div>
-
-          {/* Duur keuze */}
-          <div className="px-4 pb-4 space-y-2">
-            {([
-              { dagen: 3, prijs: "€2,99", label: "3 dagen" },
-              { dagen: 7, prijs: "€4,99", label: "7 dagen" },
-            ] as const).map(optie => {
-              const isActief = gepromoot && promotieDuur === optie.dagen;
-              return (
-                <button
-                  key={optie.dagen}
-                  type="button"
-                  onClick={() => {
-                    if (isActief) { setGepromoot(false); setPromotieDuur(null); }
-                    else { setGepromoot(true); setPromotieDuur(optie.dagen); }
-                  }}
-                  className={cn(
-                    "w-full flex items-center justify-between px-4 py-3.5 rounded-xl border-2 transition-all",
-                    isActief
-                      ? "border-amber-400 bg-amber-50 dark:bg-amber-900/20"
-                      : "border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800"
-                  )}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={cn(
-                      "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0",
-                      isActief ? "border-amber-500 bg-amber-500" : "border-slate-300 dark:border-slate-600"
-                    )}>
-                      {isActief && <Check className="w-3 h-3 text-white" />}
-                    </div>
-                    <div className="text-left">
-                      <p className={cn("text-sm font-bold", isActief ? "text-amber-800 dark:text-amber-300" : "text-slate-700 dark:text-slate-200")}>
-                        {optie.label} zichtbaarheid
-                      </p>
-                      <p className="text-xs text-slate-400 mt-0.5">Gouden badge · Altijd bovenaan</p>
-                    </div>
-                  </div>
-                  <span className={cn("text-base font-black shrink-0", isActief ? "text-amber-700 dark:text-amber-400" : "text-slate-900 dark:text-white")}>
-                    {optie.prijs}
-                  </span>
-                </button>
-              );
-            })}
-
-            {gepromoot && promotieDuur && (
-              <div className="flex items-center gap-2 bg-amber-100 dark:bg-amber-900/20 rounded-xl px-3 py-2 mt-1">
-                <Zap className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">
-                  Promotie actief voor {promotieDuur} dagen na opslaan. Betaling via Mollie (binnenkort).
-                </p>
-              </div>
-            )}
+          <div className="flex-1">
+            <p className="font-bold text-sm text-slate-900 dark:text-white">Advertentieruimte inkopen</p>
+            <p className="text-xs text-slate-400 mt-0.5">
+              {gepromoot ? "Boost actief · Tik om te verlengen" : "Verschijn als eerste in Ontdekken"}
+            </p>
           </div>
-        </div>
+        </button>
 
         {/* Verwijder sectie */}
         <div className="pt-2 space-y-2">

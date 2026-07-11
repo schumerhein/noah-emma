@@ -1,44 +1,80 @@
-
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
-import { X, Zap, Star, Rocket, Info } from "lucide-react";
-import { useState } from "react";
+import { X, Zap, Star, Rocket, Info, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
+
+const tiers = [
+  { id: "fast", name: "Snel", title: "3 Dagen Boost", price: "€2,99", desc: "Voor een korte, snelle boost in de swipe-flow.", icon: Zap },
+  { id: "popular", name: "Populair", title: "7 Dagen Boost", price: "€4,99", desc: "Een volle week vaker bovenaan — de meest gekozen duur.", icon: Star, badge: "Aanbevolen" },
+  { id: "max", name: "Maximaal", title: "14 Dagen Boost", price: "€8,99", desc: "Twee weken maximale zichtbaarheid voor je beste items.", icon: Rocket },
+];
+
+type Listing = { id: string; titel: string; foto_urls: string[]; gepromoot: boolean };
 
 export default function PromotePage() {
   const router = useRouter();
+  const params = useParams();
+  const listingId = params.id as string;
+  const { toast } = useToast();
   const [selectedTier, setSelectedTier] = useState("popular");
+  const [listing, setListing] = useState<Listing | null>(null);
+  const [laden, setLaden] = useState(true);
+  const [bezig, setBezig] = useState(false);
 
-  const tiers = [
-    {
-      id: "fast",
-      name: "Snel",
-      title: "3 Dagen Boost",
-      price: "€2,99",
-      desc: "Perfect voor een snelle verkoopboost.",
-      icon: Zap
-    },
-    {
-      id: "popular",
-      name: "Populair",
-      title: "7 Dagen Boost",
-      price: "€4,99",
-      desc: "7x meer kans op verkoop in de swipe-functie.",
-      icon: Star,
-      badge: "Meest Gekozen"
-    },
-    {
-      id: "max",
-      name: "Maximaal",
-      title: "14 Dagen Boost",
-      price: "€8,99",
-      desc: "De ultieme exposure voor je beste items.",
-      icon: Rocket
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("listings")
+        .select("id, titel, foto_urls, gepromoot")
+        .eq("id", listingId)
+        .single();
+      setListing(data);
+      setLaden(false);
+    })();
+  }, [listingId]);
+
+  const betalen = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { router.push("/login"); return; }
+
+    setBezig(true);
+    try {
+      const res = await fetch("/api/betalen/boost", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ listingId, tier: selectedTier }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.checkoutUrl) throw new Error(data.error || "Betaling starten mislukt");
+      window.location.href = data.checkoutUrl;
+    } catch {
+      toast({ variant: "destructive", title: "Er ging iets mis", description: "Probeer het zo nog eens." });
+      setBezig(false);
     }
-  ];
+  };
+
+  if (laden) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+      </div>
+    );
+  }
+
+  if (!listing) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center gap-3">
+        <p className="text-slate-500">Advertentie niet gevonden.</p>
+        <Button onClick={() => router.back()} variant="outline">Terug</Button>
+      </div>
+    );
+  }
 
   return (
     <div className="font-display bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 min-h-screen flex flex-col">
@@ -52,13 +88,17 @@ export default function PromotePage() {
 
       <main className="flex-1 px-4 py-6 max-w-md mx-auto w-full space-y-6 pb-48">
         <div className="flex items-center gap-4 bg-white dark:bg-slate-800 p-3 rounded-xl border border-primary/5 shadow-sm">
-          <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 relative">
-            <Image fill alt="Baby Sweater" className="object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzAb08zkPOfGg6Vdd4UTZG0xwR6Fa9l1LQnyA07wRXMVSxJR-O0jjFawVn4OhMUtR_qNeWb4MbsFbyM4RaWj6qmWLdB0ZMUcKKlCigcHBVACLgXvaSML4u0Es6zeNnOllwNL96fCYU3gcT4IRPnsxAbMVMMc_ihmvDWIiJNki_kdyjJ5JJKNrvV9Vk9KVeC9HgSp8sT4yYmKJGTz3yY4H0AEu_CfKRrEJDzLmtk2VNJh0nn_2Mr3rKh2_F5DeG8NcK3aim5W6oQDs" />
+          <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 relative bg-slate-100">
+            {listing.foto_urls?.[0] && (
+              <Image fill alt={listing.titel} className="object-cover" src={listing.foto_urls[0]} />
+            )}
           </div>
           <div>
             <p className="text-[10px] font-bold text-primary uppercase tracking-wider">Uw advertentie</p>
-            <h3 className="font-bold text-slate-800 dark:text-white truncate max-w-[200px]">Biologisch Katoenen Trui</h3>
-            <p className="text-xs text-slate-500">Huidige status: Geen boost</p>
+            <h3 className="font-bold text-slate-800 dark:text-white truncate max-w-[200px]">{listing.titel}</h3>
+            <p className="text-xs text-slate-500">
+              Huidige status: {listing.gepromoot ? "Al geboost" : "Geen boost"}
+            </p>
           </div>
         </div>
 
@@ -69,13 +109,13 @@ export default function PromotePage() {
 
         <div className="space-y-4">
           {tiers.map((tier) => (
-            <div 
+            <div
               key={tier.id}
               onClick={() => setSelectedTier(tier.id)}
               className={cn(
                 "relative p-5 rounded-xl border-2 transition-all duration-200 flex items-center justify-between cursor-pointer shadow-sm",
-                selectedTier === tier.id 
-                  ? "border-primary bg-white dark:bg-slate-800 ring-4 ring-primary/10" 
+                selectedTier === tier.id
+                  ? "border-primary bg-white dark:bg-slate-800 ring-4 ring-primary/10"
                   : "border-white dark:border-slate-800 bg-white dark:bg-slate-800"
               )}
             >
@@ -107,14 +147,18 @@ export default function PromotePage() {
         <div className="bg-primary/5 rounded-xl p-4 flex gap-3 items-start border border-primary/10">
           <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
           <p className="text-xs text-primary/80 leading-relaxed font-medium">
-            Je product verschijnt vaker in de 'Ontdek' swipe-flow en bovenaan de zoekresultaten voor de geselecteerde periode.
+            Je product verschijnt vaker in de &apos;Ontdek&apos; swipe-flow en bovenaan de zoekresultaten voor de geselecteerde periode.
           </p>
         </div>
       </main>
 
       <div className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-slate-100 dark:border-slate-800 px-4 pt-4 pb-8 z-50">
-        <Button className="w-full bg-primary hover:bg-primary-dark text-white font-extrabold py-7 rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-transform active:scale-[0.98] border-none text-lg">
-          Betaal Nu <span className="opacity-60">•</span> {tiers.find(t => t.id === selectedTier)?.price}
+        <Button
+          onClick={betalen}
+          disabled={bezig}
+          className="w-full bg-primary hover:bg-primary-dark text-white font-extrabold py-7 rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-transform active:scale-[0.98] border-none text-lg disabled:opacity-60"
+        >
+          {bezig ? "Even geduld…" : (<>Betaal Nu <span className="opacity-60">•</span> {tiers.find(t => t.id === selectedTier)?.price}</>)}
         </Button>
       </div>
     </div>

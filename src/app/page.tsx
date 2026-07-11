@@ -213,18 +213,21 @@ export default function Home() {
   };
 
   const activeerPremium = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { router.push("/login"); return; }
+
     setPremiumActiveren(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    const verloopdatum = new Date();
-    verloopdatum.setMonth(verloopdatum.getMonth() + 1);
-    await supabase.from("profiles").update({
-      is_premium: true,
-      premium_verloopdatum: verloopdatum.toISOString(),
-    }).eq("id", user.id);
-    setIsPremium(true);
-    setPremiumActiveren(false);
-    setToonPremiumModal(false);
+    try {
+      const res = await fetch("/api/betalen/premium", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      const data = await res.json();
+      if (!res.ok || !data.checkoutUrl) throw new Error(data.error || "Betaling starten mislukt");
+      window.location.href = data.checkoutUrl;
+    } catch {
+      setPremiumActiveren(false);
+    }
   };
 
   const onPointerDown = (e: React.PointerEvent) => {

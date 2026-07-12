@@ -60,25 +60,24 @@ export function NoahFace({ size = 200 }: { size?: number }) {
       <ellipse cx="62" cy="130" rx="14" ry="20" fill="#A06030" opacity="0.07"/>
       <ellipse cx="138" cy="130" rx="14" ry="20" fill="#A06030" opacity="0.07"/>
 
-      {/* Haar — basis dekking */}
-      <ellipse cx="100" cy="72" rx="52" ry="40" fill="url(#noah-hair)"/>
-      {/* Haar — zijkanten */}
-      <ellipse cx="52" cy="100" rx="11" ry="24" fill="url(#noah-hair)"/>
-      <ellipse cx="148" cy="100" rx="11" ry="24" fill="url(#noah-hair)"/>
-      {/* Haar — voorkant lijn (frisuur), zachte lokjes i.p.v. één vlakke boog */}
-      <path d="M50 92 C53 80 60 72 68 76 C71 68 79 62 87 68 C91 60 100 58 100 66 C100 58 109 60 113 68 C121 62 129 68 132 76 C140 72 147 80 150 92 C141 81 121 75 100 75 C79 75 59 81 50 92 Z" fill="#241407"/>
-      {/* Haar lok-scheidingen (subtiele lijnen voor textuur) */}
-      <path d="M64 78 C63 82 63 87 65 91" stroke="#160B03" strokeWidth="1.2" fill="none" strokeLinecap="round" opacity="0.5"/>
-      <path d="M83 70 C82 75 82 80 84 85" stroke="#160B03" strokeWidth="1.2" fill="none" strokeLinecap="round" opacity="0.5"/>
-      <path d="M100 66 C99 72 99 78 100 83" stroke="#160B03" strokeWidth="1.2" fill="none" strokeLinecap="round" opacity="0.45"/>
-      <path d="M117 70 C118 75 118 80 116 85" stroke="#160B03" strokeWidth="1.2" fill="none" strokeLinecap="round" opacity="0.5"/>
-      <path d="M136 78 C137 82 137 87 135 91" stroke="#160B03" strokeWidth="1.2" fill="none" strokeLinecap="round" opacity="0.5"/>
-      {/* Haar highlight — volgt de lokken voor een glanzend effect */}
-      <path d="M70 68 C76 60 84 56 92 58" stroke="#6B4622" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.55"/>
-      <path d="M96 60 C102 56 110 56 116 60" stroke="#6B4622" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.45"/>
-      <path d="M120 64 C126 62 132 66 136 72" stroke="#6B4622" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.3"/>
-      {/* Zijkant highlight */}
-      <path d="M53 88 C51 94 51 102 54 110" stroke="#5C3A1A" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.35"/>
+      {/* Haar — volume aan de achterkant */}
+      <ellipse cx="100" cy="80" rx="48" ry="32" fill="url(#noah-hair)"/>
+      {/* Bakkebaarden, smal aflopend */}
+      <path d="M50 88 C45 98 45 110 52 120 C57 113 59 102 56 91 Z" fill="url(#noah-hair)"/>
+      <path d="M150 88 C155 98 155 110 148 120 C143 113 141 102 144 91 Z" fill="url(#noah-hair)"/>
+      {/* Getousseerde lokken bovenop — asymmetrisch, met een lichte zijscheiding */}
+      <ellipse cx="60" cy="68" rx="13" ry="19" fill="#241407" transform="rotate(-26 60 68)"/>
+      <ellipse cx="76" cy="55" rx="13" ry="21" fill="#241407" transform="rotate(-13 76 55)"/>
+      <ellipse cx="94" cy="48" rx="12" ry="19" fill="#2C1A0A" transform="rotate(-3 94 48)"/>
+      <ellipse cx="113" cy="50" rx="12" ry="19" fill="#241407" transform="rotate(13 113 50)"/>
+      <ellipse cx="130" cy="59" rx="12" ry="18" fill="#241407" transform="rotate(27 130 59)"/>
+      <ellipse cx="142" cy="73" rx="10" ry="15" fill="#1A0F05" transform="rotate(40 142 73)"/>
+      {/* Losse lok voor een speels, natuurlijk accent */}
+      <path d="M84 42 C80 34 82 26 90 24 C87 30 87 37 90 44 Z" fill="#241407"/>
+      {/* Glans op de lokken */}
+      <path d="M68 58 C70 48 78 40 88 38" stroke="#6B4622" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.5"/>
+      <path d="M98 42 C104 38 111 38 116 42" stroke="#6B4622" strokeWidth="2.2" fill="none" strokeLinecap="round" opacity="0.4"/>
+      <path d="M122 50 C128 48 134 52 138 60" stroke="#5C3A1A" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.3"/>
 
       {/* Wenkbrauw links */}
       <path d="M65 100 C72 95 83 94 93 97" stroke="#1A0A02" strokeWidth="4" strokeLinecap="round"/>
@@ -136,22 +135,18 @@ export function NoahFace({ size = 200 }: { size?: number }) {
       <ellipse cx="60" cy="130" rx="14" ry="9" fill="#E07050" opacity="0.14" filter="url(#noah-blur)"/>
       <ellipse cx="140" cy="130" rx="14" ry="9" fill="#E07050" opacity="0.14" filter="url(#noah-blur)"/>
 
-      {/* Mond — glimlach met tanden */}
+      {/* Mond — warme, ontspannen glimlach */}
+      {/* Mondvorm (basis) */}
+      <path d="M81 143 C86 140 93 138 100 139 C107 138 114 140 119 143 C118 152 110 158 100 158 C90 158 82 152 81 143 Z" fill="#8B3020"/>
+      {/* Zachte glimp van tanden, zonder harde lijntjes */}
+      <path d="M85 144 C89 141 95 139 100 140 C105 139 111 141 115 144 C112 147 106 148 100 148 C94 148 88 147 85 144 Z" fill="#FFFCF8"/>
       {/* Bovenlip */}
-      <path d="M83 146 C88 142 96 141 100 143 C104 141 112 142 117 146" fill="#C05838" stroke="#C05838" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"/>
-      {/* Mondholte */}
-      <path d="M83 146 C88 156 112 156 117 146 C112 149 88 149 83 146 Z" fill="#7A2A14"/>
-      {/* Tanden */}
-      <path d="M84 147 C88 152 112 152 116 147 L116 149 C112 153 88 153 84 149 Z" fill="white"/>
-      {/* Tandlijn */}
-      <line x1="100" y1="147" x2="100" y2="152" stroke="#E0E0E0" strokeWidth="1"/>
-      <line x1="91" y1="148" x2="91" y2="152" stroke="#E0E0E0" strokeWidth="1"/>
-      <line x1="109" y1="148" x2="109" y2="152" stroke="#E0E0E0" strokeWidth="1"/>
-      {/* Onderlip */}
-      <path d="M86 153 C92 159 108 159 114 153" stroke="#D07050" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.7"/>
-      {/* Mond hoeken */}
-      <circle cx="83" cy="146" r="2" fill="#A04030" opacity="0.6"/>
-      <circle cx="117" cy="146" r="2" fill="#A04030" opacity="0.6"/>
+      <path d="M81 143 C86 139 93 137 100 138 C107 137 114 139 119 143" stroke="#C05838" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+      {/* Onderlip, vol en zacht */}
+      <path d="M84 150 C90 157 110 157 116 150" stroke="#B8583A" strokeWidth="3" fill="none" strokeLinecap="round" opacity="0.55"/>
+      {/* Mond hoeken (kuiltjes) */}
+      <circle cx="81" cy="143" r="1.6" fill="#7A2A14" opacity="0.5"/>
+      <circle cx="119" cy="143" r="1.6" fill="#7A2A14" opacity="0.5"/>
     </svg>
   );
 }
@@ -198,8 +193,10 @@ export function EmmaFace({ size = 200 }: { size?: number }) {
       {/* Staartje rechts */}
       <path d="M162 110 C172 118 178 135 174 150 C172 158 166 162 162 158 C166 148 168 132 158 120 Z" fill="url(#emma-hair)"/>
 
-      {/* Haar boven (uitlopend) */}
-      <ellipse cx="100" cy="68" rx="54" ry="38" fill="url(#emma-hair)"/>
+      {/* Haar boven — één zachte, ronde volume-vorm i.p.v. een platte koepel */}
+      <ellipse cx="100" cy="54" rx="36" ry="26" fill="url(#emma-hair)"/>
+      <ellipse cx="70" cy="66" rx="22" ry="19" fill="url(#emma-hair)" transform="rotate(-16 70 66)"/>
+      <ellipse cx="130" cy="66" rx="22" ry="19" fill="url(#emma-hair)" transform="rotate(16 130 66)"/>
       {/* Haar zijkanten dik (staartjes) */}
       <ellipse cx="47" cy="108" rx="14" ry="26" fill="url(#emma-hair)"/>
       <ellipse cx="153" cy="108" rx="14" ry="26" fill="url(#emma-hair)"/>
@@ -308,24 +305,20 @@ export function EmmaFace({ size = 200 }: { size?: number }) {
       <ellipse cx="106" cy="130" rx="3.5" ry="2.5" fill="#D09060" opacity="0.3"/>
       <path d="M95 127 C97 131 103 131 105 127" stroke="#D09060" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.5"/>
 
-      {/* Mond — meisje: voller, meer roze */}
-      {/* Bovenlip Cupido-boog */}
-      <path d="M84 145 C88 140 94 138 100 140 C106 138 112 140 116 145" fill="#E06880" stroke="none"/>
-      {/* Mondholte */}
-      <path d="M84 145 C88 155 112 155 116 145 C112 148 88 148 84 145 Z" fill="#8B2040"/>
-      {/* Tanden */}
-      <path d="M85 146 C89 152 111 152 115 146 L115 149 C111 153 89 153 85 149 Z" fill="white"/>
-      {/* Tandlijn */}
-      <line x1="100" y1="146" x2="100" y2="152" stroke="#F0E0E0" strokeWidth="1"/>
-      <line x1="91" y1="147" x2="91" y2="152" stroke="#F0E0E0" strokeWidth="1"/>
-      <line x1="109" y1="147" x2="109" y2="152" stroke="#F0E0E0" strokeWidth="1"/>
-      {/* Onderlip voller */}
-      <path d="M85 153 C92 161 108 161 115 153" stroke="#E87090" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.8"/>
+      {/* Mond — meisje: zachte, volle glimlach */}
+      {/* Mondvorm (basis) */}
+      <path d="M82 142 C87 139 94 137 100 138 C106 137 113 139 118 142 C117 151 109 158 100 158 C91 158 83 151 82 142 Z" fill="#8B2040"/>
+      {/* Zachte glimp van tanden */}
+      <path d="M86 143 C90 140 95 138 100 139 C105 138 110 140 114 143 C111 146 105 147 100 147 C95 147 89 146 86 143 Z" fill="#FFF8F5"/>
+      {/* Bovenlip met Cupido-boog */}
+      <path d="M82 142 C86 138 92 136 96 138 C98 136 102 136 104 138 C108 136 114 138 118 142" stroke="#E06880" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+      {/* Onderlip, vol */}
+      <path d="M84 149 C91 158 109 158 116 149" stroke="#E06880" strokeWidth="3.5" fill="none" strokeLinecap="round" opacity="0.6"/>
       {/* Liplicht */}
-      <ellipse cx="100" cy="156" rx="8" ry="3" fill="white" opacity="0.3"/>
+      <ellipse cx="100" cy="152" rx="7" ry="2.5" fill="white" opacity="0.35"/>
       {/* Mond hoeken */}
-      <circle cx="84" cy="145" r="2" fill="#C05060" opacity="0.5"/>
-      <circle cx="116" cy="145" r="2" fill="#C05060" opacity="0.5"/>
+      <circle cx="82" cy="142" r="1.6" fill="#7A1838" opacity="0.5"/>
+      <circle cx="118" cy="142" r="1.6" fill="#7A1838" opacity="0.5"/>
     </svg>
   );
 }

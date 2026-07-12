@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Search, SquarePen, MessageCircle, Heart, TrendingUp, UserPlus, Bell, Package } from "lucide-react";
@@ -37,6 +37,14 @@ type Notificatie = {
 type Tab = "berichten" | "notificaties";
 
 export default function MessagesPage() {
+  return (
+    <Suspense fallback={null}>
+      <MessagesContent />
+    </Suspense>
+  );
+}
+
+function MessagesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [tab, setTab] = useState<Tab>("berichten");

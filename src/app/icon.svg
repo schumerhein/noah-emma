@@ -60,7 +60,16 @@
     <ellipse cx="100" cy="72" rx="52" ry="40" fill="url(#noah-hair)"/>
     <ellipse cx="52" cy="100" rx="11" ry="24" fill="url(#noah-hair)"/>
     <ellipse cx="148" cy="100" rx="11" ry="24" fill="url(#noah-hair)"/>
-    <path d="M54 88 C60 78 78 72 100 70 C122 72 140 78 146 88 C138 80 120 76 100 76 C80 76 62 80 54 88 Z" fill="#2C1A0A"/>
+    <path d="M50 92 C53 80 60 72 68 76 C71 68 79 62 87 68 C91 60 100 58 100 66 C100 58 109 60 113 68 C121 62 129 68 132 76 C140 72 147 80 150 92 C141 81 121 75 100 75 C79 75 59 81 50 92 Z" fill="#241407"/>
+    <path d="M64 78 C63 82 63 87 65 91" stroke="#160B03" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+    <path d="M83 70 C82 75 82 80 84 85" stroke="#160B03" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+    <path d="M100 66 C99 72 99 78 100 83" stroke="#160B03" stroke-width="1.2" stroke-linecap="round" opacity="0.45"/>
+    <path d="M117 70 C118 75 118 80 116 85" stroke="#160B03" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+    <path d="M136 78 C137 82 137 87 135 91" stroke="#160B03" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+    <path d="M70 68 C76 60 84 56 92 58" stroke="#6B4622" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>
+    <path d="M96 60 C102 56 110 56 116 60" stroke="#6B4622" stroke-width="2.5" stroke-linecap="round" opacity="0.45"/>
+    <path d="M120 64 C126 62 132 66 136 72" stroke="#6B4622" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+    <path d="M53 88 C51 94 51 102 54 110" stroke="#5C3A1A" stroke-width="1.5" stroke-linecap="round" opacity="0.35"/>
     <path d="M65 100 C72 95 83 94 93 97" stroke="#1A0A02" stroke-width="4" stroke-linecap="round"/>
     <path d="M107 97 C117 94 128 95 135 100" stroke="#1A0A02" stroke-width="4" stroke-linecap="round"/>
     <ellipse cx="79" cy="113" rx="13" ry="11" fill="white"/>
@@ -94,7 +103,14 @@
     <ellipse cx="100" cy="68" rx="54" ry="38" fill="url(#emma-hair)"/>
     <ellipse cx="47" cy="108" rx="14" ry="26" fill="url(#emma-hair)"/>
     <ellipse cx="153" cy="108" rx="14" ry="26" fill="url(#emma-hair)"/>
-    <path d="M52 86 C60 76 78 70 100 68 C122 70 140 76 148 86 C140 78 120 74 100 74 C80 74 60 78 52 86 Z" fill="#B07840"/>
+    <path d="M50 90 C54 78 62 70 70 74 C73 66 82 60 90 66 C93 58 100 56 100 64 C100 56 107 58 110 66 C118 60 127 66 130 74 C138 70 146 78 150 90 C140 79 121 73 100 73 C79 73 60 79 50 90 Z" fill="#A9723E"/>
+    <path d="M66 76 C65 80 65 85 67 89" stroke="#8B5E2A" stroke-width="1" stroke-linecap="round" opacity="0.4"/>
+    <path d="M85 66 C84 71 84 76 86 81" stroke="#8B5E2A" stroke-width="1" stroke-linecap="round" opacity="0.4"/>
+    <path d="M115 66 C116 71 116 76 114 81" stroke="#8B5E2A" stroke-width="1" stroke-linecap="round" opacity="0.4"/>
+    <path d="M134 76 C135 80 135 85 133 89" stroke="#8B5E2A" stroke-width="1" stroke-linecap="round" opacity="0.4"/>
+    <path d="M72 62 C80 52 92 48 100 50" stroke="#EACB9C" stroke-width="3" stroke-linecap="round" opacity="0.55"/>
+    <path d="M100 50 C108 48 120 52 128 62" stroke="#EACB9C" stroke-width="2.5" stroke-linecap="round" opacity="0.4"/>
+    <path d="M78 56 C86 50 94 48 100 49" stroke="#F5DDB5" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
     <path d="M35 104 C30 96 38 88 44 94 C42 98 38 100 35 104 Z" fill="#FF6B8A"/>
     <path d="M35 104 C30 112 38 120 44 114 C42 110 38 108 35 104 Z" fill="#FF6B8A"/>
     <path d="M35 104 C44 100 52 102 52 104 C52 106 44 108 35 104 Z" fill="#FF8CA0"/>

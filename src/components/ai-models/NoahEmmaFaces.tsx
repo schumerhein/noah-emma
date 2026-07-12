@@ -65,11 +65,20 @@ export function NoahFace({ size = 200 }: { size?: number }) {
       {/* Haar — zijkanten */}
       <ellipse cx="52" cy="100" rx="11" ry="24" fill="url(#noah-hair)"/>
       <ellipse cx="148" cy="100" rx="11" ry="24" fill="url(#noah-hair)"/>
-      {/* Haar — voorkant lijn (frisuur) */}
-      <path d="M54 88 C60 78 78 72 100 70 C122 72 140 78 146 88 C138 80 120 76 100 76 C80 76 62 80 54 88 Z" fill="#2C1A0A"/>
-      {/* Haar highlight */}
-      <path d="M80 60 C88 54 108 54 118 60" stroke="#5C3A1A" strokeWidth="3" fill="none" strokeLinecap="round" opacity="0.5"/>
-      <path d="M72 66 C76 60 82 57 90 56" stroke="#5C3A1A" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.3"/>
+      {/* Haar — voorkant lijn (frisuur), zachte lokjes i.p.v. één vlakke boog */}
+      <path d="M50 92 C53 80 60 72 68 76 C71 68 79 62 87 68 C91 60 100 58 100 66 C100 58 109 60 113 68 C121 62 129 68 132 76 C140 72 147 80 150 92 C141 81 121 75 100 75 C79 75 59 81 50 92 Z" fill="#241407"/>
+      {/* Haar lok-scheidingen (subtiele lijnen voor textuur) */}
+      <path d="M64 78 C63 82 63 87 65 91" stroke="#160B03" strokeWidth="1.2" fill="none" strokeLinecap="round" opacity="0.5"/>
+      <path d="M83 70 C82 75 82 80 84 85" stroke="#160B03" strokeWidth="1.2" fill="none" strokeLinecap="round" opacity="0.5"/>
+      <path d="M100 66 C99 72 99 78 100 83" stroke="#160B03" strokeWidth="1.2" fill="none" strokeLinecap="round" opacity="0.45"/>
+      <path d="M117 70 C118 75 118 80 116 85" stroke="#160B03" strokeWidth="1.2" fill="none" strokeLinecap="round" opacity="0.5"/>
+      <path d="M136 78 C137 82 137 87 135 91" stroke="#160B03" strokeWidth="1.2" fill="none" strokeLinecap="round" opacity="0.5"/>
+      {/* Haar highlight — volgt de lokken voor een glanzend effect */}
+      <path d="M70 68 C76 60 84 56 92 58" stroke="#6B4622" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.55"/>
+      <path d="M96 60 C102 56 110 56 116 60" stroke="#6B4622" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.45"/>
+      <path d="M120 64 C126 62 132 66 136 72" stroke="#6B4622" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.3"/>
+      {/* Zijkant highlight */}
+      <path d="M53 88 C51 94 51 102 54 110" stroke="#5C3A1A" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.35"/>
 
       {/* Wenkbrauw links */}
       <path d="M65 100 C72 95 83 94 93 97" stroke="#1A0A02" strokeWidth="4" strokeLinecap="round"/>
@@ -195,12 +204,18 @@ export function EmmaFace({ size = 200 }: { size?: number }) {
       <ellipse cx="47" cy="108" rx="14" ry="26" fill="url(#emma-hair)"/>
       <ellipse cx="153" cy="108" rx="14" ry="26" fill="url(#emma-hair)"/>
 
-      {/* Haar voorkant lijn */}
-      <path d="M52 86 C60 76 78 70 100 68 C122 70 140 76 148 86 C140 78 120 74 100 74 C80 74 60 78 52 86 Z" fill="#B07840"/>
+      {/* Haar voorkant lijn — zachte lokjes i.p.v. één vlakke boog */}
+      <path d="M50 90 C54 78 62 70 70 74 C73 66 82 60 90 66 C93 58 100 56 100 64 C100 56 107 58 110 66 C118 60 127 66 130 74 C138 70 146 78 150 90 C140 79 121 73 100 73 C79 73 60 79 50 90 Z" fill="#A9723E"/>
+      {/* Haar lok-scheidingen */}
+      <path d="M66 76 C65 80 65 85 67 89" stroke="#8B5E2A" strokeWidth="1" fill="none" strokeLinecap="round" opacity="0.4"/>
+      <path d="M85 66 C84 71 84 76 86 81" stroke="#8B5E2A" strokeWidth="1" fill="none" strokeLinecap="round" opacity="0.4"/>
+      <path d="M115 66 C116 71 116 76 114 81" stroke="#8B5E2A" strokeWidth="1" fill="none" strokeLinecap="round" opacity="0.4"/>
+      <path d="M134 76 C135 80 135 85 133 89" stroke="#8B5E2A" strokeWidth="1" fill="none" strokeLinecap="round" opacity="0.4"/>
 
       {/* Haar highlight */}
-      <path d="M75 58 C84 50 116 50 125 58" stroke="#DEB880" strokeWidth="4" fill="none" strokeLinecap="round" opacity="0.5"/>
-      <path d="M82 54 C90 48 110 48 118 54" stroke="#DEB880" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.3"/>
+      <path d="M72 62 C80 52 92 48 100 50" stroke="#EACB9C" strokeWidth="3" fill="none" strokeLinecap="round" opacity="0.55"/>
+      <path d="M100 50 C108 48 120 52 128 62" stroke="#EACB9C" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.4"/>
+      <path d="M78 56 C86 50 94 48 100 49" stroke="#F5DDB5" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.4"/>
 
       {/* Strikje links */}
       <path d="M35 104 C30 96 38 88 44 94 C42 98 38 100 35 104 Z" fill="#FF6B8A"/>

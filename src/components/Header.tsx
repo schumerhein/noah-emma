@@ -64,7 +64,8 @@ export function Header() {
     pathname === "/community" ||
     pathname === "/wachtwoord-reset" ||
     pathname.startsWith("/admin/") ||
-    pathname.startsWith("/kind/")
+    pathname.startsWith("/kind/") ||
+    pathname === "/landing"
   ) return null;
 
   return (

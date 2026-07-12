@@ -1,13 +1,22 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { NoahEmmaLogo } from "@/components/Header";
 
 export default function LoginPage() {
   const router = useRouter();
   const [mode, setMode] = useState<"login" | "register">("login");
+
+  // Vanuit de landingspagina (noah-emma.nl) komen nieuwe bezoekers binnen
+  // via /login?mode=register — zij starten dus meteen op het
+  // registreren-tabblad in plaats van inloggen.
+  useEffect(() => {
+    if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("mode") === "register") {
+      setMode("register");
+    }
+  }, []);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [naam, setNaam] = useState("");
@@ -177,14 +186,6 @@ export default function LoginPage() {
             )}
           </button>
         </form>
-
-        <button
-          onClick={() => router.push("/")}
-          className="w-full h-14 mt-4 border-2 border-accent/20 text-accent rounded-xl font-bold text-lg hover:bg-accent/5 transition-all flex items-center justify-center gap-2"
-        >
-          <span>Doorgaan als gast</span>
-          <span className="material-symbols-outlined text-xl">person_search</span>
-        </button>
 
         <div className="mt-8 text-center">
           {mode === "login" ? (

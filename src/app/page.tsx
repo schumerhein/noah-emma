@@ -59,8 +59,18 @@ export default function Home() {
   const [swipesVandaag, setSwipesVandaag] = useState(0);
   const SWIPE_LIMIET = 10;
   const [toonPremiumModal, setToonPremiumModal] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { router.push("/login"); return; }
+      setAuthChecked(true);
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (!authChecked) return;
     const actief = leesActiefKind();
     if (actief) setKind(actief);
     else laadKindFallback();
@@ -78,9 +88,9 @@ export default function Home() {
     };
     window.addEventListener("kind-gewisseld", onWissel);
     return () => window.removeEventListener("kind-gewisseld", onWissel);
-  }, []);
+  }, [authChecked]);
 
-  useEffect(() => { laadListings(); }, [kind, filterOpKind]);
+  useEffect(() => { if (authChecked) laadListings(); }, [authChecked, kind, filterOpKind]);
 
   const checkPremiumEnSwipes = async () => {
     const { data: { user } } = await supabase.auth.getUser();

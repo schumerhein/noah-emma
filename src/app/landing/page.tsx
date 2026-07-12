@@ -3,6 +3,7 @@ import { Camera, Sparkles, Search, ShieldCheck, Leaf, Users, ArrowRight } from "
 import { NoahEmmaLogo } from "@/components/Header";
 
 const APP_URL = "https://noah-emma-sepia.vercel.app";
+const SIGNUP_URL = `${APP_URL}/login?mode=register`;
 
 const STAPPEN = [
   {
@@ -61,7 +62,7 @@ export default function LandingPage() {
             <span className="font-headline font-extrabold text-lg tracking-tight">Noah &amp; Emma</span>
           </div>
           <Link
-            href={APP_URL}
+            href={SIGNUP_URL}
             className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors"
           >
             Naar de app <ArrowRight className="w-4 h-4" />
@@ -84,7 +85,7 @@ export default function LandingPage() {
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
-            href={APP_URL}
+            href={SIGNUP_URL}
             className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold text-base px-7 py-3.5 rounded-2xl shadow-lg shadow-primary/25 transition-transform active:scale-[0.98]"
           >
             Probeer de app <ArrowRight className="w-5 h-5" />
@@ -174,7 +175,7 @@ export default function LandingPage() {
             jouw buurt te bieden hebben.
           </p>
           <Link
-            href={APP_URL}
+            href={SIGNUP_URL}
             className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold text-base px-8 py-4 rounded-2xl shadow-lg shadow-primary/25 transition-transform active:scale-[0.98]"
           >
             Open Noah &amp; Emma <ArrowRight className="w-5 h-5" />

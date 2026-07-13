@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Camera, Sparkles, Search, MessageCircle, ShieldCheck, CheckCircle2, Leaf, ArrowRight } from "lucide-react";
+import { Camera, Sparkles, Search, MessageCircle, EyeOff, Ruler, Users, Heart, Leaf, ArrowRight } from "lucide-react";
 import { NoahFace, EmmaFace } from "@/components/ai-models/NoahEmmaFaces";
 import { Reveal } from "@/components/Reveal";
 
@@ -8,25 +8,21 @@ const SIGNUP_URL = `${APP_URL}/login?mode=register`;
 
 const STAPPEN = [
   {
-    icon: Camera,
     color: "blue" as const,
     titel: "Foto maken",
     tekst: "Je maakt een foto van het kledingstuk — met of zonder je kind erin, dat maakt niet uit. Wij regelen de rest.",
   },
   {
-    icon: Sparkles,
     color: "pink" as const,
     titel: "Noah of Emma trekt het aan",
     tekst: "Onze twee AI-modellen dragen het kledingstuk in de advertentie. Het gezicht van jouw kind komt nooit online.",
   },
   {
-    icon: Search,
     color: "blue" as const,
     titel: "Andere ouders swipen mee",
     tekst: "Kopers zoeken op maat, merk en categorie en swipen door het aanbod in hun buurt — net zo simpel als daten, maar dan voor kinderkleding.",
   },
   {
-    icon: MessageCircle,
     color: "pink" as const,
     titel: "Samen een prijs afspreken",
     tekst: "Via de chat in de app spreek je zelf prijs en overdracht af — precies zoals dat hoort tussen ouders onderling.",
@@ -35,19 +31,35 @@ const STAPPEN = [
 
 const VOORDELEN = [
   {
-    icon: ShieldCheck,
-    titel: "Geen herkenbare foto's",
-    tekst: "Noah en Emma dragen de kleding in elke advertentie. Jouw kind blijft volledig van internet.",
+    icon: EyeOff,
+    kleur: "blue" as const,
+    groot: true,
+    titel: "Geen kinderhoofden zichtbaar",
+    tekst: "Noah of Emma draagt automatisch elk kledingstuk in de advertentie. Het gezicht van jouw kind komt nooit online — bij geen enkele advertentie.",
   },
   {
-    icon: CheckCircle2,
-    titel: "Elke advertentie gecontroleerd",
-    tekst: "Voordat iets zichtbaar wordt voor andere ouders, controleren wij hem eerst.",
+    icon: Ruler,
+    kleur: "pink" as const,
+    titel: "Groeit mee met je kind",
+    tekst: "Je groeimodel past zich vanzelf aan, dus je ziet altijd aanbod in de maat die nu past.",
+  },
+  {
+    icon: Users,
+    kleur: "blue" as const,
+    titel: "Moeiteloos wisselen tussen kinderen",
+    tekst: "Meerdere kinderen? Switch met één tik — de app verandert direct mee, met een eigen kleur per kind.",
+  },
+  {
+    icon: Heart,
+    kleur: "pink" as const,
+    titel: "Simpel en leuk swipen",
+    tekst: "Geen eindeloos scrollen door foto's. Swipe naar links of rechts, precies zoals je al gewend bent.",
   },
   {
     icon: Leaf,
-    titel: "Minder kast, minder afval",
-    tekst: "Kinderen groeien razendsnel. Doorverkopen scheelt geld en is beter voor het milieu.",
+    kleur: "blue" as const,
+    titel: "Duurzaam voor het milieu",
+    tekst: "Elk kledingstuk dat wordt doorverkocht, is er één minder dat nieuw geproduceerd hoeft te worden.",
   },
 ];
 
@@ -108,6 +120,53 @@ function SwipePhone({ kind, tilt }: { kind: "noah" | "emma"; tilt: "left" | "rig
             <span className={`w-8 h-8 rounded-full ${soft} flex items-center justify-center text-sm`}>♡</span>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function StepVisual({ index }: { index: number }) {
+  if (index === 0) {
+    return (
+      <div className="flex items-center gap-4">
+        <div className="w-16 h-16 rounded-2xl bg-white shadow-[0_12px_30px_-14px_rgba(36,26,46,0.35)] flex items-center justify-center shrink-0">
+          <Camera className="w-7 h-7 text-[#3FA9DB]" strokeWidth={1.75} />
+        </div>
+        <div className="w-28 h-28 rounded-2xl bg-white shadow-[0_12px_30px_-14px_rgba(36,26,46,0.35)] overflow-hidden flex items-center justify-center -rotate-3">
+          <NoahFace size={100} />
+        </div>
+      </div>
+    );
+  }
+  if (index === 1) {
+    return (
+      <div className="flex items-center">
+        <div className="w-32 h-32 rounded-3xl bg-white shadow-[0_12px_30px_-14px_rgba(36,26,46,0.35)] overflow-hidden flex items-center justify-center -rotate-6 -mr-5 z-[1]">
+          <EmmaFace size={116} />
+        </div>
+        <div className="w-14 h-14 rounded-2xl bg-white shadow-[0_12px_30px_-14px_rgba(36,26,46,0.35)] flex items-center justify-center rotate-6">
+          <Sparkles className="w-6 h-6 text-[#FF6F9C]" strokeWidth={1.75} />
+        </div>
+      </div>
+    );
+  }
+  if (index === 2) {
+    return (
+      <div className="relative w-44 h-32">
+        <div className="absolute top-3 left-8 w-28 h-24 rounded-2xl bg-white shadow-[0_12px_30px_-14px_rgba(36,26,46,0.35)] -rotate-6" />
+        <div className="absolute top-0 left-11 w-28 h-24 rounded-2xl bg-white shadow-[0_12px_30px_-14px_rgba(36,26,46,0.35)] rotate-3 flex items-center justify-center">
+          <Search className="w-9 h-9 text-[#3FA9DB]" strokeWidth={1.75} />
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="flex items-end gap-3.5">
+      <div className="w-14 h-14 rounded-full bg-white shadow-[0_12px_30px_-14px_rgba(36,26,46,0.35)] flex items-center justify-center shrink-0">
+        <MessageCircle className="w-6 h-6 text-[#FF6F9C]" strokeWidth={1.75} />
+      </div>
+      <div className="max-w-[190px] px-4 py-3 rounded-2xl rounded-bl-sm bg-white shadow-[0_12px_30px_-14px_rgba(36,26,46,0.35)] font-body text-[13px] font-semibold text-[#241A2E]">
+        Top, zullen we zaterdag afspreken? 🙂
       </div>
     </div>
   );
@@ -210,8 +269,8 @@ export default function LandingPage() {
       <section className="py-16 sm:py-24 px-5">
         <Reveal>
           <p className="max-w-3xl mx-auto text-center font-headline font-bold leading-snug text-2xl sm:text-4xl tracking-tight text-balance">
-            Een joggingbroek houdt het gemiddeld <span className="text-[#1C7FA8]">vijf maanden</span> vol bij een kind van vier.
-            De rest van zijn leven hangt hij in een kast — <span className="text-[#D63D74]">terwijl ergens een ander kind hem net past.</span>
+            <span className="text-[#1C7FA8]">Nooit</span> een foto van jouw kind online.
+            <br className="hidden sm:block" /> <span className="text-[#D63D74]">Altijd</span> de juiste maat binnen handbereik.
           </p>
         </Reveal>
       </section>
@@ -239,7 +298,7 @@ export default function LandingPage() {
                     <p className="text-[#5B4F63] max-w-[42ch]">{stap.tekst}</p>
                   </div>
                   <div className={`${flip ? "md:order-1" : ""} rounded-[28px] aspect-[16/11] flex items-center justify-center ${isBlue ? "bg-gradient-to-br from-[#E4F4FB] to-white" : "bg-gradient-to-br from-[#FFEAF1] to-white"}`}>
-                    <stap.icon className={`w-16 h-16 sm:w-20 sm:h-20 ${isBlue ? "text-[#3FA9DB]" : "text-[#FF6F9C]"}`} strokeWidth={1.5} />
+                    <StepVisual index={i} />
                   </div>
                 </div>
               </Reveal>
@@ -249,21 +308,33 @@ export default function LandingPage() {
       </section>
 
       {/* Voordelen */}
-      <section id="voordelen" className="bg-[#241A2E] text-white py-20 sm:py-28 px-5">
-        <Reveal className="text-center max-w-xl mx-auto mb-14">
-          <span className="text-[#FF6F9C] text-xs font-bold tracking-[0.14em] uppercase block mb-3">Waarom ouders overstappen</span>
-          <h2 className="font-headline font-extrabold text-3xl sm:text-4xl tracking-tight">Veilig voor je kind, fijn voor je portemonnee</h2>
+      <section id="voordelen" className="relative overflow-hidden bg-[#241A2E] text-white py-20 sm:py-28 px-5">
+        <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-[#3FA9DB]/20 blur-[100px]" />
+        <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-[#FF6F9C]/20 blur-[100px]" />
+
+        <Reveal className="relative text-center max-w-xl mx-auto mb-14">
+          <span className="text-[#FF9EB8] text-xs font-bold tracking-[0.14em] uppercase block mb-3">Waarom ouders overstappen</span>
+          <h2 className="font-headline font-extrabold text-3xl sm:text-4xl tracking-tight">Veilig voor je kind, slim voor je gezin</h2>
         </Reveal>
-        <div className="max-w-5xl mx-auto grid sm:grid-cols-3 gap-5">
-          {VOORDELEN.map((v) => (
-            <Reveal key={v.titel}>
-              <div className="bg-white/[0.07] border border-white/[0.14] rounded-2xl p-7 h-full">
-                <v.icon className="w-7 h-7 text-[#FF9EB8] mb-4" strokeWidth={1.5} />
-                <h3 className="font-headline font-extrabold text-lg mb-2">{v.titel}</h3>
-                <p className="text-white/70 text-sm leading-relaxed">{v.tekst}</p>
-              </div>
-            </Reveal>
-          ))}
+
+        <div className="relative max-w-5xl mx-auto grid md:grid-cols-2 gap-5">
+          {VOORDELEN.map((v) => {
+            const isBlue = v.kleur === "blue";
+            const badge = isBlue ? "bg-[#3FA9DB]/20 text-[#7ECBEE]" : "bg-[#FF6F9C]/20 text-[#FF9EB8]";
+            return (
+              <Reveal key={v.titel} className={v.groot ? "md:col-span-2" : ""}>
+                <div className={`bg-white/[0.06] border border-white/[0.12] rounded-2xl p-7 h-full flex flex-col ${v.groot ? "md:flex-row md:items-center md:gap-7" : ""}`}>
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-5 shrink-0 ${v.groot ? "md:mb-0 md:w-16 md:h-16" : ""} ${badge}`}>
+                    <v.icon className={`w-6 h-6 ${v.groot ? "md:w-8 md:h-8" : ""}`} strokeWidth={1.75} />
+                  </div>
+                  <div>
+                    <h3 className={`font-headline font-extrabold mb-2 ${v.groot ? "text-xl" : "text-lg"}`}>{v.titel}</h3>
+                    <p className="text-white/65 text-sm leading-relaxed">{v.tekst}</p>
+                  </div>
+                </div>
+              </Reveal>
+            );
+          })}
         </div>
       </section>
 

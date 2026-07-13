@@ -11,7 +11,12 @@ export function middleware(request: NextRequest) {
   const isMarketingHost = MARKETING_HOSTS.some((h) => host === h || host.startsWith(`${h}:`));
 
   if (isMarketingHost && request.nextUrl.pathname === "/") {
-    return NextResponse.rewrite(new URL("/landing", request.url));
+    // Bij een rewrite blijft de URL in de browser "/", waardoor client-side
+    // pathname-checks (usePathname() === "/landing") niet kloppen. Geef daarom
+    // een marker-header mee die de server-layout wél kan lezen.
+    const headers = new Headers(request.headers);
+    headers.set("x-noah-emma-marketing", "1");
+    return NextResponse.rewrite(new URL("/landing", request.url), { request: { headers } });
   }
 
   return NextResponse.next();

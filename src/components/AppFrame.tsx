@@ -10,9 +10,9 @@ import { Navigation } from "@/components/Navigation";
  * De marketingpagina (/landing) is een volwaardige desktop-website en
  * moet dat frame — en de app-header/onderbalk — niet erven.
  */
-export function AppFrame({ children }: { children: React.ReactNode }) {
+export function AppFrame({ children, forceMarketing = false }: { children: React.ReactNode; forceMarketing?: boolean }) {
   const pathname = usePathname();
-  const isMarketing = pathname === "/landing";
+  const isMarketing = forceMarketing || pathname === "/landing";
 
   if (isMarketing) {
     return <>{children}</>;

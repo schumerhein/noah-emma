@@ -1,5 +1,6 @@
 
 import type {Metadata, Viewport} from 'next';
+import {headers} from 'next/headers';
 import './globals.css';
 import {Toaster} from '@/components/ui/toaster';
 import {ThemeProvider} from '@/components/ThemeProvider';
@@ -23,11 +24,14 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const headerList = await headers();
+  const forceMarketing = headerList.get("x-noah-emma-marketing") === "1";
+
   return (
     <html lang="nl" className="antialiased">
       <head>
@@ -39,7 +43,7 @@ export default function RootLayout({
       </head>
       <body className="font-body min-h-screen bg-background text-foreground">
         <ThemeProvider>
-          <AppFrame>{children}</AppFrame>
+          <AppFrame forceMarketing={forceMarketing}>{children}</AppFrame>
           <Toaster />
         </ThemeProvider>
       </body>

@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { Camera, Sparkles, Search, ShieldCheck, Leaf, Users, ArrowRight } from "lucide-react";
-import { NoahEmmaLogo } from "@/components/Header";
+import { Camera, Sparkles, Search, MessageCircle, ShieldCheck, CheckCircle2, Leaf, ArrowRight } from "lucide-react";
+import { NoahFace, EmmaFace } from "@/components/ai-models/NoahEmmaFaces";
+import { Reveal } from "@/components/Reveal";
 
 const APP_URL = "https://noah-emma-sepia.vercel.app";
 const SIGNUP_URL = `${APP_URL}/login?mode=register`;
@@ -8,21 +9,25 @@ const SIGNUP_URL = `${APP_URL}/login?mode=register`;
 const STAPPEN = [
   {
     icon: Camera,
+    color: "blue" as const,
     titel: "Foto maken",
-    tekst: "Je maakt een foto van het kledingstuk — met of zonder je kind erin, dat maakt niet uit.",
+    tekst: "Je maakt een foto van het kledingstuk — met of zonder je kind erin, dat maakt niet uit. Wij regelen de rest.",
   },
   {
     icon: Sparkles,
-    titel: "Noah of Emma laat het zien",
-    tekst: "Onze AI-modellen dragen het kledingstuk in de advertentie. Het gezicht van jouw kind komt nooit online.",
+    color: "pink" as const,
+    titel: "Noah of Emma trekt het aan",
+    tekst: "Onze twee AI-modellen dragen het kledingstuk in de advertentie. Het gezicht van jouw kind komt nooit online.",
   },
   {
     icon: Search,
-    titel: "Andere ouders vinden het",
-    tekst: "Kopers zoeken op maat, merk en categorie en swipen door het aanbod in hun buurt.",
+    color: "blue" as const,
+    titel: "Andere ouders swipen mee",
+    tekst: "Kopers zoeken op maat, merk en categorie en swipen door het aanbod in hun buurt — net zo simpel als daten, maar dan voor kinderkleding.",
   },
   {
-    icon: Users,
+    icon: MessageCircle,
+    color: "pink" as const,
     titel: "Samen een prijs afspreken",
     tekst: "Via de chat in de app spreek je zelf prijs en overdracht af — precies zoals dat hoort tussen ouders onderling.",
   },
@@ -31,166 +36,295 @@ const STAPPEN = [
 const VOORDELEN = [
   {
     icon: ShieldCheck,
-    titel: "Veilig voor je kind",
-    tekst: "Geen herkenbare foto's van je kind online. Elke advertentie wordt bovendien gecontroleerd voordat hij zichtbaar is.",
+    titel: "Geen herkenbare foto's",
+    tekst: "Noah en Emma dragen de kleding in elke advertentie. Jouw kind blijft volledig van internet.",
   },
   {
-    icon: Search,
-    titel: "Snel het juiste vinden",
-    tekst: "Filter op maat, merk, kleur en prijs — geen eindeloos scrollen door spullen die niet passen.",
+    icon: CheckCircle2,
+    titel: "Elke advertentie gecontroleerd",
+    tekst: "Voordat iets zichtbaar wordt voor andere ouders, controleren wij hem eerst.",
   },
   {
     icon: Leaf,
-    titel: "Duurzaam en voordelig",
-    tekst: "Kinderen groeien razendsnel. Tweedehands kopen en verkopen scheelt geld en is beter voor het milieu.",
-  },
-  {
-    icon: Users,
-    titel: "Gemaakt voor ouders",
-    tekst: "Een community van ouders die precies weten hoe snel een maatje te klein wordt.",
+    titel: "Minder kast, minder afval",
+    tekst: "Kinderen groeien razendsnel. Doorverkopen scheelt geld en is beter voor het milieu.",
   },
 ];
 
+const REVIEWS = [
+  {
+    quote: "Binnen een dag verkocht en ik hoefde geen foto van mijn dochter te posten. Precies wat ik zocht.",
+    naam: "Lotte",
+    context: "moeder van 2, Utrecht",
+    kleur: "bg-[#FF6F9C]",
+  },
+  {
+    quote: "Onze zoon groeit zo hard dat de helft van zijn kast nog het prijskaartje heeft. Nu verkoop ik het door voor hij het draagt.",
+    naam: "Rik",
+    context: "vader van 3, Rotterdam",
+    kleur: "bg-[#3FA9DB]",
+  },
+  {
+    quote: "Swipen door de buurt voelt echt als shoppen, niet als een marktplaats doorzoeken. Heerlijk simpel.",
+    naam: "Sanne",
+    context: "moeder van 1, Groningen",
+    kleur: "bg-[#D63D74]",
+  },
+];
+
+function SwipePhone({ kind, tilt }: { kind: "noah" | "emma"; tilt: "left" | "right" }) {
+  const isNoah = kind === "noah";
+  const soft = isNoah ? "bg-[#E4F4FB]" : "bg-[#FFEAF1]";
+  const line = isNoah ? "from-[#C7E7F5] to-[#E4F4FB]" : "from-[#FFD3E2] to-[#FFEAF1]";
+  const deep = isNoah ? "text-[#1C7FA8]" : "text-[#D63D74]";
+  const rotate = tilt === "left" ? "-rotate-6 translate-y-2" : "rotate-6 -translate-y-1";
+  const overlap = tilt === "left" ? "mr-[-2.2rem] z-[1]" : "ml-[-2.2rem] z-[2]";
+
+  return (
+    <div className={`w-[168px] sm:w-[220px] rounded-[34px] bg-white p-2.5 shadow-[0_20px_40px_-20px_rgba(36,26,46,0.35)] ${rotate} ${overlap}`}>
+      <div className={`rounded-[26px] overflow-hidden ${soft} aspect-[9/18.5] relative flex flex-col`}>
+        <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-16 h-4 bg-[#241A2E] rounded-full z-10" />
+        <div className="flex items-center justify-between px-4 pt-6 pb-2">
+          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full bg-white ${deep}`}>
+            {isNoah ? "JONGEN · 98" : "MEISJE · 104"}
+          </span>
+          <span className="text-sm">♡</span>
+        </div>
+        <div className="mx-3.5 mb-3.5 flex-1 bg-white rounded-[20px] shadow-[0_10px_24px_-12px_rgba(36,26,46,0.35)] overflow-hidden flex flex-col">
+          <div className={`flex-1 bg-gradient-to-br ${line} flex items-center justify-center relative`}>
+            <span className="absolute top-2.5 left-2.5 text-[9px] font-bold bg-white px-2 py-1 rounded-lg">
+              {isNoah ? "NIEUWSTAAT" : "GOED"}
+            </span>
+            <div className="w-20 h-20 rounded-full overflow-hidden bg-white shadow-md">
+              {isNoah ? <NoahFace size={80} /> : <EmmaFace size={80} />}
+            </div>
+          </div>
+          <div className="px-3.5 py-3">
+            <div className="font-bold text-[13px]">{isNoah ? "Regenjas · Maat 98" : "Winterjas · Maat 104"}</div>
+            <div className={`font-extrabold text-[15px] mt-0.5 ${deep}`}>{isNoah ? "€ 8,00" : "€ 12,50"}</div>
+          </div>
+          <div className="flex gap-2.5 px-3.5 pb-3.5">
+            <span className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-sm">✕</span>
+            <span className={`w-8 h-8 rounded-full ${soft} flex items-center justify-center text-sm`}>♡</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function LandingPage() {
   return (
-    <div className="font-body bg-white text-slate-900 min-h-screen">
+    <div className="font-body bg-[#FFF9FA] text-[#241A2E] min-h-screen antialiased">
       {/* Nav */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-100">
-        <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <NoahEmmaLogo size={32} />
-            <span className="font-headline font-extrabold text-lg tracking-tight">Noah &amp; Emma</span>
+      <header className="sticky top-0 z-50 bg-[#FFF9FA]/90 backdrop-blur-md border-b border-[#241A2E]/[0.08]">
+        <div className="max-w-[1180px] mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+            <div className="flex items-center shrink-0">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border-2 border-white shadow-md"><NoahFace size={36} /></div>
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border-2 border-white shadow-md -ml-2"><EmmaFace size={36} /></div>
+            </div>
+            <span className="font-headline font-extrabold text-base sm:text-lg tracking-tight truncate">Noah &amp; Emma</span>
           </div>
+          <nav className="hidden md:flex items-center gap-8">
+            <a href="#hoe-het-werkt" className="text-sm font-semibold text-[#5B4F63] hover:text-[#241A2E] transition-colors">Hoe het werkt</a>
+            <a href="#voordelen" className="text-sm font-semibold text-[#5B4F63] hover:text-[#241A2E] transition-colors">Voordelen</a>
+            <a href="#reviews" className="text-sm font-semibold text-[#5B4F63] hover:text-[#241A2E] transition-colors">Reviews</a>
+          </nav>
           <Link
             href={SIGNUP_URL}
-            className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors"
+            className="inline-flex items-center gap-1 sm:gap-1.5 shrink-0 bg-[#241A2E] hover:-translate-y-0.5 text-white text-xs sm:text-sm font-bold px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-full shadow-[0_12px_30px_-14px_rgba(36,26,46,0.5)] transition-transform whitespace-nowrap"
           >
-            Naar de app <ArrowRight className="w-4 h-4" />
+            <span className="hidden sm:inline">Naar de app</span><span className="sm:hidden">App</span> <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </Link>
         </div>
       </header>
 
       {/* Hero */}
-      <section className="max-w-5xl mx-auto px-6 pt-16 pb-20 text-center">
-        <div className="inline-flex items-center gap-1.5 bg-primary/10 text-primary font-bold text-xs uppercase tracking-widest px-3 py-1.5 rounded-full mb-6">
-          Tweedehands kindermode
+      <header className="relative overflow-hidden pt-4">
+        <div className="absolute inset-0 grid grid-cols-2 z-0">
+          <div className="bg-gradient-to-br from-[#E4F4FB] to-[#FFF9FA]" />
+          <div className="bg-gradient-to-bl from-[#FFEAF1] to-[#FFF9FA]" />
         </div>
-        <h1 className="font-headline font-extrabold text-4xl sm:text-5xl md:text-6xl tracking-tight leading-tight mb-6">
-          De makkelijkste manier om<br className="hidden sm:block" /> kinderkleding te kopen &amp; verkopen
-        </h1>
-        <p className="text-lg text-slate-500 max-w-2xl mx-auto mb-10">
-          Kinderen groeien uit hun kleding voordat ze er versleten mee zijn. Noah &amp; Emma
-          maakt tweedehands kopen en verkopen simpel, snel en veilig — zonder ooit een
-          herkenbare foto van je kind te delen.
-        </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-          <Link
-            href={SIGNUP_URL}
-            className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold text-base px-7 py-3.5 rounded-2xl shadow-lg shadow-primary/25 transition-transform active:scale-[0.98]"
-          >
-            Probeer de app <ArrowRight className="w-5 h-5" />
-          </Link>
-          <a
-            href="#hoe-het-werkt"
-            className="inline-flex items-center gap-2 text-slate-600 font-bold text-base px-7 py-3.5 rounded-2xl hover:bg-slate-50 transition-colors"
-          >
-            Bekijk hoe het werkt
-          </a>
+
+        <div className="relative z-10 max-w-[1180px] mx-auto px-5 sm:px-8 pt-14 sm:pt-20 text-center">
+          <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-[0_12px_30px_-14px_rgba(36,26,46,0.28)] mb-7">
+            <span className="w-2 h-2 rounded-full bg-[#3FA9DB]" />
+            <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-[#5B4F63]">Tweedehands kindermode</span>
+            <span className="w-2 h-2 rounded-full bg-[#FF6F9C]" />
+          </div>
+
+          <h1 className="font-headline font-extrabold tracking-tight leading-[1.05] text-[2.4rem] sm:text-6xl md:text-[4.4rem] max-w-4xl mx-auto text-balance">
+            Verkocht voor <span className="text-[#1C7FA8]">het</span> te <span className="text-[#D63D74]">klein</span> is.
+          </h1>
+
+          <p className="max-w-[46ch] mx-auto mt-6 text-base sm:text-lg text-[#5B4F63]">
+            Elk kind groeit uit zijn kleding voordat hij er versleten mee is. Noah &amp; Emma laat je in een paar swipes
+            verkopen wat te klein is geworden — en vinden wat er straks past. Zonder ooit een foto van je eigen kind te delen.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 mt-9">
+            <Link
+              href={SIGNUP_URL}
+              className="inline-flex items-center gap-2 bg-[#241A2E] text-white font-bold text-base px-7 py-4 rounded-full shadow-[0_12px_30px_-14px_rgba(36,26,46,0.5)] transition-transform active:scale-[0.97] hover:-translate-y-0.5 w-full sm:w-auto justify-center"
+            >
+              Begin met swipen <ArrowRight className="w-5 h-5" />
+            </Link>
+            <a
+              href="#hoe-het-werkt"
+              className="inline-flex items-center gap-2 text-[#241A2E] font-bold text-base px-7 py-4 rounded-full border border-[#241A2E]/20 hover:bg-[#241A2E]/5 transition-colors w-full sm:w-auto justify-center"
+            >
+              Bekijk hoe het werkt
+            </a>
+          </div>
         </div>
+
+        <div className="relative z-10 flex items-end justify-center mt-14 sm:mt-16 px-4">
+          <SwipePhone kind="noah" tilt="left" />
+          <SwipePhone kind="emma" tilt="right" />
+        </div>
+
+        <Reveal className="relative z-10 mx-auto mt-12 sm:mt-14 max-w-2xl">
+          <div className="flex items-center justify-center gap-6 sm:gap-10 flex-wrap px-8 py-5 bg-white rounded-full shadow-[0_12px_30px_-14px_rgba(36,26,46,0.28)] mx-5">
+            <div className="flex flex-col items-center sm:items-start">
+              <span className="font-headline font-extrabold text-lg">★ 4,8</span>
+              <span className="text-xs font-semibold text-[#8A7E90]">waardering ouders</span>
+            </div>
+            <div className="w-px h-7 bg-[#241A2E]/10 hidden sm:block" />
+            <div className="flex flex-col items-center sm:items-start">
+              <span className="font-headline font-extrabold text-lg">0 foto&apos;s</span>
+              <span className="text-xs font-semibold text-[#8A7E90]">van jouw kind nodig</span>
+            </div>
+            <div className="w-px h-7 bg-[#241A2E]/10 hidden sm:block" />
+            <div className="flex flex-col items-center sm:items-start">
+              <span className="font-headline font-extrabold text-lg">100%</span>
+              <span className="text-xs font-semibold text-[#8A7E90]">advertenties gecontroleerd</span>
+            </div>
+          </div>
+        </Reveal>
+
+        <div className="h-16 sm:h-24 relative z-10" />
+      </header>
+
+      {/* Insight */}
+      <section className="py-16 sm:py-24 px-5">
+        <Reveal>
+          <p className="max-w-3xl mx-auto text-center font-headline font-bold leading-snug text-2xl sm:text-4xl tracking-tight text-balance">
+            Een joggingbroek houdt het gemiddeld <span className="text-[#1C7FA8]">vijf maanden</span> vol bij een kind van vier.
+            De rest van zijn leven hangt hij in een kast — <span className="text-[#D63D74]">terwijl ergens een ander kind hem net past.</span>
+          </p>
+        </Reveal>
       </section>
 
       {/* Hoe het werkt */}
-      <section id="hoe-het-werkt" className="bg-slate-50 py-20">
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="text-center mb-14">
-            <h2 className="font-headline font-extrabold text-3xl sm:text-4xl tracking-tight mb-3">Hoe het werkt</h2>
-            <p className="text-slate-500 max-w-xl mx-auto">In vier simpele stappen van volle kast naar verkocht.</p>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {STAPPEN.map((stap, i) => (
-              <div key={stap.titel} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 relative">
-                <span className="absolute top-5 right-5 text-3xl font-headline font-black text-slate-100">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                  <stap.icon className="w-6 h-6 text-primary" />
+      <section id="hoe-het-werkt" className="px-5 sm:px-8 pb-20 sm:pb-28">
+        <Reveal className="text-center max-w-xl mx-auto mb-14 sm:mb-16">
+          <span className="text-[#D63D74] text-xs font-bold tracking-[0.14em] uppercase block mb-3">Hoe het werkt</span>
+          <h2 className="font-headline font-extrabold text-3xl sm:text-4xl tracking-tight mb-3">Van volle kast naar verkocht</h2>
+          <p className="text-[#5B4F63]">Vier stappen, geen gedoe — en geen moment waarop je een foto van je eigen kind hoeft te posten.</p>
+        </Reveal>
+
+        <div className="max-w-5xl mx-auto">
+          {STAPPEN.map((stap, i) => {
+            const flip = i % 2 === 1;
+            const isBlue = stap.color === "blue";
+            return (
+              <Reveal key={stap.titel}>
+                <div className={`grid md:grid-cols-2 gap-8 md:gap-16 items-center py-9 md:py-11 ${i !== STAPPEN.length - 1 ? "border-b border-[#241A2E]/[0.08]" : ""}`}>
+                  <div className={flip ? "md:order-2" : ""}>
+                    <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full font-headline font-extrabold text-sm mb-4 ${isBlue ? "bg-[#E4F4FB] text-[#1C7FA8]" : "bg-[#FFEAF1] text-[#D63D74]"}`}>
+                      {i + 1}
+                    </span>
+                    <h3 className="font-headline font-extrabold text-xl sm:text-2xl mb-3">{stap.titel}</h3>
+                    <p className="text-[#5B4F63] max-w-[42ch]">{stap.tekst}</p>
+                  </div>
+                  <div className={`${flip ? "md:order-1" : ""} rounded-[28px] aspect-[16/11] flex items-center justify-center ${isBlue ? "bg-gradient-to-br from-[#E4F4FB] to-white" : "bg-gradient-to-br from-[#FFEAF1] to-white"}`}>
+                    <stap.icon className={`w-16 h-16 sm:w-20 sm:h-20 ${isBlue ? "text-[#3FA9DB]" : "text-[#FF6F9C]"}`} strokeWidth={1.5} />
+                  </div>
                 </div>
-                <h3 className="font-headline font-extrabold text-base mb-2">{stap.titel}</h3>
-                <p className="text-sm text-slate-500 leading-relaxed">{stap.tekst}</p>
-              </div>
-            ))}
-          </div>
+              </Reveal>
+            );
+          })}
         </div>
       </section>
 
       {/* Voordelen */}
-      <section className="py-20">
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="text-center mb-14">
-            <h2 className="font-headline font-extrabold text-3xl sm:text-4xl tracking-tight mb-3">Waarom Noah &amp; Emma</h2>
-            <p className="text-slate-500 max-w-xl mx-auto">Gemaakt voor ouders die het veilig, snel en eerlijk willen houden.</p>
-          </div>
-          <div className="grid sm:grid-cols-2 gap-6">
-            {VOORDELEN.map((v) => (
-              <div key={v.titel} className="flex gap-4 p-6 rounded-2xl border border-slate-100 hover:border-primary/20 hover:bg-primary/5 transition-colors">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                  <v.icon className="w-6 h-6 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-headline font-extrabold text-base mb-1.5">{v.titel}</h3>
-                  <p className="text-sm text-slate-500 leading-relaxed">{v.tekst}</p>
-                </div>
+      <section id="voordelen" className="bg-[#241A2E] text-white py-20 sm:py-28 px-5">
+        <Reveal className="text-center max-w-xl mx-auto mb-14">
+          <span className="text-[#FF6F9C] text-xs font-bold tracking-[0.14em] uppercase block mb-3">Waarom ouders overstappen</span>
+          <h2 className="font-headline font-extrabold text-3xl sm:text-4xl tracking-tight">Veilig voor je kind, fijn voor je portemonnee</h2>
+        </Reveal>
+        <div className="max-w-5xl mx-auto grid sm:grid-cols-3 gap-5">
+          {VOORDELEN.map((v) => (
+            <Reveal key={v.titel}>
+              <div className="bg-white/[0.07] border border-white/[0.14] rounded-2xl p-7 h-full">
+                <v.icon className="w-7 h-7 text-[#FF9EB8] mb-4" strokeWidth={1.5} />
+                <h3 className="font-headline font-extrabold text-lg mb-2">{v.titel}</h3>
+                <p className="text-white/70 text-sm leading-relaxed">{v.tekst}</p>
               </div>
-            ))}
-          </div>
+            </Reveal>
+          ))}
         </div>
       </section>
 
-      {/* Noah & Emma showcase */}
-      <section className="bg-slate-50 py-20">
-        <div className="max-w-3xl mx-auto px-6 text-center">
-          <div className="flex justify-center mb-6">
-            <NoahEmmaLogo size={72} />
-          </div>
-          <h2 className="font-headline font-extrabold text-3xl sm:text-4xl tracking-tight mb-4">
-            Noah en Emma dragen het, jouw kind hoeft niet online
-          </h2>
-          <p className="text-slate-500 leading-relaxed">
-            In plaats van foto's van je eigen kind te delen, laten onze AI-modellen Noah en Emma
-            zien hoe een kledingstuk eruitziet en zit. Zo blijft de app veilig voor kinderen,
-            zonder dat kopers iets missen — elke advertentie wordt bovendien gecontroleerd
-            voordat hij zichtbaar wordt voor anderen.
-          </p>
+      {/* Reviews */}
+      <section id="reviews" className="py-20 sm:py-28 px-5 sm:px-8">
+        <Reveal className="text-center max-w-xl mx-auto mb-14">
+          <span className="text-[#D63D74] text-xs font-bold tracking-[0.14em] uppercase block mb-3">Wat ouders zeggen</span>
+          <h2 className="font-headline font-extrabold text-3xl sm:text-4xl tracking-tight mb-3">Nog even in te vullen met echte reviews</h2>
+          <p className="text-[#5B4F63]">Onderstaande drie zijn voorbeeldteksten — vervang door echte quotes van gebruikers zodra die er zijn.</p>
+        </Reveal>
+        <div className="max-w-5xl mx-auto grid sm:grid-cols-3 gap-5">
+          {REVIEWS.map((r) => (
+            <Reveal key={r.naam}>
+              <div className="bg-white rounded-2xl p-7 shadow-[0_12px_30px_-14px_rgba(36,26,46,0.28)] h-full flex flex-col gap-4">
+                <div className="text-[#D63D74] text-sm tracking-wider">★★★★★</div>
+                <p className="text-[#241A2E] leading-relaxed">&ldquo;{r.quote}&rdquo;</p>
+                <div className="flex items-center gap-3 mt-auto pt-2">
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white font-headline font-extrabold text-sm ${r.kleur}`}>
+                    {r.naam[0]}
+                  </div>
+                  <div>
+                    <div className="font-bold text-sm">{r.naam}</div>
+                    <div className="text-xs text-[#8A7E90]">{r.context}</div>
+                  </div>
+                </div>
+              </div>
+            </Reveal>
+          ))}
         </div>
       </section>
 
       {/* Final CTA */}
-      <section className="py-20">
-        <div className="max-w-2xl mx-auto px-6 text-center">
-          <h2 className="font-headline font-extrabold text-3xl sm:text-4xl tracking-tight mb-4">
-            Klaar om te beginnen?
+      <section className="relative overflow-hidden py-20 sm:py-28 px-5 text-center">
+        <div className="absolute inset-0 grid grid-cols-2 z-0">
+          <div className="bg-[#3FA9DB]" />
+          <div className="bg-[#FF6F9C]" />
+        </div>
+        <div className="relative z-10 max-w-xl mx-auto">
+          <h2 className="font-headline font-extrabold text-3xl sm:text-5xl text-white tracking-tight text-balance">
+            Ruim de kast op.<br />Vind de volgende maat.
           </h2>
-          <p className="text-slate-500 mb-8">
-            Plaats je eerste advertentie in een paar minuten, of ontdek wat andere ouders in
-            jouw buurt te bieden hebben.
+          <p className="text-white/90 mt-5 text-base sm:text-lg">
+            Plaats je eerste advertentie in een paar minuten, of ontdek wat andere ouders in jouw buurt te bieden hebben.
           </p>
           <Link
             href={SIGNUP_URL}
-            className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold text-base px-8 py-4 rounded-2xl shadow-lg shadow-primary/25 transition-transform active:scale-[0.98]"
+            className="inline-flex items-center gap-2 bg-white text-[#241A2E] font-bold text-base px-8 py-4 rounded-full shadow-lg mt-9 transition-transform active:scale-[0.97] hover:-translate-y-0.5"
           >
-            Open Noah &amp; Emma <ArrowRight className="w-5 h-5" />
+            Maak gratis een account <ArrowRight className="w-5 h-5" />
           </Link>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-100 py-10">
-        <div className="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <NoahEmmaLogo size={24} />
+      <footer className="py-10 px-5 sm:px-8">
+        <div className="max-w-[1180px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-5 pt-8 border-t border-[#241A2E]/10">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-full overflow-hidden"><NoahFace size={28} /></div>
             <span className="font-headline font-bold text-sm">Noah &amp; Emma</span>
           </div>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-[#8A7E90]">
             © {new Date().getFullYear()} Noah &amp; Emma — De makkelijkste manier om kinderkleding te kopen en verkopen.
           </p>
         </div>

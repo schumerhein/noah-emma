@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { Camera, Sparkles, Search, MessageCircle, EyeOff, Ruler, Users, Heart, Leaf, ArrowRight } from "lucide-react";
+import { Camera, Sparkles, Search, MessageCircle, ArrowRight } from "lucide-react";
 import { NoahFace, EmmaFace } from "@/components/ai-models/NoahEmmaFaces";
 import { Reveal } from "@/components/Reveal";
+import { VoordelenExplorer } from "@/components/VoordelenExplorer";
 
 const APP_URL = "https://noah-emma-sepia.vercel.app";
 const SIGNUP_URL = `${APP_URL}/login?mode=register`;
@@ -26,40 +27,6 @@ const STAPPEN = [
     color: "pink" as const,
     titel: "Samen een prijs afspreken",
     tekst: "Via de chat in de app spreek je zelf prijs en overdracht af — precies zoals dat hoort tussen ouders onderling.",
-  },
-];
-
-const VOORDELEN = [
-  {
-    icon: EyeOff,
-    kleur: "blue" as const,
-    groot: true,
-    titel: "Geen kinderhoofden zichtbaar",
-    tekst: "Noah of Emma draagt automatisch elk kledingstuk in de advertentie. Het gezicht van jouw kind komt nooit online — bij geen enkele advertentie.",
-  },
-  {
-    icon: Ruler,
-    kleur: "pink" as const,
-    titel: "Groeit mee met je kind",
-    tekst: "Je groeimodel past zich vanzelf aan, dus je ziet altijd aanbod in de maat die nu past.",
-  },
-  {
-    icon: Users,
-    kleur: "blue" as const,
-    titel: "Moeiteloos wisselen tussen kinderen",
-    tekst: "Meerdere kinderen? Switch met één tik — de app verandert direct mee, met een eigen kleur per kind.",
-  },
-  {
-    icon: Heart,
-    kleur: "pink" as const,
-    titel: "Simpel en leuk swipen",
-    tekst: "Geen eindeloos scrollen door foto's. Swipe naar links of rechts, precies zoals je al gewend bent.",
-  },
-  {
-    icon: Leaf,
-    kleur: "blue" as const,
-    titel: "Duurzaam voor het milieu",
-    tekst: "Elk kledingstuk dat wordt doorverkocht, is er één minder dat nieuw geproduceerd hoeft te worden.",
   },
 ];
 
@@ -312,30 +279,14 @@ export default function LandingPage() {
         <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-[#3FA9DB]/20 blur-[100px]" />
         <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-[#FF6F9C]/20 blur-[100px]" />
 
-        <Reveal className="relative text-center max-w-xl mx-auto mb-14">
+        <Reveal className="relative text-center max-w-xl mx-auto mb-12">
           <span className="text-[#FF9EB8] text-xs font-bold tracking-[0.14em] uppercase block mb-3">Waarom ouders overstappen</span>
           <h2 className="font-headline font-extrabold text-3xl sm:text-4xl tracking-tight">Veilig voor je kind, slim voor je gezin</h2>
         </Reveal>
 
-        <div className="relative max-w-5xl mx-auto grid md:grid-cols-2 gap-5">
-          {VOORDELEN.map((v) => {
-            const isBlue = v.kleur === "blue";
-            const badge = isBlue ? "bg-[#3FA9DB]/20 text-[#7ECBEE]" : "bg-[#FF6F9C]/20 text-[#FF9EB8]";
-            return (
-              <Reveal key={v.titel} className={v.groot ? "md:col-span-2" : ""}>
-                <div className={`bg-white/[0.06] border border-white/[0.12] rounded-2xl p-7 h-full flex flex-col ${v.groot ? "md:flex-row md:items-center md:gap-7" : ""}`}>
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-5 shrink-0 ${v.groot ? "md:mb-0 md:w-16 md:h-16" : ""} ${badge}`}>
-                    <v.icon className={`w-6 h-6 ${v.groot ? "md:w-8 md:h-8" : ""}`} strokeWidth={1.75} />
-                  </div>
-                  <div>
-                    <h3 className={`font-headline font-extrabold mb-2 ${v.groot ? "text-xl" : "text-lg"}`}>{v.titel}</h3>
-                    <p className="text-white/65 text-sm leading-relaxed">{v.tekst}</p>
-                  </div>
-                </div>
-              </Reveal>
-            );
-          })}
-        </div>
+        <Reveal className="relative max-w-3xl mx-auto">
+          <VoordelenExplorer />
+        </Reveal>
       </section>
 
       {/* Reviews */}
@@ -369,19 +320,19 @@ export default function LandingPage() {
       {/* Final CTA */}
       <section className="relative overflow-hidden py-20 sm:py-28 px-5 text-center">
         <div className="absolute inset-0 grid grid-cols-2 z-0">
-          <div className="bg-[#3FA9DB]" />
-          <div className="bg-[#FF6F9C]" />
+          <div className="bg-gradient-to-br from-[#E4F4FB] to-[#FFF9FA]" />
+          <div className="bg-gradient-to-bl from-[#FFEAF1] to-[#FFF9FA]" />
         </div>
         <div className="relative z-10 max-w-xl mx-auto">
-          <h2 className="font-headline font-extrabold text-3xl sm:text-5xl text-white tracking-tight text-balance">
+          <h2 className="font-headline font-extrabold text-3xl sm:text-5xl tracking-tight text-balance">
             Ruim de kast op.<br />Vind de volgende maat.
           </h2>
-          <p className="text-white/90 mt-5 text-base sm:text-lg">
+          <p className="text-[#5B4F63] mt-5 text-base sm:text-lg">
             Plaats je eerste advertentie in een paar minuten, of ontdek wat andere ouders in jouw buurt te bieden hebben.
           </p>
           <Link
             href={SIGNUP_URL}
-            className="inline-flex items-center gap-2 bg-white text-[#241A2E] font-bold text-base px-8 py-4 rounded-full shadow-lg mt-9 transition-transform active:scale-[0.97] hover:-translate-y-0.5"
+            className="inline-flex items-center gap-2 bg-[#241A2E] text-white font-bold text-base px-8 py-4 rounded-full shadow-[0_12px_30px_-14px_rgba(36,26,46,0.5)] mt-9 transition-transform active:scale-[0.97] hover:-translate-y-0.5"
           >
             Maak gratis een account <ArrowRight className="w-5 h-5" />
           </Link>
@@ -392,7 +343,10 @@ export default function LandingPage() {
       <footer className="py-10 px-5 sm:px-8">
         <div className="max-w-[1180px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-5 pt-8 border-t border-[#241A2E]/10">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-full overflow-hidden"><NoahFace size={28} /></div>
+            <div className="flex items-center">
+              <div className="w-7 h-7 rounded-full overflow-hidden border-2 border-white shadow-sm"><NoahFace size={28} /></div>
+              <div className="w-7 h-7 rounded-full overflow-hidden border-2 border-white shadow-sm -ml-2"><EmmaFace size={28} /></div>
+            </div>
             <span className="font-headline font-bold text-sm">Noah &amp; Emma</span>
           </div>
           <p className="text-xs text-[#8A7E90]">

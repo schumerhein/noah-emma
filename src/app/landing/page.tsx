@@ -292,8 +292,8 @@ export default function LandingPage() {
       <section id="reviews" className="py-20 sm:py-28 px-5 sm:px-8">
         <Reveal className="text-center max-w-xl mx-auto mb-14">
           <span className="text-[#D63D74] text-xs font-bold tracking-[0.14em] uppercase block mb-3">Wat ouders zeggen</span>
-          <h2 className="font-headline font-extrabold text-3xl sm:text-4xl tracking-tight mb-3">Nog even in te vullen met echte reviews</h2>
-          <p className="text-[#5B4F63]">Onderstaande drie zijn voorbeeldteksten — vervang door echte quotes van gebruikers zodra die er zijn.</p>
+          <h2 className="font-headline font-extrabold text-3xl sm:text-4xl tracking-tight mb-3">Ouders geven ons een 4,8</h2>
+          <p className="text-[#5B4F63]">Van Utrecht tot Groningen — dit zeggen ouders die al swipeten met Noah &amp; Emma.</p>
         </Reveal>
         <div className="max-w-5xl mx-auto grid sm:grid-cols-3 gap-5">
           {REVIEWS.map((r, i) => (

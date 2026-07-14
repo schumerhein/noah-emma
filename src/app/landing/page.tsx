@@ -210,24 +210,24 @@ export default function LandingPage() {
           <SwipePhone kind="emma" tilt="right" />
         </div>
 
-        <Reveal className="relative z-10 mx-auto mt-12 sm:mt-14 max-w-2xl">
+        <div className="relative z-10 mx-auto mt-12 sm:mt-14 max-w-2xl">
           <div className="flex items-center justify-center gap-6 sm:gap-10 flex-wrap px-8 py-5 bg-white rounded-full shadow-[0_12px_30px_-14px_rgba(36,26,46,0.28)] mx-5">
-            <div className="flex flex-col items-center sm:items-start">
+            <Reveal delay={0} className="flex flex-col items-center sm:items-start">
               <span className="font-headline font-extrabold text-lg">★ 4,8</span>
               <span className="text-xs font-semibold text-[#8A7E90]">waardering ouders</span>
-            </div>
+            </Reveal>
             <div className="w-px h-7 bg-[#241A2E]/10 hidden sm:block" />
-            <div className="flex flex-col items-center sm:items-start">
+            <Reveal delay={120} className="flex flex-col items-center sm:items-start">
               <span className="font-headline font-extrabold text-lg">0 foto&apos;s</span>
               <span className="text-xs font-semibold text-[#8A7E90]">van jouw kind nodig</span>
-            </div>
+            </Reveal>
             <div className="w-px h-7 bg-[#241A2E]/10 hidden sm:block" />
-            <div className="flex flex-col items-center sm:items-start">
+            <Reveal delay={240} className="flex flex-col items-center sm:items-start">
               <span className="font-headline font-extrabold text-lg">100%</span>
               <span className="text-xs font-semibold text-[#8A7E90]">advertenties gecontroleerd</span>
-            </div>
+            </Reveal>
           </div>
-        </Reveal>
+        </div>
 
         <div className="h-16 sm:h-24 relative z-10" />
       </header>
@@ -264,8 +264,10 @@ export default function LandingPage() {
                     <h3 className="font-headline font-extrabold text-xl sm:text-2xl mb-3">{stap.titel}</h3>
                     <p className="text-[#5B4F63] max-w-[42ch]">{stap.tekst}</p>
                   </div>
-                  <div className={`${flip ? "md:order-1" : ""} rounded-[28px] aspect-[16/11] flex items-center justify-center ${isBlue ? "bg-gradient-to-br from-[#E4F4FB] to-white" : "bg-gradient-to-br from-[#FFEAF1] to-white"}`}>
-                    <StepVisual index={i} />
+                  <div className={`${flip ? "md:order-1" : ""} group rounded-[28px] aspect-[16/11] flex items-center justify-center transition-transform duration-300 hover:-translate-y-1 ${isBlue ? "bg-gradient-to-br from-[#E4F4FB] to-white" : "bg-gradient-to-br from-[#FFEAF1] to-white"}`}>
+                    <div className="transition-transform duration-300 group-hover:scale-[1.04]">
+                      <StepVisual index={i} />
+                    </div>
                   </div>
                 </div>
               </Reveal>
@@ -297,9 +299,9 @@ export default function LandingPage() {
           <p className="text-[#5B4F63]">Onderstaande drie zijn voorbeeldteksten — vervang door echte quotes van gebruikers zodra die er zijn.</p>
         </Reveal>
         <div className="max-w-5xl mx-auto grid sm:grid-cols-3 gap-5">
-          {REVIEWS.map((r) => (
-            <Reveal key={r.naam}>
-              <div className="bg-white rounded-2xl p-7 shadow-[0_12px_30px_-14px_rgba(36,26,46,0.28)] h-full flex flex-col gap-4">
+          {REVIEWS.map((r, i) => (
+            <Reveal key={r.naam} delay={i * 110}>
+              <div className="bg-white rounded-2xl p-7 shadow-[0_12px_30px_-14px_rgba(36,26,46,0.28)] h-full flex flex-col gap-4 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_-16px_rgba(36,26,46,0.32)]">
                 <div className="text-[#D63D74] text-sm tracking-wider">★★★★★</div>
                 <p className="text-[#241A2E] leading-relaxed">&ldquo;{r.quote}&rdquo;</p>
                 <div className="flex items-center gap-3 mt-auto pt-2">

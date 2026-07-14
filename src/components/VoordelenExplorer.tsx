@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { EyeOff, Ruler, Users, Heart, Leaf, X } from "lucide-react";
+import { EyeOff, Ruler, Users, Heart, Leaf } from "lucide-react";
 
 const VOORDELEN = [
   {
@@ -36,141 +36,97 @@ const VOORDELEN = [
   },
 ];
 
-const AUTO_ADVANCE_MS = 4200;
-const EXIT_MS = 380;
-const DRAG_THRESHOLD = 90;
-
 export function VoordelenExplorer() {
-  const [index, setIndex] = useState(0);
-  const [exit, setExit] = useState<"left" | "right" | null>(null);
-  const [paused, setPaused] = useState(false);
-  const [dragX, setDragX] = useState(0);
-  const dragging = useRef(false);
-  const startX = useRef(0);
-
-  const advance = (dir: "left" | "right", userInitiated: boolean) => {
-    if (exit) return;
-    setExit(dir);
-    if (userInitiated) setPaused(true);
-    window.setTimeout(() => {
-      setIndex((i) => (i + 1) % VOORDELEN.length);
-      setExit(null);
-      setDragX(0);
-    }, EXIT_MS);
-  };
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const panelRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [active, setActive] = useState(0);
 
   useEffect(() => {
-    if (paused) return;
-    const timer = setInterval(() => advance("right", false), AUTO_ADVANCE_MS);
-    return () => clearInterval(timer);
-  }, [paused]);
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
 
-  const onPointerDown = (e: React.PointerEvent) => {
-    if (exit) return;
-    dragging.current = true;
-    startX.current = e.clientX;
-    (e.target as Element).setPointerCapture(e.pointerId);
-  };
-  const onPointerMove = (e: React.PointerEvent) => {
-    if (!dragging.current) return;
-    setDragX(e.clientX - startX.current);
-  };
-  const endDrag = () => {
-    if (!dragging.current) return;
-    dragging.current = false;
-    if (dragX > DRAG_THRESHOLD) advance("right", true);
-    else if (dragX < -DRAG_THRESHOLD) advance("left", true);
-    else setDragX(0);
-  };
+    let ticking = false;
+    const updateActive = () => {
+      ticking = false;
+      const scrollerRect = scroller.getBoundingClientRect();
+      const center = scrollerRect.left + scrollerRect.width / 2;
+      let closest = 0;
+      let closestDist = Infinity;
+      panelRefs.current.forEach((el, i) => {
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        const dist = Math.abs(rect.left + rect.width / 2 - center);
+        if (dist < closestDist) {
+          closestDist = dist;
+          closest = i;
+        }
+      });
+      setActive(closest);
+    };
 
-  const jumpTo = (i: number) => {
-    if (i === index || exit) return;
-    setPaused(true);
-    setExit(i > index || (index === VOORDELEN.length - 1 && i === 0) ? "right" : "left");
-    window.setTimeout(() => {
-      setIndex(i);
-      setExit(null);
-      setDragX(0);
-    }, EXIT_MS);
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(updateActive);
+    };
+
+    updateActive();
+    scroller.addEventListener("scroll", onScroll, { passive: true });
+    return () => scroller.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const scrollTo = (i: number) => {
+    const el = panelRefs.current[i];
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
   };
-
-  const card = VOORDELEN[index];
-  const nextCard = VOORDELEN[(index + 1) % VOORDELEN.length];
-  const isBlue = card.kleur === "blue";
-
-  const dragRotate = dragX / 18;
-  const cardStyle: React.CSSProperties = exit
-    ? {
-        transform: `translateX(${exit === "right" ? 420 : -420}px) rotate(${exit === "right" ? 18 : -18}deg)`,
-        opacity: 0,
-        transition: `transform ${EXIT_MS}ms cubic-bezier(0.32,0,0.67,0), opacity ${EXIT_MS}ms ease-out`,
-      }
-    : {
-        transform: `translateX(${dragX}px) rotate(${dragRotate}deg)`,
-        transition: dragging.current ? "none" : "transform 0.35s cubic-bezier(0.34,1.4,0.64,1)",
-      };
 
   return (
-    <div className="select-none">
-      <div className="relative h-[300px] sm:h-[260px]">
-        {/* peek card behind */}
-        <div
-          key={`next-${index}`}
-          className={`absolute inset-0 rounded-3xl border ${nextCard.kleur === "blue" ? "bg-[#E4F4FB] border-[#C7E7F5]" : "bg-[#FFEAF1] border-[#FFD3E2]"} scale-[0.93] translate-y-3 opacity-70`}
-        />
-
-        {/* front card */}
-        <div
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={endDrag}
-          onPointerLeave={endDrag}
-          style={cardStyle}
-          className={`absolute inset-0 rounded-3xl bg-white/[0.07] border border-white/[0.16] backdrop-blur-sm p-7 sm:p-9 flex flex-col justify-between cursor-grab active:cursor-grabbing touch-pan-y ${dragging.current ? "" : ""}`}
-        >
-          <div className="flex items-start justify-between gap-4">
-            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${isBlue ? "bg-[#3FA9DB]/20 text-[#7ECBEE]" : "bg-[#FF6F9C]/20 text-[#FF9EB8]"}`}>
-              <card.icon className="w-7 h-7" strokeWidth={1.75} />
+    <div>
+      <div
+        ref={scrollerRef}
+        className="flex gap-5 overflow-x-auto snap-x snap-mandatory scroll-px-5 pb-3 -mx-5 px-5 sm:-mx-8 sm:px-8 scrollbar-none"
+      >
+        {VOORDELEN.map((v, i) => {
+          const isBlue = v.kleur === "blue";
+          return (
+            <div
+              key={v.titel}
+              ref={(el) => { panelRefs.current[i] = el; }}
+              className={`snap-center shrink-0 w-[82%] sm:w-[420px] rounded-[32px] p-8 sm:p-10 flex flex-col justify-between min-h-[280px] transition-transform duration-300 ${
+                isBlue ? "bg-gradient-to-br from-[#E4F4FB] to-white" : "bg-gradient-to-br from-[#FFEAF1] to-white"
+              } ${active === i ? "scale-100" : "scale-[0.96] opacity-80"}`}
+            >
+              <div className={`w-14 h-14 rounded-2xl bg-white shadow-[0_10px_24px_-12px_rgba(36,26,46,0.25)] flex items-center justify-center ${isBlue ? "text-[#1C7FA8]" : "text-[#D63D74]"}`}>
+                <v.icon className="w-7 h-7" strokeWidth={1.75} />
+              </div>
+              <div className="mt-8">
+                <h3 className="font-headline font-extrabold text-xl sm:text-2xl mb-2.5 text-[#241A2E]">{v.titel}</h3>
+                <p className="text-[#5B4F63] leading-relaxed">{v.tekst}</p>
+              </div>
             </div>
-            <span className="text-white/40 text-xs font-bold tracking-wider">{index + 1}/{VOORDELEN.length}</span>
-          </div>
-
-          <div>
-            <h3 className="font-headline font-extrabold text-xl sm:text-2xl mb-2">{card.titel}</h3>
-            <p className="text-white/65 leading-relaxed max-w-[46ch]">{card.tekst}</p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={(e) => { e.stopPropagation(); advance("left", true); }}
-              aria-label="Vorige"
-              className="w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 flex items-center justify-center transition-colors"
-            >
-              <X className="w-5 h-5" strokeWidth={2} />
-            </button>
-            <button
-              onClick={(e) => { e.stopPropagation(); advance("right", true); }}
-              aria-label="Volgende"
-              className={`w-11 h-11 rounded-full flex items-center justify-center transition-colors ${isBlue ? "bg-[#3FA9DB]/25 hover:bg-[#3FA9DB]/40 text-[#7ECBEE]" : "bg-[#FF6F9C]/25 hover:bg-[#FF6F9C]/40 text-[#FF9EB8]"}`}
-            >
-              <Heart className="w-5 h-5" strokeWidth={2} />
-            </button>
-            <span className="text-white/35 text-xs ml-1 hidden sm:inline">sleep of tik om verder te gaan</span>
-          </div>
-        </div>
+          );
+        })}
+        <div className="shrink-0 w-px sm:hidden" aria-hidden />
       </div>
 
-      {/* dots */}
-      <div className="flex items-center justify-center gap-2 mt-6">
+      <div className="flex items-center justify-center gap-2 mt-7">
         {VOORDELEN.map((v, i) => (
           <button
             key={v.titel}
-            onClick={() => jumpTo(i)}
+            onClick={() => scrollTo(i)}
             aria-label={v.titel}
-            className={`h-1.5 rounded-full transition-all duration-300 ${i === index ? "w-7 bg-white" : "w-1.5 bg-white/25 hover:bg-white/45"}`}
+            className={`h-1.5 rounded-full transition-all duration-300 ${
+              active === i ? "w-7 bg-[#241A2E]" : "w-1.5 bg-[#241A2E]/20 hover:bg-[#241A2E]/40"
+            }`}
           />
         ))}
       </div>
+
+      <style>{`
+        .scrollbar-none::-webkit-scrollbar { display: none; }
+        .scrollbar-none { scrollbar-width: none; }
+      `}</style>
     </div>
   );
 }

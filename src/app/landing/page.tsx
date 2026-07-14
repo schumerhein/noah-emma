@@ -277,16 +277,13 @@ export default function LandingPage() {
       </section>
 
       {/* Voordelen */}
-      <section id="voordelen" className="relative overflow-hidden bg-[#241A2E] text-white py-20 sm:py-28 px-5">
-        <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-[#3FA9DB]/20 blur-[100px]" />
-        <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-[#FF6F9C]/20 blur-[100px]" />
-
-        <Reveal className="relative text-center max-w-xl mx-auto mb-12">
-          <span className="text-[#FF9EB8] text-xs font-bold tracking-[0.14em] uppercase block mb-3">Waarom ouders overstappen</span>
-          <h2 className="font-headline font-extrabold text-3xl sm:text-4xl tracking-tight">Veilig voor je kind, slim voor je gezin</h2>
+      <section id="voordelen" className="relative overflow-hidden py-20 sm:py-28">
+        <Reveal className="text-center max-w-xl mx-auto mb-12 px-5">
+          <span className="text-[#D63D74] text-xs font-bold tracking-[0.14em] uppercase block mb-3">Waarom ouders overstappen</span>
+          <h2 className="font-headline font-extrabold text-3xl sm:text-4xl tracking-tight text-[#241A2E]">Veilig voor je kind, slim voor je gezin</h2>
         </Reveal>
 
-        <Reveal className="relative max-w-3xl mx-auto">
+        <Reveal className="max-w-[1180px] mx-auto px-5 sm:px-8">
           <VoordelenExplorer />
         </Reveal>
       </section>

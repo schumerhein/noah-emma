@@ -9,8 +9,13 @@ const MARKETING_HOSTS = ["noah-emma.nl", "www.noah-emma.nl"];
 export function middleware(request: NextRequest) {
   const host = request.headers.get("host") ?? "";
   const isMarketingHost = MARKETING_HOSTS.some((h) => host === h || host.startsWith(`${h}:`));
+  // De Supabase-sessie zelf staat alleen in localStorage (niet leesbaar door
+  // middleware); deze cookie is puur een boolean marker die ThemeProvider
+  // bijhoudt zodat ingelogde bezoekers niet steeds op de marketingpagina
+  // terugvallen.
+  const isIngelogd = request.cookies.get("ne_ingelogd")?.value === "1";
 
-  if (isMarketingHost && request.nextUrl.pathname === "/") {
+  if (isMarketingHost && request.nextUrl.pathname === "/" && !isIngelogd) {
     // Bij een rewrite blijft de URL in de browser "/", waardoor client-side
     // pathname-checks (usePathname() === "/landing") niet kloppen. Geef daarom
     // een marker-header mee die de server-layout wél kan lezen.

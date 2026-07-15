@@ -72,7 +72,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     window.addEventListener("kind-gewisseld", onWissel);
 
     // Auth-wijzigingen
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // Marker-cookie zodat middleware (die geen toegang heeft tot
+      // localStorage) weet of een bezoeker is ingelogd — zie middleware.ts.
+      if (session) {
+        document.cookie = "ne_ingelogd=1; path=/; max-age=2592000; samesite=lax";
+      } else {
+        document.cookie = "ne_ingelogd=; path=/; max-age=0";
+      }
+
       if (event === "SIGNED_OUT") {
         localStorage.removeItem(LS_KEY);
         document.documentElement.removeAttribute("data-gender");

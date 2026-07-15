@@ -50,12 +50,28 @@ export default function KindOnboardingPage() {
       geslacht: geslacht,
     });
 
+    // De eigen naam die bij het registreren is ingevuld, staat alleen in de
+    // auth-metadata — dit is het eerste moment met een gegarandeerd geldige
+    // sessie, dus hier zetten we hem alsnog op het profiel.
+    const eigenNaam = user.user_metadata?.naam;
+    if (eigenNaam) {
+      await supabase.from("profiles").update({ naam: eigenNaam }).eq("id", user.id);
+    }
+
     // Thema direct toepassen
     if (geslacht) {
       document.documentElement.setAttribute("data-gender", geslacht);
     }
 
     setLoading(false);
+    router.push("/");
+  };
+
+  const handleOverslaan = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user?.user_metadata?.naam) {
+      await supabase.from("profiles").update({ naam: user.user_metadata.naam }).eq("id", user.id);
+    }
     router.push("/");
   };
 
@@ -313,7 +329,7 @@ export default function KindOnboardingPage() {
               )}
             </button>
 
-            <button onClick={() => router.push("/")} className="w-full text-center text-slate-400 text-sm font-medium py-2">
+            <button onClick={handleOverslaan} className="w-full text-center text-slate-400 text-sm font-medium py-2">
               Later invullen
             </button>
           </div>

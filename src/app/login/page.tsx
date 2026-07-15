@@ -25,6 +25,7 @@ export default function LoginPage() {
   const [resetBezig, setResetBezig] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
 
   // Stuur een wachtwoord-herstel e-mail via Supabase
   const handleWachtwoordVergeten = async () => {
@@ -52,7 +53,11 @@ export default function LoginPage() {
     setError(null);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      setError("Onjuist e-mailadres of wachtwoord. Probeer het opnieuw.");
+      if (error.message.toLowerCase().includes("email not confirmed")) {
+        setError("Je e-mailadres is nog niet bevestigd. Check je inbox voor de bevestigingslink (ook je spamfolder).");
+      } else {
+        setError("Onjuist e-mailadres of wachtwoord. Probeer het opnieuw.");
+      }
     } else {
       router.push("/");
     }
@@ -63,16 +68,24 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { naam } },
+      options: {
+        data: { naam },
+        // Als e-mailbevestiging verplicht is, stuurt de link de gebruiker
+        // direct terug naar de kind-onboarding — precies waar ze gebleven waren.
+        emailRedirectTo: `${window.location.origin}/onboarding/kind`,
+      },
     });
     if (error) {
       setError(error.message);
-    } else {
-      // Nieuwe gebruiker → kind-profiel onboarding
+    } else if (data.session) {
+      // E-mailbevestiging staat uit (of het account was al bevestigd) — meteen door.
       router.push("/onboarding/kind");
+    } else {
+      // Geen sessie: e-mailbevestiging is vereist voordat de onboarding kan starten.
+      setAwaitingConfirmation(true);
     }
     setLoading(false);
   };
@@ -88,6 +101,27 @@ export default function LoginPage() {
       </div>
 
       <div className="flex-1 px-6 max-w-[480px] mx-auto w-full pb-10">
+        {awaitingConfirmation ? (
+          <div className="flex flex-col items-center text-center gap-4 pt-8">
+            <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+              <span className="material-icons-round text-green-600 text-3xl">mark_email_read</span>
+            </div>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Check je e-mail</h1>
+            <p className="text-slate-500 dark:text-slate-400">
+              We hebben een bevestigingslink gestuurd naar{" "}
+              <span className="font-semibold text-slate-700 dark:text-slate-200">{email}</span>.
+              Klik op de link om je account te activeren — je gaat dan direct verder waar je gebleven was.
+            </p>
+            <p className="text-slate-400 dark:text-slate-500 text-sm">Niets ontvangen? Check ook je spamfolder.</p>
+            <button
+              onClick={() => { setAwaitingConfirmation(false); setMode("login"); setError(null); }}
+              className="mt-2 text-accent font-bold hover:underline text-sm"
+            >
+              Terug naar inloggen
+            </button>
+          </div>
+        ) : (
+        <>
         <div className="mb-8">
           <h1 className="text-slate-900 dark:text-slate-100 text-3xl font-bold leading-tight">
             {mode === "login" ? "Welkom terug" : "Account aanmaken"}
@@ -204,6 +238,8 @@ export default function LoginPage() {
             </p>
           )}
         </div>
+        </>
+        )}
       </div>
 
       <div className="fixed top-[-100px] right-[-50px] w-[300px] h-[300px] bg-primary/20 rounded-full blur-3xl -z-10"></div>

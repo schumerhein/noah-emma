@@ -185,41 +185,48 @@ export default function Home() {
     setSwipesVandaag(prev => prev + 1);
   };
 
-  const handleSwipeAction = async (direction: "left" | "right") => {
+  const handleSwipeAction = (direction: "left" | "right") => {
     // Check swipe limiet
     if (!isPremium && swipesVandaag >= SWIPE_LIMIET) {
       setToonPremiumModal(true);
       return;
     }
 
+    const geswipet = current;
     setSwiping(direction);
     setDragX(direction === "right" ? 250 : -250);
 
-    if (direction === "right" && current) {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const actiefKind = leesActiefKind();
-        await supabase.from("favorites")
-          .upsert(
-            { user_id: user.id, listing_id: current.id, kind_id: actiefKind?.id ?? null },
-            { onConflict: "user_id,listing_id" }
-          );
-      } else {
-        // Gast: like wordt niet bewaard — verwijs één keer naar inloggen
-        toast({
-          title: "Log in om favorieten te bewaren",
-          description: "Als gast worden je likes niet opgeslagen.",
-        });
+    // Like opslaan en swipe-teller bijwerken op de achtergrond — de
+    // kaartanimatie hoeft niet op het netwerk te wachten, anders voelt
+    // swipen traag aan zodra de verbinding wat latency heeft.
+    (async () => {
+      if (direction === "right" && geswipet) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const actiefKind = leesActiefKind();
+          await supabase.from("favorites")
+            .upsert(
+              { user_id: user.id, listing_id: geswipet.id, kind_id: actiefKind?.id ?? null },
+              { onConflict: "user_id,listing_id" }
+            );
+        } else {
+          // Gast: like wordt niet bewaard — verwijs één keer naar inloggen
+          toast({
+            title: "Log in om favorieten te bewaren",
+            description: "Als gast worden je likes niet opgeslagen.",
+          });
+        }
       }
-    }
+      await registreerSwipe();
+    })();
 
-    await registreerSwipe();
-
+    // Zelfde duur als de wegzwaai-transitie hieronder (0.5s), zodat de
+    // volgende kaart pas verschijnt zodra de vorige echt van het scherm is.
     setTimeout(() => {
       setListings(prev => prev.length > 1 ? prev.slice(1) : []);
       setSwiping(null);
       setDragX(0);
-    }, 400);
+    }, 500);
   };
 
   const onPointerDown = (e: React.PointerEvent) => {
@@ -359,6 +366,7 @@ export default function Home() {
               )}
 
               <div
+                key={current.id}
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}
                 onPointerUp={onPointerUp}

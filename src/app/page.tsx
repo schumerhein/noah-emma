@@ -293,15 +293,6 @@ export default function Home() {
               </span>
             </button>
           )}
-          {isPremium && (
-            <button
-              onClick={() => setToonPremiumModal(true)}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-amber-50 border border-amber-200 active:scale-95 transition-transform"
-            >
-              <Crown className="w-3.5 h-3.5 text-amber-500" />
-              <span className="text-xs font-bold text-amber-700">Premium</span>
-            </button>
-          )}
           {kind && (
             <button
               onClick={() => setFilterOpKind(f => !f)}

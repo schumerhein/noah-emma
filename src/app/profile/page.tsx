@@ -8,7 +8,7 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   Heart, ChevronRight, Baby, Edit2, LogOut, Bell, Package, Star, Plus, X, Check, Settings, Umbrella,
-  HelpCircle, Headphones, Sliders, FileText, Cookie, CheckCircle2
+  HelpCircle, Headphones, Sliders, FileText, Cookie, CheckCircle2, Crown
 } from "lucide-react";
 import { slaActiefKindOp, leesActiefKind } from "@/components/ThemeProvider";
 import { groeiCheck, lengteBijMaat } from "@/lib/groei";
@@ -26,6 +26,8 @@ type Profile = {
   gemiddelde_beoordeling: number | null;
   lid_sinds: string | null;
   vakantiestand: boolean | null;
+  is_premium: boolean | null;
+  premium_verloopdatum: string | null;
 };
 
 type Kind = {
@@ -133,7 +135,7 @@ export default function ProfilePage() {
     const actiefId = actief?.id ?? null;
 
     const [profileRes, kinderenRes, itemsRes, favorietenRes, reviewsRes] = await Promise.all([
-      supabase.from("profiles").select("id, naam, stad, bio, avatar_url, lid_sinds, gemiddelde_beoordeling, totaal_verkopen, vakantiestand").eq("id", user.id).single(),
+      supabase.from("profiles").select("id, naam, stad, bio, avatar_url, lid_sinds, gemiddelde_beoordeling, totaal_verkopen, vakantiestand, is_premium, premium_verloopdatum").eq("id", user.id).single(),
       supabase.from("children").select("id, naam, geboortedatum, lengte, maat, geslacht").eq("user_id", user.id).order("created_at"),
       supabase.from("listings").select("*")
         .eq("user_id", user.id).order("created_at", { ascending: false }),
@@ -283,6 +285,8 @@ export default function ProfilePage() {
   const initialen = (profile.naam || "U").charAt(0).toUpperCase();
   const actieveItems = mijneItems.filter(i => i.actief);
   const lidSinds = profile.lid_sinds ? new Date(profile.lid_sinds).getFullYear() : new Date().getFullYear();
+  const isPremium = !!profile.is_premium &&
+    (!profile.premium_verloopdatum || new Date(profile.premium_verloopdatum) > new Date());
 
   return (
     <div className="bg-background min-h-screen pb-36">
@@ -329,7 +333,15 @@ export default function ProfilePage() {
                   placeholder="Jouw naam"
                 />
               ) : (
-                <h1 className="font-black text-xl text-slate-900 dark:text-white">{profile.naam || "Gebruiker"}</h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="font-black text-xl text-slate-900 dark:text-white">{profile.naam || "Gebruiker"}</h1>
+                  {isPremium && (
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 shrink-0">
+                      <Crown className="w-3 h-3 text-amber-500" />
+                      <span className="text-[11px] font-bold text-amber-700">Premium</span>
+                    </span>
+                  )}
+                </div>
               )}
               <div className="flex items-center gap-2 mt-1">
                 {profile.gemiddelde_beoordeling && profile.gemiddelde_beoordeling > 0 ? (

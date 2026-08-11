@@ -97,7 +97,7 @@ export default function LoginPage() {
           <NoahEmmaLogo size={56} />
         </div>
         <h2 className="text-accent text-2xl font-bold tracking-[0.2em] uppercase">NOAH & EMMA</h2>
-        <p className="text-slate-500 dark:text-slate-400 text-sm mt-2 font-medium">De marketplace voor kinderkleding</p>
+        <p className="text-slate-500 dark:text-slate-400 text-sm mt-2 font-medium">De marketplace voor kinderkleding &amp; accessoires</p>
       </div>
 
       <div className="flex-1 px-6 max-w-[480px] mx-auto w-full pb-10">

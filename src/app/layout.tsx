@@ -7,8 +7,8 @@ import {ThemeProvider} from '@/components/ThemeProvider';
 import {AppFrame} from '@/components/AppFrame';
 
 export const metadata: Metadata = {
-  title: 'Noah & Emma | Tweedehands Kindermode',
-  description: 'De makkelijkste en veiligste manier om kinderkleding te kopen en verkopen voor kids van 0 tot 12 jaar.',
+  title: 'Noah & Emma | Kinderkleding & Accessoires Kopen en Verkopen',
+  description: 'De makkelijkste en veiligste manier om kinderkleding en accessoires te kopen en verkopen voor kids van 0 tot 12 jaar.',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',

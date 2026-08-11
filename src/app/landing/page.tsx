@@ -176,16 +176,16 @@ export default function LandingPage() {
         <div className="relative z-10 max-w-[1180px] mx-auto px-5 sm:px-8 pt-14 sm:pt-20 text-center">
           <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-[0_12px_30px_-14px_rgba(36,26,46,0.28)] mb-7">
             <span className="w-2 h-2 rounded-full bg-[#3FA9DB]" />
-            <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-[#5B4F63]">Tweedehands kindermode</span>
+            <span className="text-[11px] font-bold tracking-[0.14em] uppercase text-[#5B4F63]">Kinderkleding &amp; accessoires</span>
             <span className="w-2 h-2 rounded-full bg-[#FF6F9C]" />
           </div>
 
           <h1 className="font-headline font-extrabold tracking-tight leading-[1.05] text-[2.4rem] sm:text-6xl md:text-[4.4rem] max-w-4xl mx-auto text-balance">
-            Verkocht voor <span className="text-[#1C7FA8]">het</span> te <span className="text-[#D63D74]">klein</span> is.
+            Wat te <span className="text-[#D63D74]">klein</span> is, past een ander kind <span className="text-[#1C7FA8]">precies</span>.
           </h1>
 
           <p className="max-w-[46ch] mx-auto mt-6 text-base sm:text-lg text-[#5B4F63]">
-            Elk kind groeit uit zijn kleding voordat hij er versleten mee is. Noah &amp; Emma laat je in een paar swipes
+            Elk kind groeit uit zijn kleding en accessoires voordat ze versleten zijn. Noah &amp; Emma laat je in een paar swipes
             verkopen wat te klein is geworden — en vinden wat er straks past. Zonder ooit een foto van je eigen kind te delen.
           </p>
 
@@ -349,7 +349,7 @@ export default function LandingPage() {
             <span className="font-headline font-bold text-sm">Noah &amp; Emma</span>
           </div>
           <p className="text-xs text-[#8A7E90]">
-            © {new Date().getFullYear()} Noah &amp; Emma — De makkelijkste manier om kinderkleding te kopen en verkopen.
+            © {new Date().getFullYear()} Noah &amp; Emma — De makkelijkste manier om kinderkleding en accessoires te kopen en verkopen.
           </p>
         </div>
       </footer>

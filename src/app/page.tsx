@@ -52,6 +52,8 @@ export default function Home() {
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const startX = useRef(0);
+  const pendingDragX = useRef(0);
+  const dragFrame = useRef<number | null>(null);
   const swipeThreshold = 100;
 
   // Verdienmodel
@@ -233,18 +235,34 @@ export default function Home() {
     if (swiping) return;
     setIsDragging(true);
     startX.current = e.clientX;
+    pendingDragX.current = 0;
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   };
   const onPointerMove = (e: React.PointerEvent) => {
     if (!isDragging) return;
-    setDragX(e.clientX - startX.current);
+    // Zet elke pointermove meteen om in de nieuwste positie, maar geef die
+    // pas per animatieframe door aan React — anders vraagt een snelle sleep
+    // (vooral met een muis) meer re-renders dan het scherm kan bijhouden,
+    // en voelt het slepen hokkerig aan.
+    pendingDragX.current = e.clientX - startX.current;
+    if (dragFrame.current == null) {
+      dragFrame.current = requestAnimationFrame(() => {
+        setDragX(pendingDragX.current);
+        dragFrame.current = null;
+      });
+    }
   };
   const onPointerUp = (e: React.PointerEvent) => {
     if (!isDragging) return;
+    if (dragFrame.current != null) {
+      cancelAnimationFrame(dragFrame.current);
+      dragFrame.current = null;
+    }
     setIsDragging(false);
     (e.target as HTMLElement).releasePointerCapture(e.pointerId);
-    if (dragX > swipeThreshold) handleSwipeAction("right");
-    else if (dragX < -swipeThreshold) handleSwipeAction("left");
+    const eindX = pendingDragX.current;
+    if (eindX > swipeThreshold) handleSwipeAction("right");
+    else if (eindX < -swipeThreshold) handleSwipeAction("left");
     else setDragX(0);
   };
 

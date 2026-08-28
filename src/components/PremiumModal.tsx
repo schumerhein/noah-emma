@@ -91,11 +91,7 @@ export function PremiumModal({ open, onClose }: { open: boolean; onClose: () => 
           <X className="w-4 h-4" />
         </button>
 
-        <div className={
-          actiefMetAbonnement || actiefZonderAbonnement
-            ? "bg-gradient-to-br from-emerald-400 to-emerald-600 py-8 px-6 text-center"
-            : "bg-gradient-to-br from-amber-400 to-amber-600 py-8 px-6 text-center"
-        }>
+        <div className="bg-gradient-to-br from-accent to-primary py-8 px-6 text-center">
           <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3">
             {actiefMetAbonnement || actiefZonderAbonnement ? (
               <Check className="w-7 h-7 text-white" />
@@ -117,8 +113,8 @@ export function PremiumModal({ open, onClose }: { open: boolean; onClose: () => 
           <div className="space-y-2.5">
             {VOORDELEN.map((v, i) => (
               <div key={i} className="flex items-center gap-3">
-                <div className="w-7 h-7 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
-                  <v.icon className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                <div className="w-7 h-7 rounded-full bg-primary/15 dark:bg-primary/20 flex items-center justify-center shrink-0">
+                  <v.icon className="w-4 h-4 text-accent" />
                 </div>
                 <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{v.tekst}</span>
               </div>
@@ -152,7 +148,7 @@ export function PremiumModal({ open, onClose }: { open: boolean; onClose: () => 
               <button
                 onClick={upgraden}
                 disabled={bezig}
-                className="w-full h-13 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-white font-black text-base shadow-lg shadow-amber-500/30 active:scale-[0.98] transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+                className="w-full h-13 py-3.5 rounded-2xl bg-accent text-white font-black text-base shadow-lg shadow-accent/30 active:scale-[0.98] transition-all disabled:opacity-60 flex items-center justify-center gap-2"
               >
                 {bezig ? "Even geduld…" : (<><Crown className="w-5 h-5" /> Premium activeren</>)}
               </button>

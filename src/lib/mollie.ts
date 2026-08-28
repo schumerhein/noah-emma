@@ -120,6 +120,10 @@ export async function verwerkBetaling(molliePaymentId: string) {
         amount: { currency: "EUR", value: PREMIUM_PRIJS.toFixed(2) },
         interval: PREMIUM_INTERVAL,
         description: "Noah & Emma Premium",
+        // Zonder dit adres krijgen vervolgbetalingen van het abonnement geen
+        // webhook, en wordt Premium bij verlenging dus nooit automatisch
+        // doorgezet — hergebruik daarom hetzelfde adres als de eerste betaling.
+        webhookUrl: payment.webhookUrl ?? undefined,
       });
       await supabaseAdmin
         .from("profiles")

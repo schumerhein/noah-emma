@@ -390,6 +390,11 @@ export default function Home() {
                   // nooit tegenkomt — laat het slepen volledig aan onze eigen
                   // pointer-handlers over.
                   touchAction: "none",
+                  // Zonder GPU-hint tekent WebKit (Safari-motor, ook onder
+                  // Chrome op iPhone) de kaart soms opnieuw bij elke
+                  // transform-wijziging in plaats van 'm alleen te
+                  // verschuiven — dat geeft precies het hortende gevoel.
+                  willChange: "transform",
                 }}
                 className={cn(
                   "absolute inset-0 bg-white dark:bg-zinc-800 rounded-2xl shadow-xl overflow-hidden flex flex-col border border-slate-100 dark:border-slate-700 select-none",

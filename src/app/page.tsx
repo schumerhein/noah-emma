@@ -384,6 +384,12 @@ export default function Home() {
                     ? `translateX(${dragX}px) rotate(${rotation}deg)`
                     : undefined,
                   transition: isDragging ? "none" : "transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+                  // Zonder dit probeert de browser op mobiel de pagina zelf te
+                  // scrollen/rubberbanden zodra je horizontaal sleept, wat
+                  // precies het hokkerige gevoel geeft dat je met een muis
+                  // nooit tegenkomt — laat het slepen volledig aan onze eigen
+                  // pointer-handlers over.
+                  touchAction: "none",
                 }}
                 className={cn(
                   "absolute inset-0 bg-white dark:bg-zinc-800 rounded-2xl shadow-xl overflow-hidden flex flex-col border border-slate-100 dark:border-slate-700 select-none",

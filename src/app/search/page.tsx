@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
+import { cn, normaliseerPrijsInvoer } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { haalGeblokkeerdeIds, filterZichtbaar } from "@/lib/zichtbaarheid";
 import { PremiumModal } from "@/components/PremiumModal";
@@ -401,15 +401,15 @@ export default function SearchPage() {
                     <div className="flex items-center gap-3">
                       <div className="flex-1 relative">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-bold">€</span>
-                        <input type="number" value={filters.minPrijs} placeholder="Min"
-                          onChange={e => { const u = { ...filters, minPrijs: e.target.value }; setFilters(u); zoek(zoekterm, u); }}
+                        <input type="text" inputMode="decimal" value={filters.minPrijs} placeholder="Min"
+                          onChange={e => { const u = { ...filters, minPrijs: normaliseerPrijsInvoer(e.target.value) }; setFilters(u); zoek(zoekterm, u); }}
                           className="w-full h-11 pl-7 pr-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 font-medium outline-none focus:border-primary text-sm" />
                       </div>
                       <div className="w-4 h-px bg-slate-200 dark:bg-slate-700" />
                       <div className="flex-1 relative">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-bold">€</span>
-                        <input type="number" value={filters.maxPrijs} placeholder="Max"
-                          onChange={e => { const u = { ...filters, maxPrijs: e.target.value }; setFilters(u); zoek(zoekterm, u); }}
+                        <input type="text" inputMode="decimal" value={filters.maxPrijs} placeholder="Max"
+                          onChange={e => { const u = { ...filters, maxPrijs: normaliseerPrijsInvoer(e.target.value) }; setFilters(u); zoek(zoekterm, u); }}
                           className="w-full h-11 pl-7 pr-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 font-medium outline-none focus:border-primary text-sm" />
                       </div>
                     </div>

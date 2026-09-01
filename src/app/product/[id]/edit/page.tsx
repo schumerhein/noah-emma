@@ -4,7 +4,7 @@ import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, Camera, X, Loader2, Trash2, Check, Crown } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { cn, normaliseerPrijsInvoer } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
@@ -310,7 +310,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           </div>
           <div className="relative">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-slate-400 text-lg">€</span>
-            <input type="number" value={prijs} onChange={e => setPrijs(e.target.value)}
+            <input type="text" inputMode="decimal" value={prijs} onChange={e => setPrijs(normaliseerPrijsInvoer(e.target.value))}
               placeholder="0,00"
               className="w-full h-14 pl-10 pr-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-xl font-bold outline-none focus:border-primary" />
           </div>

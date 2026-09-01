@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { X, Camera, ArrowRight, Loader2, Plus, Sparkles, ChevronRight, ChevronLeft, Check, Crown, Wand2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
-import { cn } from "@/lib/utils";
+import { cn, normaliseerPrijsInvoer } from "@/lib/utils";
 import Link from "next/link";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
@@ -585,7 +585,7 @@ export default function SellPage() {
             </div>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary-dark font-bold text-lg">€</span>
-              <Input type="number" placeholder="0,00" value={price} onChange={e => setPrice(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl py-7 pl-10 pr-4 font-bold text-lg" />
+              <Input type="text" inputMode="decimal" placeholder="0,00" value={price} onChange={e => setPrice(normaliseerPrijsInvoer(e.target.value))} className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl py-7 pl-10 pr-4 font-bold text-lg" />
             </div>
           </div>
         </section>

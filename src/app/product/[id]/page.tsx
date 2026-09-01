@@ -6,7 +6,7 @@ import Image from "next/image";
 import { ChevronLeft, Heart, ShieldCheck, Check, Flag, X, ChevronRight, TrendingDown, UserPlus, UserCheck, Pencil, Crown, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
+import { cn, normaliseerPrijsInvoer } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { AIModelDisplay } from "@/components/ai-models/NoahEmmaModel";
 import Link from "next/link";
@@ -794,9 +794,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-black text-slate-400">€</span>
               <input
-                type="number"
+                type="text"
+                inputMode="decimal"
                 value={bodBedrag}
-                onChange={e => setBodBedrag(e.target.value)}
+                onChange={e => setBodBedrag(normaliseerPrijsInvoer(e.target.value))}
                 placeholder="0,00"
                 className="w-full h-16 pl-10 pr-4 rounded-2xl border-2 border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 text-2xl font-black text-slate-900 dark:text-white focus:border-primary outline-none transition-all"
               />

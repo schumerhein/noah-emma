@@ -52,11 +52,11 @@ export default function KindOnboardingPage() {
 
     // De eigen naam die bij het registreren is ingevuld, staat alleen in de
     // auth-metadata — dit is het eerste moment met een gegarandeerd geldige
-    // sessie, dus hier zetten we hem alsnog op het profiel.
-    const eigenNaam = user.user_metadata?.naam;
-    if (eigenNaam) {
-      await supabase.from("profiles").update({ naam: eigenNaam }).eq("id", user.id);
-    }
+    // sessie, dus hier zetten we hem alsnog op het profiel. Altijd iets
+    // invullen (nooit leeg laten): de inlogpagina gebruikt een lege
+    // profiles.naam als signaal dat onboarding nog nooit is doorlopen, en
+    // zou anders bij elke volgende login weer hierheen sturen.
+    await supabase.from("profiles").update({ naam: user.user_metadata?.naam || "Gebruiker" }).eq("id", user.id);
 
     // Thema direct toepassen
     if (geslacht) {
@@ -69,8 +69,9 @@ export default function KindOnboardingPage() {
 
   const handleOverslaan = async () => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (user?.user_metadata?.naam) {
-      await supabase.from("profiles").update({ naam: user.user_metadata.naam }).eq("id", user.id);
+    if (user) {
+      // Zie handleOpslaan: altijd iets invullen, nooit leeg laten.
+      await supabase.from("profiles").update({ naam: user.user_metadata?.naam || "Gebruiker" }).eq("id", user.id);
     }
     router.push("/");
   };

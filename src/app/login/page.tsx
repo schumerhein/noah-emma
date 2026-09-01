@@ -51,13 +51,26 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       if (error.message.toLowerCase().includes("email not confirmed")) {
         setError("Je e-mailadres is nog niet bevestigd. Check je inbox voor de bevestigingslink (ook je spamfolder).");
       } else {
         setError("Onjuist e-mailadres of wachtwoord. Probeer het opnieuw.");
       }
+      setLoading(false);
+      return;
+    }
+
+    // Bij registratie met verplichte e-mailbevestiging komt een gebruiker
+    // hier voor het eerst terecht via inloggen in plaats van via de
+    // registratieflow (die meteen naar /onboarding/kind stuurt). Zonder
+    // deze check sloeg zo'n eerste keer de hele onboarding over: geen naam
+    // op het profiel, geen kindprofiel. profiles.naam is leeg totdat de
+    // onboarding-stap 'm zet, dus dat is hier het betrouwbare signaal.
+    const { data: profiel } = await supabase.from("profiles").select("naam").eq("id", data.user.id).single();
+    if (!profiel?.naam) {
+      router.push("/onboarding/kind");
     } else {
       router.push("/");
     }

@@ -4,8 +4,10 @@ import { NoahFace, EmmaFace } from "@/components/ai-models/NoahEmmaFaces";
 import { Reveal } from "@/components/Reveal";
 import { VoordelenExplorer } from "@/components/VoordelenExplorer";
 
-const APP_URL = "https://noah-emma-sepia.vercel.app";
-const SIGNUP_URL = `${APP_URL}/login?mode=register`;
+// De app draait op hetzelfde domein — alleen "/" wordt door de middleware
+// naar deze marketingpagina omgeleid, elk ander pad (zoals /login) is de
+// echte app. Geen los adres nodig.
+const SIGNUP_URL = "/login?mode=register";
 
 const STAPPEN = [
   {

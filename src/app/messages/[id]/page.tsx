@@ -51,6 +51,7 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
   const [otherUserId, setOtherUserId] = useState<string | null>(null);
   const [toonDealModal, setToonDealModal] = useState(false);
   const [dealBezig, setDealBezig] = useState(false);
+  const [alBeoordeeld, setAlBeoordeeld] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -86,6 +87,20 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
       .single();
 
     setConversation({ ...conv, other_user: profile });
+
+    // Check of de deal al beoordeeld is (anders blijft de knop staan nadat
+    // je al een beoordeling gaf, wat verwarrend is — zie reviews/schrijf
+    // dat dezelfde check al deed, maar pas op de volgende pagina).
+    if (conv.afgerond && conv.listing?.id) {
+      const { data: bestaand } = await supabase
+        .from("reviews")
+        .select("id")
+        .eq("reviewer_id", user.id)
+        .eq("reviewed_id", other)
+        .eq("listing_id", conv.listing.id)
+        .maybeSingle();
+      setAlBeoordeeld(!!bestaand);
+    }
 
     // Laad berichten
     await laadBerichten();
@@ -317,13 +332,20 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
                 : ""}
             </p>
           </div>
-          <button
-            onClick={() => router.push(`/reviews/schrijf?user=${otherUserId}&listing=${conversation?.listing?.id}&conv=${id}`)}
-            className="w-full flex items-center justify-center gap-2 bg-amber-400 text-white font-bold text-sm py-2.5 rounded-xl active:scale-[0.98] transition-transform"
-          >
-            <Star className="w-4 h-4 fill-white" />
-            Geef {naam} een beoordeling
-          </button>
+          {alBeoordeeld ? (
+            <div className="w-full flex items-center justify-center gap-2 bg-emerald-100 dark:bg-emerald-800/40 text-emerald-700 dark:text-emerald-300 font-bold text-sm py-2.5 rounded-xl">
+              <CheckCircle className="w-4 h-4" />
+              Je hebt {naam} al beoordeeld
+            </div>
+          ) : (
+            <button
+              onClick={() => router.push(`/reviews/schrijf?user=${otherUserId}&listing=${conversation?.listing?.id}&conv=${id}`)}
+              className="w-full flex items-center justify-center gap-2 bg-amber-400 text-white font-bold text-sm py-2.5 rounded-xl active:scale-[0.98] transition-transform"
+            >
+              <Star className="w-4 h-4 fill-white" />
+              Geef {naam} een beoordeling
+            </button>
+          )}
         </div>
       )}
 

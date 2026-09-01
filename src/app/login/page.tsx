@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { NoahEmmaLogo } from "@/components/Header";
+import { MailCheck } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -117,7 +118,7 @@ export default function LoginPage() {
         {awaitingConfirmation ? (
           <div className="flex flex-col items-center text-center gap-4 pt-8">
             <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
-              <span className="material-icons-round text-green-600 text-3xl">mark_email_read</span>
+              <MailCheck className="w-8 h-8 text-green-600" />
             </div>
             <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Check je e-mail</h1>
             <p className="text-slate-500 dark:text-slate-400">

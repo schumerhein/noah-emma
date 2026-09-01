@@ -6,6 +6,7 @@ import { ChevronLeft } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 type NotificatieKeys = {
   nieuw_bericht: boolean;
@@ -56,6 +57,7 @@ const SECTIES = [
 
 export default function PushmeldingPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [inst, setInst] = useState<NotificatieKeys>(DEFAULTS);
   const [limiet, setLimiet] = useState("Tot 5 notificaties");
   const [laden, setLaden] = useState(true);
@@ -82,14 +84,18 @@ export default function PushmeldingPage() {
     const nieuw = { ...inst, [key]: val };
     setInst(nieuw);
     localStorage.setItem("notificatie_instellingen", JSON.stringify({ ...nieuw, limiet }));
-    if (userId) await supabase.from("profiles").update({ notificatie_instellingen: { ...nieuw, limiet } }).eq("id", userId);
+    if (!userId) return;
+    const { error } = await supabase.from("profiles").update({ notificatie_instellingen: { ...nieuw, limiet } }).eq("id", userId);
+    if (error) toast({ variant: "destructive", title: "Opslaan mislukt", description: "Instelling is wel lokaal bewaard, maar niet gesynchroniseerd." });
   };
 
   const slaLimietOp = async (val: string) => {
     setLimiet(val);
     const nieuw = { ...inst, limiet: val };
     localStorage.setItem("notificatie_instellingen", JSON.stringify(nieuw));
-    if (userId) await supabase.from("profiles").update({ notificatie_instellingen: nieuw }).eq("id", userId);
+    if (!userId) return;
+    const { error } = await supabase.from("profiles").update({ notificatie_instellingen: nieuw }).eq("id", userId);
+    if (error) toast({ variant: "destructive", title: "Opslaan mislukt", description: "Instelling is wel lokaal bewaard, maar niet gesynchroniseerd." });
   };
 
   if (laden) return (

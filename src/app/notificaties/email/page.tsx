@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
 
 export default function EmailNotificatiesPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [emailAan, setEmailAan] = useState(false);
   const [laden, setLaden] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
@@ -26,11 +28,16 @@ export default function EmailNotificatiesPage() {
   }, []);
 
   const toggle = async (val: boolean) => {
+    const vorige = emailAan;
     setEmailAan(val);
     if (!userId) return;
     const { data } = await supabase.from("profiles").select("notificatie_instellingen").eq("id", userId).single();
     const huidig = data?.notificatie_instellingen || {};
-    await supabase.from("profiles").update({ notificatie_instellingen: { ...huidig, email_aan: val } }).eq("id", userId);
+    const { error } = await supabase.from("profiles").update({ notificatie_instellingen: { ...huidig, email_aan: val } }).eq("id", userId);
+    if (error) {
+      setEmailAan(vorige);
+      toast({ variant: "destructive", title: "Opslaan mislukt", description: "Probeer het zo nog eens." });
+    }
   };
 
   if (laden) return (

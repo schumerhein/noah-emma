@@ -6,6 +6,7 @@ import { ChevronLeft, Send, ShieldCheck, Star, CheckCircle, X } from "lucide-rea
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -39,6 +40,7 @@ type Conversation = {
 
 export default function ChatDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
+  const { toast } = useToast();
   const { id } = use(params);
   const [messages, setMessages] = useState<Message[]>([]);
   const [conversation, setConversation] = useState<Conversation | null>(null);
@@ -132,18 +134,26 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
     const tekst = nieuwBericht.trim();
     setNieuwBericht("");
 
-    const { data: msg } = await supabase
+    const { data: msg, error } = await supabase
       .from("messages")
       .insert({ conversation_id: id, sender_id: currentUserId, tekst })
       .select()
       .single();
+
+    if (error || !msg) {
+      // Bericht niet verstuurd — typte tekst teruggeven, anders is 'm kwijt.
+      setNieuwBericht(tekst);
+      toast({ variant: "destructive", title: "Bericht versturen mislukt", description: "Probeer het zo nog eens." });
+      setSending(false);
+      return;
+    }
 
     await supabase
       .from("conversations")
       .update({ last_message: tekst, last_message_at: new Date().toISOString() })
       .eq("id", id);
 
-    if (msg) setMessages(prev => [...prev, msg as Message]);
+    setMessages(prev => [...prev, msg as Message]);
     setSending(false);
   };
 
@@ -154,11 +164,17 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
     const nu = new Date().toISOString();
 
     // Markeer gesprek als afgerond
-    await supabase.from("conversations").update({
+    const { error: afgerondError } = await supabase.from("conversations").update({
       afgerond: true,
       afgerond_at: nu,
       afgerond_door: currentUserId,
     }).eq("id", id);
+
+    if (afgerondError) {
+      toast({ variant: "destructive", title: "Afronden mislukt", description: "Probeer het zo nog eens." });
+      setDealBezig(false);
+      return;
+    }
 
     // Zet listing op verkocht en inactief
     if (conversation.listing?.id) {

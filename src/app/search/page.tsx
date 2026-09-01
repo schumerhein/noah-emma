@@ -11,6 +11,7 @@ import { cn, normaliseerPrijsInvoer } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { haalGeblokkeerdeIds, filterZichtbaar } from "@/lib/zichtbaarheid";
 import { PremiumModal } from "@/components/PremiumModal";
+import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 
 // ── Constants ──────────────────────────────────────────────────────────────
@@ -155,6 +156,7 @@ const INIT_FILTERS: Filters = {
 
 export default function SearchPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [zoekterm, setZoekterm] = useState("");
   const [activeMainCat, setActiveMainCat] = useState<string | null>(null);
   const [resultaten, setResultaten] = useState<Listing[]>([]);
@@ -247,14 +249,22 @@ export default function SearchPage() {
     if (!user) { router.push("/login"); return; }
     setWaarschuwingBezig(true);
     if (waarschuwingActief) {
-      await supabase.from("zoekwaarschuwingen").delete().eq("user_id", user.id).eq("zoekterm", zoekterm);
-      setWaarschuwingActief(false);
+      const { error } = await supabase.from("zoekwaarschuwingen").delete().eq("user_id", user.id).eq("zoekterm", zoekterm);
+      if (error) {
+        toast({ variant: "destructive", title: "Uitzetten mislukt", description: "Probeer het zo nog eens." });
+      } else {
+        setWaarschuwingActief(false);
+      }
     } else {
-      await supabase.from("zoekwaarschuwingen").insert({
+      const { error } = await supabase.from("zoekwaarschuwingen").insert({
         user_id: user.id, zoekterm,
         max_prijs: filters.maxPrijs ? parseFloat(filters.maxPrijs) : null,
       });
-      setWaarschuwingActief(true);
+      if (error) {
+        toast({ variant: "destructive", title: "Instellen mislukt", description: "Probeer het zo nog eens." });
+      } else {
+        setWaarschuwingActief(true);
+      }
     }
     setWaarschuwingBezig(false);
   };

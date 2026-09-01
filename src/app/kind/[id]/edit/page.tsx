@@ -89,7 +89,11 @@ export default function KindBewerkenPage({ params }: { params: Promise<{ id: str
 
   const verwijderKind = async () => {
     if (!bevestigVerwijder) { setBevestigVerwijder(true); return; }
-    await supabase.from("children").delete().eq("id", id);
+    const { error } = await supabase.from("children").delete().eq("id", id);
+    if (error) {
+      toast({ variant: "destructive", title: "Verwijderen mislukt", description: "Probeer het zo nog eens." });
+      return;
+    }
 
     // Als dit het actieve kind was, localStorage wissen
     const actief = leesActiefKind();

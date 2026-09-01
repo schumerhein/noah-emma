@@ -5,9 +5,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, Star } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 function ReviewForm() {
   const router = useRouter();
+  const { toast } = useToast();
   const params = useSearchParams();
   const beoordeeldId = params.get("user"); // de te beoordelen gebruiker
   const listingId = params.get("listing");
@@ -71,7 +73,7 @@ function ReviewForm() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push("/login"); return; }
 
-    await supabase.from("reviews").insert({
+    const { error } = await supabase.from("reviews").insert({
       reviewer_id: user.id,
       reviewed_id: beoordeeldId,
       listing_id: listingId,
@@ -80,6 +82,10 @@ function ReviewForm() {
     });
 
     setLoading(false);
+    if (error) {
+      toast({ variant: "destructive", title: "Review versturen mislukt", description: "Probeer het zo nog eens." });
+      return;
+    }
     // Ga terug naar het gesprek
     if (conversationId) {
       router.push(`/messages/${conversationId}`);

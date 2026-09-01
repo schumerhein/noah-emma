@@ -178,10 +178,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const toggleVolg = async () => {
     if (!currentUserId || !listing) return;
     if (volgt) {
-      await supabase.from("followers").delete().eq("follower_id", currentUserId).eq("following_id", listing.user_id);
+      const { error } = await supabase.from("followers").delete().eq("follower_id", currentUserId).eq("following_id", listing.user_id);
+      if (error) { toast({ variant: "destructive", title: "Ontvolgen mislukt", description: "Probeer het zo nog eens." }); return; }
       setVolgt(false);
     } else {
-      await supabase.from("followers").insert({ follower_id: currentUserId, following_id: listing.user_id });
+      const { error } = await supabase.from("followers").insert({ follower_id: currentUserId, following_id: listing.user_id });
+      if (error) { toast({ variant: "destructive", title: "Volgen mislukt", description: "Probeer het zo nog eens." }); return; }
       setVolgt(true);
     }
   };
@@ -194,10 +196,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     }
 
     if (isLiked) {
-      await supabase.from("favorites").delete().eq("user_id", currentUserId).eq("listing_id", id);
+      const { error } = await supabase.from("favorites").delete().eq("user_id", currentUserId).eq("listing_id", id);
+      if (error) { toast({ variant: "destructive", title: "Verwijderen mislukt", description: "Probeer het zo nog eens." }); return; }
       setIsLiked(false);
     } else {
-      await supabase.from("favorites").insert({ user_id: currentUserId, listing_id: id });
+      const { error } = await supabase.from("favorites").insert({ user_id: currentUserId, listing_id: id });
+      if (error) { toast({ variant: "destructive", title: "Opslaan mislukt", description: "Probeer het zo nog eens." }); return; }
       setIsLiked(true);
       toast({
         title: "Toegevoegd aan favorieten",
@@ -266,11 +270,17 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     setBodBezig(true);
 
     // Sla bod op in DB
-    await supabase.from("biedingen").insert({
+    const { error: bodError } = await supabase.from("biedingen").insert({
       listing_id: listing.id,
       bieder_id: currentUserId,
       bedrag,
     });
+
+    if (bodError) {
+      setBodBezig(false);
+      toast({ variant: "destructive", title: "Bod versturen mislukt", description: "Probeer het zo nog eens." });
+      return;
+    }
 
     // Stuur ook meteen een bericht naar de verkoper
     const { data: convData } = await supabase.from("conversations")
@@ -311,8 +321,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const verstuurMelding = async () => {
     if (!meldReden || !currentUserId) return;
     setMeldBezig(true);
-    await supabase.from("reports").insert({ reporter_id: currentUserId, listing_id: listing.id, reden: meldReden });
+    const { error } = await supabase.from("reports").insert({ reporter_id: currentUserId, listing_id: listing.id, reden: meldReden });
     setMeldBezig(false);
+    if (error) {
+      toast({ variant: "destructive", title: "Melding versturen mislukt", description: "Probeer het zo nog eens." });
+      return;
+    }
     setGemeld(true);
     setToonMeldModal(false);
     toast({ title: "Melding ontvangen", description: "We bekijken deze advertentie zo snel mogelijk." });

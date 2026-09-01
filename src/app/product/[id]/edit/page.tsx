@@ -169,7 +169,12 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   const verwijderArtikel = async () => {
     if (!bevestigVerwijder) { setBevestigVerwijder(true); return; }
     setVerwijderen(true);
-    await supabase.from("listings").update({ actief: false }).eq("id", id);
+    const { error } = await supabase.from("listings").update({ actief: false }).eq("id", id);
+    setVerwijderen(false);
+    if (error) {
+      toast({ variant: "destructive", title: "Verwijderen mislukt", description: "Probeer het zo nog eens." });
+      return;
+    }
     toast({ title: "Artikel verwijderd." });
     router.push("/profile");
   };

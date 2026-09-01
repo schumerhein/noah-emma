@@ -182,26 +182,40 @@ export default function ProfilePage() {
   const slaProfielOp = async () => {
     if (!profile) return;
     setOpslaan(true);
-    await supabase.from("profiles").update({
+    const { error } = await supabase.from("profiles").update({
       naam: bewerktNaam,
       stad: bewerktStad,
       bio: bewerktBio,
     }).eq("id", profile.id);
+    setOpslaan(false);
+    if (error) {
+      toast({ variant: "destructive", title: "Opslaan mislukt", description: "Probeer het zo nog eens." });
+      return;
+    }
     setProfile(prev => prev ? { ...prev, naam: bewerktNaam, stad: bewerktStad, bio: bewerktBio } : prev);
     setBewerken(false);
-    setOpslaan(false);
     toast({ title: "Profiel opgeslagen ✓" });
   };
 
   const verwijderFavoriet = async (favorietId: string) => {
-    await supabase.from("favorites").delete().eq("id", favorietId);
+    const { error } = await supabase.from("favorites").delete().eq("id", favorietId);
+    if (error) {
+      toast({ variant: "destructive", title: "Verwijderen mislukt", description: "Probeer het zo nog eens." });
+      return;
+    }
     setFavorieten(prev => prev.filter(f => f.id !== favorietId));
   };
 
   const toggleVakantiestand = async (aan: boolean) => {
     if (!profile) return;
+    const vorige = vakantiestand;
     setVakantiestand(aan);
-    await supabase.from("profiles").update({ vakantiestand: aan }).eq("id", profile.id);
+    const { error } = await supabase.from("profiles").update({ vakantiestand: aan }).eq("id", profile.id);
+    if (error) {
+      setVakantiestand(vorige);
+      toast({ variant: "destructive", title: "Opslaan mislukt", description: "Probeer het zo nog eens." });
+      return;
+    }
     toast({ title: aan ? "🌴 Vakantiestand ingeschakeld" : "Vakantiestand uitgeschakeld" });
   };
 
@@ -220,7 +234,11 @@ export default function ProfilePage() {
 
   const slaKindMaatOp = async (kindId: string, maat: string) => {
     // Maat én geschatte lengte bijwerken (groeifunctie)
-    await supabase.from("children").update({ maat, lengte: lengteBijMaat(maat) }).eq("id", kindId);
+    const { error } = await supabase.from("children").update({ maat, lengte: lengteBijMaat(maat) }).eq("id", kindId);
+    if (error) {
+      toast({ variant: "destructive", title: "Opslaan mislukt", description: "Probeer het zo nog eens." });
+      return;
+    }
     const bijgewerkt = kinderen.map(k => k.id === kindId ? { ...k, maat } : k);
     setKinderen(bijgewerkt);
     setMaatBewerken(null);
@@ -253,14 +271,22 @@ export default function ProfilePage() {
     const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(pad);
     const url = `${publicUrl}?t=${Date.now()}`;
 
-    await supabase.from("profiles").update({ avatar_url: url }).eq("id", profile.id);
+    const { error: updateError } = await supabase.from("profiles").update({ avatar_url: url }).eq("id", profile.id);
+    setAvatarUploaden(false);
+    if (updateError) {
+      toast({ variant: "destructive", title: "Profielfoto bijwerken mislukt", description: "Probeer het zo nog eens." });
+      return;
+    }
     setProfile(prev => prev ? { ...prev, avatar_url: url } : prev);
     toast({ title: "Profielfoto bijgewerkt ✓" });
-    setAvatarUploaden(false);
   };
 
   const toggleListingActief = async (listing: Listing) => {
-    await supabase.from("listings").update({ actief: !listing.actief }).eq("id", listing.id);
+    const { error } = await supabase.from("listings").update({ actief: !listing.actief }).eq("id", listing.id);
+    if (error) {
+      toast({ variant: "destructive", title: "Bijwerken mislukt", description: "Probeer het zo nog eens." });
+      return;
+    }
     setMijneItems(prev => prev.map(l => l.id === listing.id ? { ...l, actief: !l.actief } : l));
   };
 

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 import { Baby, ChevronRight, Calendar, ArrowLeft, Sparkles, Check } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 // Eén bron voor de groeicurve: dezelfde logica als de groeifunctie op het profiel
 import { GROEI_MAATLIJST as MAATLIJST, schatMaatOpLeeftijd, leeftijdInMaanden as berekenLeeftijdInMaanden } from "@/lib/groei";
 
@@ -22,6 +23,7 @@ type Geslacht = "meisje" | "jongen" | null;
 
 export default function KindOnboardingPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [stap, setStap] = useState<1 | 2 | 3 | 4>(1);
   const [geslacht, setGeslacht] = useState<Geslacht>(null);
   const [naam, setNaam] = useState("");
@@ -42,13 +44,19 @@ export default function KindOnboardingPage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push("/login"); return; }
 
-    await supabase.from("children").insert({
+    const { error } = await supabase.from("children").insert({
       user_id: user.id,
       naam: naam || null,
       geboortedatum: geboortedatum || new Date().toISOString().split("T")[0],
       maat: activeMaat,
       geslacht: geslacht,
     });
+
+    if (error) {
+      setLoading(false);
+      toast({ variant: "destructive", title: "Opslaan mislukt", description: "Probeer het zo nog eens." });
+      return;
+    }
 
     // De eigen naam die bij het registreren is ingevuld, staat alleen in de
     // auth-metadata — dit is het eerste moment met een gegarandeerd geldige

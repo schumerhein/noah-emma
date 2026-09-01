@@ -99,13 +99,21 @@ export default function SellerPage({ params }: { params: Promise<{ id: string }>
     setVolgBezig(true);
 
     if (volgt) {
-      await supabase.from("followers").delete().eq("follower_id", currentUserId).eq("following_id", id);
-      setSeller(prev => prev ? { ...prev, aantalvolgers: Math.max(0, (prev.aantalvolgers || 1) - 1) } : prev);
-      setVolgt(false);
+      const { error } = await supabase.from("followers").delete().eq("follower_id", currentUserId).eq("following_id", id);
+      if (error) {
+        toast({ variant: "destructive", title: "Ontvolgen mislukt", description: "Probeer het zo nog eens." });
+      } else {
+        setSeller(prev => prev ? { ...prev, aantalvolgers: Math.max(0, (prev.aantalvolgers || 1) - 1) } : prev);
+        setVolgt(false);
+      }
     } else {
-      await supabase.from("followers").insert({ follower_id: currentUserId, following_id: id });
-      setSeller(prev => prev ? { ...prev, aantalvolgers: (prev.aantalvolgers || 0) + 1 } : prev);
-      setVolgt(true);
+      const { error } = await supabase.from("followers").insert({ follower_id: currentUserId, following_id: id });
+      if (error) {
+        toast({ variant: "destructive", title: "Volgen mislukt", description: "Probeer het zo nog eens." });
+      } else {
+        setSeller(prev => prev ? { ...prev, aantalvolgers: (prev.aantalvolgers || 0) + 1 } : prev);
+        setVolgt(true);
+      }
     }
     setVolgBezig(false);
   };
@@ -116,19 +124,29 @@ export default function SellerPage({ params }: { params: Promise<{ id: string }>
     setBlokkeerBezig(true);
 
     if (geblokkeerd) {
-      await supabase.from("blocks").delete().eq("blokkeerder_id", currentUserId).eq("geblokkeerd_id", id);
-      setGeblokkeerd(false);
-      toast({ title: "Gebruiker gedeblokkeerd" });
-    } else {
-      await supabase.from("blocks").insert({ blokkeerder_id: currentUserId, geblokkeerd_id: id });
-      // Bij blokkeren ook ontvolgen
-      if (volgt) {
-        await supabase.from("followers").delete().eq("follower_id", currentUserId).eq("following_id", id);
-        setVolgt(false);
-        setSeller(prev => prev ? { ...prev, aantalvolgers: Math.max(0, (prev.aantalvolgers || 1) - 1) } : prev);
+      const { error } = await supabase.from("blocks").delete().eq("blokkeerder_id", currentUserId).eq("geblokkeerd_id", id);
+      if (error) {
+        toast({ variant: "destructive", title: "Deblokkeren mislukt", description: "Probeer het zo nog eens." });
+      } else {
+        setGeblokkeerd(false);
+        toast({ title: "Gebruiker gedeblokkeerd" });
       }
-      setGeblokkeerd(true);
-      toast({ title: "Gebruiker geblokkeerd", description: "Beheer geblokkeerde gebruikers via Instellingen → Geblokkeerd." });
+    } else {
+      const { error } = await supabase.from("blocks").insert({ blokkeerder_id: currentUserId, geblokkeerd_id: id });
+      if (error) {
+        toast({ variant: "destructive", title: "Blokkeren mislukt", description: "Probeer het zo nog eens." });
+      } else {
+        // Bij blokkeren ook ontvolgen
+        if (volgt) {
+          const { error: ontvolgError } = await supabase.from("followers").delete().eq("follower_id", currentUserId).eq("following_id", id);
+          if (!ontvolgError) {
+            setVolgt(false);
+            setSeller(prev => prev ? { ...prev, aantalvolgers: Math.max(0, (prev.aantalvolgers || 1) - 1) } : prev);
+          }
+        }
+        setGeblokkeerd(true);
+        toast({ title: "Gebruiker geblokkeerd", description: "Beheer geblokkeerde gebruikers via Instellingen → Geblokkeerd." });
+      }
     }
     setBlokkeerBezig(false);
     setToonActieMenu(false);
@@ -138,8 +156,12 @@ export default function SellerPage({ params }: { params: Promise<{ id: string }>
   const verstuurMelding = async () => {
     if (!meldReden || !currentUserId) return;
     setMeldBezig(true);
-    await supabase.from("reports").insert({ reporter_id: currentUserId, reported_user_id: id, reden: meldReden });
+    const { error } = await supabase.from("reports").insert({ reporter_id: currentUserId, reported_user_id: id, reden: meldReden });
     setMeldBezig(false);
+    if (error) {
+      toast({ variant: "destructive", title: "Melding versturen mislukt", description: "Probeer het zo nog eens." });
+      return;
+    }
     setGemeld(true);
     setToonMeldModal(false);
     toast({ title: "Melding ontvangen", description: "We bekijken deze gebruiker zo snel mogelijk." });

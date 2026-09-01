@@ -41,9 +41,13 @@ export default function GeblokkeerdeGebruikersPage() {
 
   const deblokkeer = async (id: string, geblokkeerd_id: string) => {
     setDeblokkeerBezig(geblokkeerd_id);
-    await supabase.from("blocks").delete().eq("id", id);
-    setGebruikers(prev => prev.filter(g => g.id !== id));
-    toast({ title: "Gebruiker gedeblokkeerd" });
+    const { error } = await supabase.from("blocks").delete().eq("id", id);
+    if (error) {
+      toast({ variant: "destructive", title: "Deblokkeren mislukt", description: "Probeer het zo nog eens." });
+    } else {
+      setGebruikers(prev => prev.filter(g => g.id !== id));
+      toast({ title: "Gebruiker gedeblokkeerd" });
+    }
     setDeblokkeerBezig(null);
   };
 

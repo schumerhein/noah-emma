@@ -48,13 +48,17 @@ export default function AccountInstellingenPage() {
   const slaOp = async () => {
     if (!userId) return;
     setOpslaan(true);
-    await supabase.from("profiles").update({
+    const { error } = await supabase.from("profiles").update({
       naam: naam.trim() || null,
       geslacht: geslacht || null,
       geboortedatum: verjaardag || null,
       telefoonnummer: telefoon.trim() || null,
     }).eq("id", userId);
     setOpslaan(false);
+    if (error) {
+      toast({ variant: "destructive", title: "Opslaan mislukt", description: "Probeer het zo nog eens." });
+      return;
+    }
     toast({ title: "Opgeslagen ✓" });
     router.back();
   };

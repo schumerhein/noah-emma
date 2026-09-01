@@ -53,9 +53,13 @@ export default function ProfielInstellingenPage() {
     const { error } = await supabase.storage.from("avatars").upload(pad, file, { upsert: true });
     if (error) { toast({ variant: "destructive", title: "Upload mislukt" }); setAvatarBezig(false); return; }
     const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(pad);
-    await supabase.from("profiles").update({ avatar_url: publicUrl }).eq("id", userId);
-    setAvatarUrl(publicUrl);
+    const { error: updateError } = await supabase.from("profiles").update({ avatar_url: publicUrl }).eq("id", userId);
     setAvatarBezig(false);
+    if (updateError) {
+      toast({ variant: "destructive", title: "Profielfoto bijwerken mislukt", description: "Probeer het zo nog eens." });
+      return;
+    }
+    setAvatarUrl(publicUrl);
     toast({ title: "Profielfoto bijgewerkt ✓" });
   };
 
@@ -69,8 +73,12 @@ export default function ProfielInstellingenPage() {
     };
     // Alleen meesturen als de kolom in de database bestaat
     if (geboortedatumKolomBestaat) updateData.geboortedatum = geboortedatum || null;
-    await supabase.from("profiles").update(updateData).eq("id", userId);
+    const { error } = await supabase.from("profiles").update(updateData).eq("id", userId);
     setOpslaan(false);
+    if (error) {
+      toast({ variant: "destructive", title: "Opslaan mislukt", description: "Probeer het zo nog eens." });
+      return;
+    }
     toast({ title: "Profiel opgeslagen ✓" });
     router.back();
   };

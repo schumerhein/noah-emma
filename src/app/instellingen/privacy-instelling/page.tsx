@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
 
 type PrivacyKeys = {
   marketing_campagnes: boolean;
@@ -45,6 +46,7 @@ const ITEMS: { key: keyof PrivacyKeys; label: string; sub: string }[] = [
 
 export default function PrivacyInstellingPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [inst, setInst] = useState<PrivacyKeys>(DEFAULTS);
   const [laden, setLaden] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
@@ -61,9 +63,15 @@ export default function PrivacyInstellingPage() {
   }, []);
 
   const toggle = async (key: keyof PrivacyKeys, val: boolean) => {
+    const vorige = inst;
     const nieuw = { ...inst, [key]: val };
     setInst(nieuw);
-    if (userId) await supabase.from("profiles").update({ privacy_instellingen: nieuw }).eq("id", userId);
+    if (!userId) return;
+    const { error } = await supabase.from("profiles").update({ privacy_instellingen: nieuw }).eq("id", userId);
+    if (error) {
+      setInst(vorige);
+      toast({ variant: "destructive", title: "Opslaan mislukt", description: "Probeer het zo nog eens." });
+    }
   };
 
   if (laden) return (

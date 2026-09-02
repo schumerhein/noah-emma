@@ -131,7 +131,8 @@ export default function SupportPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="p-5 rounded-2xl bg-white dark:bg-slate-800/80 border border-primary/10 shadow-sm flex flex-col gap-4">
+                <div className="relative p-5 rounded-2xl bg-white dark:bg-slate-800/80 border border-primary/10 shadow-sm flex flex-col gap-4 opacity-60">
+                  <span className="absolute top-3 right-3 text-[9px] font-black text-primary bg-primary/10 px-2 py-0.5 rounded-full uppercase tracking-wider">Binnenkort</span>
                   <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                     <Mic className="w-6 h-6" />
                   </div>
@@ -140,7 +141,10 @@ export default function SupportPage() {
                     <p className="text-[10px] text-slate-500 mt-1">Spreek direct met onze stem-assistent.</p>
                   </div>
                 </div>
-                <div className="p-5 rounded-2xl bg-white dark:bg-slate-800/80 border border-primary/10 shadow-sm flex flex-col gap-4">
+                <a
+                  href="mailto:support@noahemma.nl"
+                  className="p-5 rounded-2xl bg-white dark:bg-slate-800/80 border border-primary/10 shadow-sm flex flex-col gap-4 active:scale-[0.98] transition-all"
+                >
                   <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                     <Mail className="w-6 h-6" />
                   </div>
@@ -148,7 +152,7 @@ export default function SupportPage() {
                     <h4 className="font-bold text-slate-900 dark:text-white text-sm">Mail Emma</h4>
                     <p className="text-[10px] text-slate-500 mt-1">Stuur ons een bericht per e-mail.</p>
                   </div>
-                </div>
+                </a>
               </div>
             </div>
           </section>

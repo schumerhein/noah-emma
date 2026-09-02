@@ -11,8 +11,8 @@ type RecenteTransactie = {
   id: string;
   listing_id: string;
   listings: { titel: string; prijs: number; foto_urls: string[] } | null;
-  koper_id: string;
-  verkoper_id: string;
+  buyer_id: string;
+  seller_id: string;
 };
 
 export default function HelpdeskPage() {
@@ -30,10 +30,10 @@ export default function HelpdeskPage() {
 
       const { data } = await supabase
         .from("conversations")
-        .select("id, listing_id, koper_id, verkoper_id, listings(titel, prijs, foto_urls)")
-        .or(`koper_id.eq.${user.id},verkoper_id.eq.${user.id}`)
+        .select("id, listing_id, buyer_id, seller_id, listings(titel, prijs, foto_urls)")
+        .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
         .eq("afgerond", true)
-        .order("updated_at", { ascending: false })
+        .order("last_message_at", { ascending: false })
         .limit(3);
 
       setTransacties((data as unknown as RecenteTransactie[]) || []);

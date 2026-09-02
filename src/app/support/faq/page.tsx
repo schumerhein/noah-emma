@@ -32,13 +32,12 @@ const FAQ_DATA = [
     category: "Account",
     icon: Settings,
     items: [
-      { id: "A09", q: "Hoe maak ik een account aan?", a: "Download de app, klik op 'Account aanmaken' en vul je e-mailadres en wachtwoord in. Je kunt ook inloggen via je Google- of Apple-account." },
+      { id: "A09", q: "Hoe maak ik een account aan?", a: "Open de app, klik op 'Registreer hier' en vul je naam, e-mailadres en wachtwoord in." },
       { id: "A10", q: "Wat is een groeiprofiel?", a: "Een groeiprofiel is een profiel dat je aanmaakt voor jouw kind, met daarin de leeftijd, het geslacht en de huidige maat. De app gebruikt dit profiel om je alleen relevante items te tonen die nu passen." },
       { id: "A11", q: "Kan ik een groeiprofiel aanmaken voor meerdere kinderen?", a: "Ja, je kunt meerdere groeiprofielen aanmaken binnen één account. Zo shop je eenvoudig voor al je kinderen zonder telkens opnieuw te hoeven filteren." },
       { id: "A12", q: "Groeit het profiel automatisch mee met mijn kind?", a: "Ja. Op basis van de geboortedatum en het ingevoerde maatprofiel past de app het aanbod automatisch aan naarmate jouw kind groeit. Je krijgt ook een melding wanneer het tijd is om het profiel bij te werken." },
-      { id: "A13", q: "Hoe wijzig ik mijn accountgegevens?", a: "Ga naar 'Mijn account' in de app en kies 'Gegevens bewerken'. Hier kun je je naam, e-mailadres, wachtwoord en adresgegevens aanpassen." },
-      { id: "A14", q: "Hoe verwijder ik mijn account?", a: "Ga naar 'Mijn account', kies 'Instellingen' en vervolgens 'Account verwijderen'. Let op: na verwijdering zijn je gegevens en aankoophistorie niet meer beschikbaar." },
-      { id: "A15", q: "Kan ik inloggen met Google of Apple?", a: "Ja, je kunt snel inloggen via je Google- of Apple-account. Je hoeft dan geen apart wachtwoord aan te maken." },
+      { id: "A13", q: "Hoe wijzig ik mijn accountgegevens?", a: "Ga naar Instellingen → Accountinstellingen. Hier kun je je naam, geslacht en verjaardag aanpassen, en je e-mailadres of wachtwoord wijzigen." },
+      { id: "A14", q: "Hoe verwijder ik mijn account?", a: "Ga naar Instellingen en kies onderaan 'Account verwijderen'. Je persoonlijke gegevens worden verwijderd en je kunt niet meer inloggen. Let op: dit kan niet ongedaan worden gemaakt." },
     ]
   },
   {
@@ -50,9 +49,8 @@ const FAQ_DATA = [
       { id: "K03", q: "Wat kost het abonnement?", a: "Het abonnement kost €4,99 per maand. Je kunt het op elk moment opzeggen, zonder verdere verplichtingen." },
       { id: "K04", q: "Wat krijg ik met een abonnement?", a: "Met een abonnement swipe je onbeperkt, heb je toegang tot geavanceerde filters, krijg je als eerste meldingen van nieuw aanbod dat past bij jouw groeiprofiel en profiteer je van exclusieve kortingsacties." },
       { id: "K05", q: "Hoe zeg ik mijn abonnement op?", a: "Ga naar 'Mijn account', kies 'Abonnement' en klik op 'Opzeggen'. Je abonnement blijft actief tot het einde van de lopende betaalperiode." },
-      { id: "K06", q: "Hoe betaal ik voor een aankoop?", a: "Betalen gaat via iDEAL, creditcard of PayPal. De betaling verloopt veilig via de app, je betaalt nooit rechtstreeks aan de verkoper." },
-      { id: "K07", q: "Wanneer wordt mijn bestelling verstuurd?", a: "De verkoper verstuurt het item binnen 3 werkdagen na jouw betaling. Je ontvangt een melding zodra het pakket onderweg is." },
-      { id: "K08", q: "Hoe wordt mijn aankoop bezorgd?", a: "De verkoper kiest zelf een verzendmethode. In de productpagina zie je welke verzenddienst wordt gebruikt en wat de verzendkosten zijn." },
+      { id: "K06", q: "Hoe betaal ik voor een aankoop?", a: "Noah & Emma werkt als Marktplaats: koper en verkoper spreken zelf een prijs en betaalmethode af via de chat, bijvoorbeeld iDEAL, Tikkie of contant bij ophalen. Wij verwerken zelf geen betalingen en houden geen geld vast — betaal daarom nooit vooraf via een onbekende link." },
+      { id: "K08", q: "Hoe wordt mijn aankoop bezorgd?", a: "Koper en verkoper spreken dit zelf af via de chat — ophalen bij de verkoper of verzenden. Als de verkoper verzendt, spreken jullie de verzendmethode en -kosten samen af." },
     ]
   },
   {
@@ -62,8 +60,8 @@ const FAQ_DATA = [
       { id: "V01", q: "Hoe bied ik een item aan?", a: "Ga naar 'Verkopen' in de app, upload foto's van het item, vul de beschrijving in en stel een prijs in. Na controle door ons systeem wordt jouw advertentie zichtbaar voor kopers." },
       { id: "V02", q: "Wat kost het om te verkopen?", a: "Verkopen is gratis. Je betaalt alleen als je je item wilt boosten voor meer zichtbaarheid." },
       { id: "V06", q: "Wat is een boost en hoe werkt het?", a: "Met een boost geef je jouw item meer zichtbaarheid in de ontdekfeed van kopers. Je kiest voor 3 dagen (€2,99) of 7 dagen (€4,99). Een geboost item wordt vaker getoond aan relevante kopers." },
-      { id: "V08", q: "Hoe en wanneer word ik uitbetaald?", a: "Na bevestiging van ontvangst door de koper wordt het verkoopbedrag binnen 3 werkdagen overgemaakt naar jouw opgegeven bankrekening. Je voegt je IBAN toe via 'Mijn account'." },
-      { id: "V09", q: "Wat zijn de verkoopkosten of commissies?", a: "Noah & Emma rekent geen verkoopcommissie. Het volledige verkoopbedrag (minus eventuele verzendkosten) wordt aan jou uitbetaald." },
+      { id: "V08", q: "Hoe en wanneer word ik uitbetaald?", a: "Noah & Emma verwerkt zelf geen betalingen: koper en verkoper spreken de betaalmethode (bijvoorbeeld iDEAL, Tikkie of contant) zelf af via de chat, dus de koper betaalt rechtstreeks aan jou." },
+      { id: "V09", q: "Wat zijn de verkoopkosten of commissies?", a: "Noah & Emma rekent geen verkoopcommissie en houdt geen geld vast. Je betaalt alleen als je ervoor kiest je item te boosten voor meer zichtbaarheid." },
     ]
   },
   {

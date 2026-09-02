@@ -45,7 +45,7 @@ const assistantFlow = ai.defineFlow(
 
     const {output} = await ai.generate({
       system: systemPrompt,
-      history: history.map(m => ({
+      messages: history.map(m => ({
         role: m.role,
         content: [{ text: m.text }]
       })),

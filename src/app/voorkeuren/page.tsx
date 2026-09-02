@@ -1,19 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type CookieKeuze = "alle" | "essentieel" | null;
 
+const OPSLAGSLEUTEL = "noah-emma-cookievoorkeur";
+
 export default function VoorkeurenPage() {
   const router = useRouter();
   const [keuze, setKeuze] = useState<CookieKeuze>(null);
   const [opgeslagen, setOpgeslagen] = useState(false);
 
+  useEffect(() => {
+    const bestaand = localStorage.getItem(OPSLAGSLEUTEL);
+    if (bestaand === "alle" || bestaand === "essentieel") setKeuze(bestaand);
+  }, []);
+
   const slaOp = (k: CookieKeuze) => {
     setKeuze(k);
+    if (k) localStorage.setItem(OPSLAGSLEUTEL, k);
     setOpgeslagen(true);
     setTimeout(() => setOpgeslagen(false), 2000);
   };

@@ -52,6 +52,7 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
   const [toonDealModal, setToonDealModal] = useState(false);
   const [dealBezig, setDealBezig] = useState(false);
   const [alBeoordeeld, setAlBeoordeeld] = useState(false);
+  const [geblokkeerd, setGeblokkeerd] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -87,6 +88,15 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
       .single();
 
     setConversation({ ...conv, other_user: profile });
+
+    // Blokkade check (beide richtingen) — bestaande gesprekken blijven
+    // zichtbaar, maar berichten sturen is niet meer mogelijk.
+    const { data: blokkade } = await supabase
+      .from("blocks")
+      .select("id")
+      .or(`and(blokkeerder_id.eq.${user.id},geblokkeerd_id.eq.${other}),and(blokkeerder_id.eq.${other},geblokkeerd_id.eq.${user.id})`)
+      .limit(1);
+    setGeblokkeerd(!!blokkade && blokkade.length > 0);
 
     // Check of de deal al beoordeeld is (anders blijft de knop staan nadat
     // je al een beoordeling gaf, wat verwarrend is — zie reviews/schrijf
@@ -144,7 +154,7 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
   };
 
   const verstuurBericht = async () => {
-    if (!nieuwBericht.trim() || !currentUserId || sending) return;
+    if (!nieuwBericht.trim() || !currentUserId || sending || geblokkeerd) return;
     setSending(true);
     const tekst = nieuwBericht.trim();
     setNieuwBericht("");
@@ -430,22 +440,27 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
         </div>
       </div>
 
-      {/* Input (uitgeschakeld als deal afgerond) */}
+      {/* Input (uitgeschakeld als deal afgerond of blokkade) */}
       <footer className="p-4 bg-white dark:bg-zinc-900 border-t border-slate-100 dark:border-zinc-800 shrink-0 pb-36">
+        {geblokkeerd && (
+          <p className="text-xs font-bold text-red-500 text-center mb-2">
+            Je kunt geen berichten sturen — een van jullie heeft de ander geblokkeerd.
+          </p>
+        )}
         <div className="flex items-center gap-3">
-          <div className={cn("flex-1 rounded-2xl px-4 py-3 flex items-center", dealAfgerond ? "bg-slate-100 dark:bg-zinc-800 opacity-60" : "bg-slate-100 dark:bg-zinc-800")}>
+          <div className={cn("flex-1 rounded-2xl px-4 py-3 flex items-center", (dealAfgerond || geblokkeerd) ? "bg-slate-100 dark:bg-zinc-800 opacity-60" : "bg-slate-100 dark:bg-zinc-800")}>
             <input
               value={nieuwBericht}
               onChange={e => setNieuwBericht(e.target.value)}
               onKeyDown={handleKeyDown}
-              disabled={dealAfgerond}
+              disabled={dealAfgerond || geblokkeerd}
               className="bg-transparent border-none focus:outline-none text-[15px] w-full placeholder:text-slate-400 text-slate-800 dark:text-white disabled:cursor-not-allowed"
-              placeholder={dealAfgerond ? "Deal afgesloten" : "Stuur een bericht..."}
+              placeholder={dealAfgerond ? "Deal afgesloten" : geblokkeerd ? "Geblokkeerd" : "Stuur een bericht..."}
             />
           </div>
           <button
             onClick={verstuurBericht}
-            disabled={!nieuwBericht.trim() || sending || dealAfgerond}
+            disabled={!nieuwBericht.trim() || sending || dealAfgerond || geblokkeerd}
             className="w-11 h-11 rounded-full bg-primary flex items-center justify-center text-white shadow-sm shrink-0 active:scale-95 transition-transform disabled:opacity-40"
           >
             <Send className="w-5 h-5" />

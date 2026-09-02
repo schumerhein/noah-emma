@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn, normaliseerPrijsInvoer } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { AIModelDisplay } from "@/components/ai-models/NoahEmmaModel";
+import { voegRecentBekekenToe } from "@/lib/recentBekeken";
 import Link from "next/link";
 
 type Review = {
@@ -153,6 +154,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       const l = data as Listing;
       setListing(l);
       laadTabData(l);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) voegRecentBekekenToe(user.id, l.id);
     }
     setLoading(false);
   };

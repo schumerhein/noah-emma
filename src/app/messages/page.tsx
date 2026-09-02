@@ -24,7 +24,7 @@ type Conversation = {
 
 type Notificatie = {
   id: string;
-  type: "favoriet" | "bod" | "volger" | "nieuwe_listing";
+  type: "favoriet" | "bod" | "volger" | "nieuwe_listing" | "zoekwaarschuwing";
   created_at: string;
   naam: string;
   avatar_url: string | null;
@@ -32,6 +32,7 @@ type Notificatie = {
   foto_url?: string;
   bedrag?: number;
   listing_id?: string;
+  zoekterm?: string;
 };
 
 type Tab = "berichten" | "notificaties";
@@ -116,8 +117,12 @@ function MessagesContent() {
     const { data: myListings } = await supabase.from("listings").select("id").eq("user_id", userId);
     const myIds = myListings?.map((l: { id: string }) => l.id) || [];
 
+    // Eigen privacyvoorkeur: wil ik weten wanneer iemand mijn artikel favoriet maakt?
+    const { data: eigenProfiel } = await supabase.from("profiles").select("privacy_instellingen").eq("id", userId).single();
+    const toonFavorietNotificaties = eigenProfiel?.privacy_instellingen?.favoriet_notificatie_verkoper !== false;
+
     // 2. Favorieten op mijn listings
-    if (myIds.length > 0) {
+    if (myIds.length > 0 && toonFavorietNotificaties) {
       const { data: favs } = await supabase
         .from("favorites")
         .select("id, created_at, listing_id, listings(titel, foto_urls), user_id")
@@ -142,7 +147,9 @@ function MessagesContent() {
           });
         }
       }
+    }
 
+    if (myIds.length > 0) {
       // 3. Biedingen op mijn listings
       const { data: bids } = await supabase
         .from("biedingen")
@@ -228,6 +235,44 @@ function MessagesContent() {
       }
     }
 
+    // 6. Nieuwe artikelen die passen bij mijn zoekwaarschuwingen
+    const { data: waarschuwingen } = await supabase
+      .from("zoekwaarschuwingen")
+      .select("id, zoekterm, max_prijs, created_at")
+      .eq("user_id", userId);
+
+    if (waarschuwingen) {
+      for (const w of waarschuwingen) {
+        let matchQuery = supabase
+          .from("listings")
+          .select("id, created_at, titel, foto_urls, user_id")
+          .eq("actief", true)
+          .neq("user_id", userId)
+          .gt("created_at", w.created_at)
+          .or(`titel.ilike.%${w.zoekterm}%,beschrijving.ilike.%${w.zoekterm}%,merk.ilike.%${w.zoekterm}%,categorie.ilike.%${w.zoekterm}%`)
+          .order("created_at", { ascending: false })
+          .limit(10);
+        if (w.max_prijs) matchQuery = matchQuery.lte("prijs", w.max_prijs);
+
+        const { data: matches } = await matchQuery;
+        if (matches) {
+          for (const listing of matches) {
+            alleNotifs.push({
+              id: `zoek_${w.id}_${listing.id}`,
+              type: "zoekwaarschuwing",
+              created_at: listing.created_at,
+              naam: "Zoekwaarschuwing",
+              avatar_url: null,
+              titel: listing.titel,
+              zoekterm: w.zoekterm,
+              foto_url: listing.foto_urls?.[0],
+              listing_id: listing.id,
+            });
+          }
+        }
+      }
+    }
+
     // Sorteer op datum
     alleNotifs.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     setNotificaties(alleNotifs);
@@ -259,12 +304,14 @@ function MessagesContent() {
     bod: "bg-emerald-100 text-emerald-600",
     volger: "bg-blue-100 text-blue-500",
     nieuwe_listing: "bg-amber-100 text-amber-600",
+    zoekwaarschuwing: "bg-violet-100 text-violet-600",
   };
 
   const notifTekst = (n: Notificatie) => {
     if (n.type === "favoriet") return `heeft "${n.titel}" aan favorieten toegevoegd`;
     if (n.type === "bod") return `heeft een bod van €${n.bedrag?.toFixed(2).replace(".", ",")} gedaan op "${n.titel}"`;
     if (n.type === "nieuwe_listing") return `heeft een nieuw artikel geplaatst: "${n.titel}"`;
+    if (n.type === "zoekwaarschuwing") return `nieuw artikel voor "${n.zoekterm}": "${n.titel}"`;
     return "volgt je nu";
   };
 
@@ -420,7 +467,7 @@ function MessagesContent() {
               </div>
               <h2 className="text-xl font-bold text-slate-700 dark:text-slate-200">Geen notificaties</h2>
               <p className="text-slate-400 text-sm max-w-xs">
-                Je ziet hier meldingen zodra iemand jouw artikel als favoriet markeert, een bod doet, jou volgt, of een verkoper die jij volgt iets nieuws plaatst.
+                Je ziet hier meldingen zodra iemand jouw artikel als favoriet markeert, een bod doet, jou volgt, een verkoper die jij volgt iets nieuws plaatst, of er een artikel verschijnt dat past bij een zoekwaarschuwing.
               </p>
             </div>
           )}
@@ -449,6 +496,7 @@ function MessagesContent() {
                   {notif.type === "bod" && <TrendingUp className="w-2.5 h-2.5" />}
                   {notif.type === "volger" && <UserPlus className="w-2.5 h-2.5" />}
                   {notif.type === "nieuwe_listing" && <Package className="w-2.5 h-2.5" />}
+                  {notif.type === "zoekwaarschuwing" && <Bell className="w-2.5 h-2.5" />}
                 </div>
               </div>
 

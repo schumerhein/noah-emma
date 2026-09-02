@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, LogOut, X, AlertCircle, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
@@ -20,12 +20,19 @@ type Sectie = {
   items: Item[];
 };
 
-export default function InstellingenPage() {
+function InstellingenInner() {
   const router = useRouter();
+  const params = useSearchParams();
   const { toast } = useToast();
   const [toonVerwijderModal, setToonVerwijderModal] = useState(false);
   const [verwijderTekst, setVerwijderTekst] = useState("");
   const [verwijderBezig, setVerwijderBezig] = useState(false);
+
+  // Vanuit instellingen/account komt de "Account verwijderen"-knop hier
+  // binnen via ?verwijder=1 — open de modal dan meteen.
+  useEffect(() => {
+    if (params.get("verwijder") === "1") setToonVerwijderModal(true);
+  }, [params]);
 
   const uitloggen = async () => {
     await supabase.auth.signOut();
@@ -35,6 +42,21 @@ export default function InstellingenPage() {
   const verwijderAccount = async () => {
     if (verwijderTekst !== "VERWIJDER") return;
     setVerwijderBezig(true);
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { router.push("/login"); return; }
+
+    const res = await fetch("/api/account/verwijderen", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    });
+
+    if (!res.ok) {
+      setVerwijderBezig(false);
+      toast({ variant: "destructive", title: "Verwijderen mislukt", description: "Probeer het zo nog eens." });
+      return;
+    }
+
     await supabase.auth.signOut();
     toast({ title: "Account verwijderd" });
     router.push("/login");
@@ -144,7 +166,9 @@ export default function InstellingenPage() {
             <div className="space-y-1.5">
               <h2 className="text-xl font-black text-slate-900 dark:text-white">Account verwijderen</h2>
               <p className="text-sm text-slate-500 leading-relaxed">
-                Verwijdert je account, advertenties en berichten. <strong>Niet terugdraaibaar.</strong>
+                Verwijdert je persoonlijke gegevens en je kunt niet meer inloggen. Advertenties worden offline gehaald.
+                Gesprekken en beoordelingen blijven zichtbaar voor de andere partij, met je naam vervangen door
+                &quot;Verwijderde gebruiker&quot;. <strong>Niet terugdraaibaar.</strong>
               </p>
             </div>
             <div className="space-y-1.5">
@@ -172,5 +196,17 @@ export default function InstellingenPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function InstellingenPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <span className="material-icons-round text-primary text-3xl animate-spin">progress_activity</span>
+      </div>
+    }>
+      <InstellingenInner />
+    </Suspense>
   );
 }

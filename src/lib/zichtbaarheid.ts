@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 type ZichtbaarItem = {
   user_id?: string;
   moderatie_status?: string;
+  profiles?: { vakantiestand?: boolean | null } | null;
 };
 
 // Haal de ids op van gebruikers die de ingelogde gebruiker geblokkeerd heeft
@@ -20,7 +21,11 @@ export async function haalGeblokkeerdeIds(): Promise<Set<string>> {
 // Filter een lijst listings op zichtbaarheid:
 // - alleen goedgekeurde advertenties (eigen advertenties altijd zichtbaar voor de eigenaar)
 // - geen advertenties van geblokkeerde gebruikers
+// - geen advertenties van verkopers in vakantiestand (behalve voor henzelf)
 // Werkt ook als de moderatie-kolom (nog) niet bestaat in de database.
+// Vereist dat de query "vakantiestand" meeselecteert in het embedded
+// profiles-object — ontbreekt die kolom in de select, dan is deze check
+// altijd "ok" (fail-open, geen listings per ongeluk verbergen).
 export function filterZichtbaar<T extends ZichtbaarItem>(
   items: T[],
   geblokkeerdeIds: Set<string>,
@@ -30,6 +35,7 @@ export function filterZichtbaar<T extends ZichtbaarItem>(
     const status = item.moderatie_status;
     const moderatieOk = status === undefined || status === null || status === "goedgekeurd" || item.user_id === eigenUserId;
     const nietGeblokkeerd = !(item.user_id && geblokkeerdeIds.has(item.user_id));
-    return moderatieOk && nietGeblokkeerd;
+    const nietOpVakantie = item.profiles?.vakantiestand !== true || item.user_id === eigenUserId;
+    return moderatieOk && nietGeblokkeerd && nietOpVakantie;
   });
 }

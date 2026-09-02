@@ -127,7 +127,7 @@ type Listing = {
   moderatie_status?: string;
   actief?: boolean;
   verkocht?: boolean;
-  profiles?: { naam: string | null; stad: string | null };
+  profiles?: { naam: string | null; stad: string | null; vakantiestand: boolean | null };
 };
 
 type Filters = {
@@ -197,7 +197,7 @@ export default function SearchPage() {
     // Handmatig verborgen items filteren we hieronder alsnog weg.
     let query = supabase
       .from("listings")
-      .select("*, profiles(naam, stad)")
+      .select("*, profiles(naam, stad, vakantiestand)")
       .limit(60);
 
     if (sort === "prijs_laag") query = query.order("prijs", { ascending: true });

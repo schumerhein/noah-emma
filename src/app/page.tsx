@@ -11,6 +11,8 @@ import { leesActiefKind, type ActiefKind } from "@/components/ThemeProvider";
 import { useToast } from "@/hooks/use-toast";
 import { PremiumModal } from "@/components/PremiumModal";
 import { X, Zap, Crown } from "lucide-react";
+import { LEGE_FEED_VOORKEUREN, scoreVoorkeurMatch, type FeedVoorkeuren } from "@/lib/feedVoorkeuren";
+import { leesRecentBekekenIds } from "@/lib/recentBekeken";
 
 type Listing = {
   id: string;
@@ -19,6 +21,7 @@ type Listing = {
   maat: string;
   conditie: string;
   categorie: string;
+  subcategorie?: string | null;
   merk: string | null;
   foto_urls: string[];
   likes: number;
@@ -30,6 +33,7 @@ type Listing = {
     gemiddelde_beoordeling: number | null;
     totaal_beoordelingen: number | null;
     avatar_url: string | null;
+    vakantiestand: boolean | null;
   };
 };
 
@@ -62,6 +66,7 @@ export default function Home() {
   const SWIPE_LIMIET = 10;
   const [toonPremiumModal, setToonPremiumModal] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const [recentBekekenItems, setRecentBekekenItems] = useState<Pick<Listing, "id" | "titel" | "prijs" | "maat" | "foto_urls">[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -77,6 +82,7 @@ export default function Home() {
     if (actief) setKind(actief);
     else laadKindFallback();
     checkPremiumEnSwipes();
+    laadRecentBekeken();
 
     // Herstel de bewaarde filterkeuze
     try {
@@ -120,6 +126,30 @@ export default function Home() {
     }
   };
 
+  const laadRecentBekeken = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const ids = leesRecentBekekenIds(user.id);
+    if (ids.length === 0) return;
+
+    const { data: profiel } = await supabase.from("profiles").select("privacy_instellingen").eq("id", user.id).single();
+    if (profiel?.privacy_instellingen?.recent_bekeken_tonen === false) return;
+
+    const { data } = await supabase
+      .from("listings")
+      .select("id, titel, prijs, maat, foto_urls, actief")
+      .in("id", ids)
+      .eq("actief", true);
+
+    if (data) {
+      // Zelfde volgorde als de kijkgeschiedenis (meest recent eerst).
+      const volgorde = new Map(ids.map((id, i) => [id, i]));
+      const gesorteerd = [...data].sort((a, b) => (volgorde.get(a.id) ?? 0) - (volgorde.get(b.id) ?? 0));
+      setRecentBekekenItems(gesorteerd);
+    }
+  };
+
   const laadKindFallback = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
@@ -139,14 +169,14 @@ export default function Home() {
     // Laad gepromote listings eerst
     let queryPromoted = supabase
       .from("listings")
-      .select("*, profiles(naam, stad, gemiddelde_beoordeling, totaal_beoordelingen, avatar_url)")
+      .select("*, profiles(naam, stad, gemiddelde_beoordeling, totaal_beoordelingen, avatar_url, vakantiestand)")
       .eq("actief", true)
       .eq("gepromoot", true)
       .limit(5);
 
     let queryNormaal = supabase
       .from("listings")
-      .select("*, profiles(naam, stad, gemiddelde_beoordeling, totaal_beoordelingen, avatar_url)")
+      .select("*, profiles(naam, stad, gemiddelde_beoordeling, totaal_beoordelingen, avatar_url, vakantiestand)")
       .eq("actief", true)
       .eq("gepromoot", false)
       .order("created_at", { ascending: false })
@@ -170,7 +200,32 @@ export default function Home() {
       haalGeblokkeerdeIds(),
       supabase.auth.getUser(),
     ]);
-    const combined = filterZichtbaar([...(promoted || []), ...(normaal || [])], geblokkeerd, user?.id);
+
+    // Zachte personalisatie: advertenties die passen bij de opgeslagen
+    // feed-voorkeuren (categorie/maat/merk) worden hoger gerangschikt,
+    // maar nooit hard weggefilterd. Gepromote advertenties blijven altijd
+    // vooraan staan (betaalde plaatsing), personalisatie sorteert alleen
+    // binnen elke groep.
+    let voorkeuren: FeedVoorkeuren = LEGE_FEED_VOORKEUREN;
+    if (user) {
+      const { data: profiel } = await supabase
+        .from("profiles")
+        .select("feed_voorkeuren, privacy_instellingen")
+        .eq("id", user.id)
+        .single();
+      const gepersonaliseerd = profiel?.privacy_instellingen?.gepersonaliseerde_inhoud !== false;
+      if (gepersonaliseerd && profiel?.feed_voorkeuren) {
+        voorkeuren = { ...LEGE_FEED_VOORKEUREN, ...profiel.feed_voorkeuren };
+      }
+    }
+    const sorteerOpVoorkeur = (items: Listing[]) =>
+      [...items].sort((a, b) => scoreVoorkeurMatch(b, voorkeuren) - scoreVoorkeurMatch(a, voorkeuren));
+
+    const combined = filterZichtbaar(
+      [...sorteerOpVoorkeur((promoted || []) as Listing[]), ...sorteerOpVoorkeur((normaal || []) as Listing[])],
+      geblokkeerd,
+      user?.id
+    );
     setListings(combined as Listing[]);
     setLoading(false);
   };
@@ -329,6 +384,28 @@ export default function Home() {
           )}
         </div>
       </header>
+
+      {/* Recent bekeken */}
+      {recentBekekenItems.length > 0 && (
+        <div className="shrink-0 pb-2">
+          <p className="px-6 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Onlangs bekeken</p>
+          <div className="flex gap-2 overflow-x-auto no-scrollbar px-6">
+            {recentBekekenItems.map(item => (
+              <Link key={item.id} href={`/product/${item.id}`} className="shrink-0">
+                <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 relative">
+                  {item.foto_urls?.[0] ? (
+                    <Image src={item.foto_urls[0]} alt={item.titel} fill className="object-cover" />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="material-icons-round text-slate-300 text-lg">image</span>
+                    </div>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Main */}
       <main className="flex-1 min-h-0 px-5 flex flex-col pt-2 touch-none overflow-hidden">

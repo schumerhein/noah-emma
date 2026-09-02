@@ -1,52 +1,68 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Check, X } from "lucide-react";
+import { ChevronLeft, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const CATEGORIEEN = [
-  { id: "tops", label: "Tops & T-shirts", emoji: "👕" },
-  { id: "broeken", label: "Broeken & Shorts", emoji: "👖" },
-  { id: "jurken", label: "Jurken & Rokken", emoji: "👗" },
-  { id: "jassen", label: "Jassen & Vesten", emoji: "🧥" },
-  { id: "schoenen", label: "Schoenen & Laarzen", emoji: "👟" },
-  { id: "accessoires", label: "Accessoires", emoji: "🧢" },
-  { id: "pyama", label: "Pyjama & Ondergoed", emoji: "🌙" },
-  { id: "kinderwagens", label: "Kinderwagens & Buggy's", emoji: "🛒" },
-  { id: "sportkleding", label: "Sportkleding", emoji: "⚽" },
-  { id: "feest", label: "Feest & Gala", emoji: "🎀" },
-];
-
-const MATEN = [
-  "50/56", "62/68", "74/80", "86/92", "98/104",
-  "110/116", "122/128", "134/140", "146/152", "158/164",
-];
-
-const MERKEN = [
-  "H&M", "Zara Kids", "Next", "Hema", "Name It",
-  "Molo", "Petit Bateau", "Noppies", "Prenatal", "Boden",
-  "Tommy Hilfiger Kids", "Nike Kids", "Adidas Kids", "Scotch & Soda",
-];
+import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
+import { FEED_CATEGORIEEN, FEED_MATEN, FEED_MERKEN, LEGE_FEED_VOORKEUREN } from "@/lib/feedVoorkeuren";
 
 type Tab = "categorien" | "maten" | "merken";
 
 export default function FeedVoorkeurenPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [tab, setTab] = useState<Tab>("categorien");
   const [catSel, setCatSel] = useState<string[]>([]);
   const [maatSel, setMaatSel] = useState<string[]>([]);
   const [merkSel, setMerkSel] = useState<string[]>([]);
+  const [laden, setLaden] = useState(true);
+  const [opslaan, setOpslaan] = useState(false);
   const [opgeslagen, setOpgeslagen] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { router.push("/login"); return; }
+      setUserId(user.id);
+
+      const { data } = await supabase.from("profiles").select("feed_voorkeuren").eq("id", user.id).single();
+      const voorkeuren = { ...LEGE_FEED_VOORKEUREN, ...(data?.feed_voorkeuren || {}) };
+      setCatSel(voorkeuren.categorieen);
+      setMaatSel(voorkeuren.maten);
+      setMerkSel(voorkeuren.merken);
+      setLaden(false);
+    })();
+  }, []);
 
   const toggle = (id: string, list: string[], setList: (v: string[]) => void) => {
     setList(list.includes(id) ? list.filter(x => x !== id) : [...list, id]);
   };
 
-  const slaOp = () => {
+  const slaOp = async () => {
+    if (!userId) return;
+    setOpslaan(true);
+    const { error } = await supabase.from("profiles").update({
+      feed_voorkeuren: { categorieen: catSel, maten: maatSel, merken: merkSel },
+    }).eq("id", userId);
+    setOpslaan(false);
+    if (error) {
+      toast({ variant: "destructive", title: "Opslaan mislukt", description: "Probeer het zo nog eens." });
+      return;
+    }
     setOpgeslagen(true);
     setTimeout(() => { setOpgeslagen(false); router.back(); }, 1200);
   };
+
+  if (laden) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-900">
+        <span className="material-icons-round text-primary text-4xl animate-spin">progress_activity</span>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900 flex flex-col">
@@ -84,7 +100,7 @@ export default function FeedVoorkeurenPage() {
       <main className="flex-1 px-5 pt-5 pb-32 overflow-y-auto">
         {tab === "categorien" && (
           <div className="grid grid-cols-2 gap-3">
-            {CATEGORIEEN.map(cat => {
+            {FEED_CATEGORIEEN.map(cat => {
               const sel = catSel.includes(cat.id);
               return (
                 <button
@@ -109,7 +125,7 @@ export default function FeedVoorkeurenPage() {
           <div className="space-y-4">
             <p className="text-sm text-slate-400">Selecteer de maten die je zoekt. Je feed toont dan vaker artikelen in deze maten.</p>
             <div className="grid grid-cols-3 gap-2">
-              {MATEN.map(maat => {
+              {FEED_MATEN.map(maat => {
                 const sel = maatSel.includes(maat);
                 return (
                   <button
@@ -132,7 +148,7 @@ export default function FeedVoorkeurenPage() {
           <div className="space-y-4">
             <p className="text-sm text-slate-400">Volg merken om hun artikelen eerder te zien in je feed.</p>
             <div className="space-y-1">
-              {MERKEN.map(merk => {
+              {FEED_MERKEN.map(merk => {
                 const sel = merkSel.includes(merk);
                 return (
                   <button
@@ -160,9 +176,10 @@ export default function FeedVoorkeurenPage() {
       <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto px-6 py-4 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-100 dark:border-slate-800">
         <button
           onClick={slaOp}
-          className="w-full h-14 rounded-2xl bg-primary text-white font-bold text-base shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
+          disabled={opslaan}
+          className="w-full h-14 rounded-2xl bg-primary text-white font-bold text-base shadow-lg shadow-primary/20 active:scale-[0.98] transition-all disabled:opacity-60"
         >
-          Voorkeuren opslaan
+          {opslaan ? "Opslaan..." : "Voorkeuren opslaan"}
         </button>
       </div>
     </div>

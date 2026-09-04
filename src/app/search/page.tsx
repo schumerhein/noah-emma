@@ -247,6 +247,10 @@ export default function SearchPage() {
   const toggleZoekwaarschuwing = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push("/login"); return; }
+    if (!waarschuwingActief && !isPremium) {
+      toast({ variant: "destructive", title: "Zoekwaarschuwingen zijn Premium", description: "Activeer Premium om alerts in te stellen." });
+      return;
+    }
     setWaarschuwingBezig(true);
     if (waarschuwingActief) {
       const { error } = await supabase.from("zoekwaarschuwingen").delete().eq("user_id", user.id).eq("zoekterm", zoekterm);

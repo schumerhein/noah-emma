@@ -1,0 +1,22 @@
+-- Fix: een kind zonder geboortedatum krijgt een fictieve geboortedatum
+-- van "vandaag" in plaats van gewoon leeg te blijven.
+--
+-- src/app/onboarding/kind/page.tsx stap 3 ("Geboortedatum — Optioneel")
+-- heeft een expliciete "Overslaan"-knop, en src/app/kind/[id]/edit/page.tsx
+-- slaat bij een leeg veld al correct `geboortedatum: null` op — maar de
+-- kolom had een NOT NULL-constraint, dus:
+-- - onboarding week stilzwijgend uit naar new Date() als fallback, wat een
+--   compleet fictieve geboortedatum in de database zet (het kind lijkt dan
+--   0 dagen oud). Dit corrumpeert later de automatische maat-suggestie
+--   (src/lib/groei.ts), die leeftijd uit deze datum berekent.
+-- - de edit-pagina zou bij het legen van het veld gewoon falen met een
+--   foutmelding (23502, not-null constraint) in plaats van het veld leeg
+--   te laten, precies tegen de eigen "optioneel"-belofte in.
+--
+-- src/lib/groei.ts's groeiCheck() gaat al netjes om met een lege
+-- geboortedatum (using `if (!geboortedatum ...) return null`), dus dit is
+-- veilig om nullable te maken.
+--
+-- Veilig om vaker te draaien.
+
+alter table public.children alter column geboortedatum drop not null;

@@ -47,7 +47,7 @@ export default function KindOnboardingPage() {
     const { error } = await supabase.from("children").insert({
       user_id: user.id,
       naam: naam || null,
-      geboortedatum: geboortedatum || new Date().toISOString().split("T")[0],
+      geboortedatum: geboortedatum || null,
       maat: activeMaat,
       geslacht: geslacht,
     });

@@ -62,17 +62,15 @@ export default function WettelijkPage() {
         {/* Bedrijfsgegevens */}
         <div className="px-6 pt-8 pb-4 space-y-1">
           <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Bedrijfsgegevens</p>
-          <p className="text-sm text-slate-700 dark:text-slate-300 font-semibold">Noah & Emma B.V.</p>
-          <p className="text-sm text-slate-400">KvK: 12345678</p>
-          <p className="text-sm text-slate-400">BTW: NL123456789B01</p>
-          <p className="text-sm text-slate-400">Amsterdam, Nederland</p>
+          <p className="text-sm text-slate-700 dark:text-slate-300 font-semibold">Noah & Emma</p>
+          <p className="text-sm text-slate-400">Nederland</p>
           <p className="text-sm text-slate-400 mt-2">
             <a href="mailto:info@noah-emma.nl" className="text-primary">info@noah-emma.nl</a>
           </p>
         </div>
 
         <div className="px-6 pt-4">
-          <p className="text-xs text-slate-300">© 2024 Noah & Emma B.V. Alle rechten voorbehouden.</p>
+          <p className="text-xs text-slate-300">© 2026 Noah & Emma. Alle rechten voorbehouden.</p>
         </div>
       </main>
     </div>

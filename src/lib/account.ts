@@ -21,7 +21,7 @@ import { supabaseAdmin, zegAbonnementOp } from "@/lib/mollie";
 export async function verwijderAccount(userId: string) {
   await zegAbonnementOp(userId).catch(() => {});
 
-  await Promise.all([
+  const verwijderResultaten = await Promise.all([
     supabaseAdmin.from("children").delete().eq("user_id", userId),
     supabaseAdmin.from("favorites").delete().eq("user_id", userId),
     supabaseAdmin.from("followers").delete().or(`follower_id.eq.${userId},following_id.eq.${userId}`),
@@ -29,15 +29,25 @@ export async function verwijderAccount(userId: string) {
     supabaseAdmin.from("swipe_tellers").delete().eq("user_id", userId),
     supabaseAdmin.from("listings").update({ actief: false }).eq("user_id", userId),
   ]);
+  const eersteFout = verwijderResultaten.find(r => r.error)?.error;
+  if (eersteFout) throw eersteFout;
 
   const { data: avatarBestanden } = await supabaseAdmin.storage.from("avatars").list(userId);
   if (avatarBestanden?.length) {
     await supabaseAdmin.storage.from("avatars").remove(avatarBestanden.map(b => `${userId}/${b.name}`));
   }
 
-  await supabaseAdmin.from("profiles").update({
+  // profiles.email is NOT NULL — kan dus niet op null gezet worden.
+  // Gebruikt hetzelfde anonieme adres als de auth-kant, in plaats van null.
+  // Bug gevonden op 4 sep 2026: de update hieronder faalde stil op precies
+  // dit punt (23502, not-null constraint), waardoor de HELE update-instructie
+  // niets bijwerkte (Postgres past een update atomisch toe) — inclusief naam
+  // en de rest — terwijl de daaropvolgende auth-ban wél gewoon slaagde. Dat
+  // gaf de indruk dat verwijderen werkte, terwijl het profiel intact bleef.
+  const anoniemEmail = `verwijderd-${userId}@noah-emma.invalid`;
+  const { error: profielError } = await supabaseAdmin.from("profiles").update({
     naam: "Verwijderde gebruiker",
-    email: null,
+    email: anoniemEmail,
     avatar_url: null,
     bio: null,
     stad: null,
@@ -47,11 +57,12 @@ export async function verwijderAccount(userId: string) {
     mollie_customer_id: null,
     mollie_subscription_id: null,
   }).eq("id", userId);
+  if (profielError) throw profielError;
 
   await supabaseAdmin.auth.admin.updateUserById(userId, {
     ban_duration: "876000h", // ~100 jaar — er bestaat geen "voor altijd"-optie
     password: randomUUID() + randomUUID(),
     // Maakt het e-mailadres vrij zodat iemand later opnieuw kan registreren.
-    email: `verwijderd-${userId}@noah-emma.invalid`,
+    email: anoniemEmail,
   });
 }

@@ -11,8 +11,8 @@ type Transactie = {
   created_at: string;
   afgerond_at: string | null;
   listing_id: string | null;
-  koper_id: string;
-  verkoper_id: string;
+  buyer_id: string;
+  seller_id: string;
   listings: {
     id: string;
     titel: string;
@@ -45,12 +45,12 @@ export default function OrdersPage() {
     const { data } = await supabase
       .from("conversations")
       .select(`
-        id, created_at, afgerond_at, listing_id, koper_id, verkoper_id,
+        id, created_at, afgerond_at, listing_id, buyer_id, seller_id,
         listings(id, titel, prijs, maat, foto_urls),
-        koper:profiles!conversations_koper_id_fkey(naam),
-        verkoper:profiles!conversations_verkoper_id_fkey(naam)
+        koper:profiles!conversations_buyer_id_fkey(naam),
+        verkoper:profiles!conversations_seller_id_fkey(naam)
       `)
-      .or(`koper_id.eq.${user.id},verkoper_id.eq.${user.id}`)
+      .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
       .eq("afgerond", true)
       .not("listing_id", "is", null)
       .order("afgerond_at", { ascending: false });
@@ -72,8 +72,8 @@ export default function OrdersPage() {
     setLoading(false);
   };
 
-  const alsKoper = transacties.filter(t => t.koper_id === currentUserId);
-  const alsVerkoper = transacties.filter(t => t.verkoper_id === currentUserId);
+  const alsKoper = transacties.filter(t => t.buyer_id === currentUserId);
+  const alsVerkoper = transacties.filter(t => t.seller_id === currentUserId);
   const getoond = tab === "kopen" ? alsKoper : alsVerkoper;
 
   const formatDatum = (dateStr: string | null) =>
@@ -137,7 +137,7 @@ export default function OrdersPage() {
           const anderePartijNaam = tab === "kopen"
             ? t.verkoper?.naam || "Verkoper"
             : t.koper?.naam || "Koper";
-          const anderePartijId = tab === "kopen" ? t.verkoper_id : t.koper_id;
+          const anderePartijId = tab === "kopen" ? t.seller_id : t.buyer_id;
           const alBeoordeeld = t.listing_id ? beoordeeldeListings.has(t.listing_id) : false;
 
           return (

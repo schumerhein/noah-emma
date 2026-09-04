@@ -48,7 +48,7 @@ Instructies per browser:
   },
   {
     titel: "Contact",
-    tekst: `Vragen over ons cookiebeleid? Stuur een e-mail naar privacy@noahemma.nl.`,
+    tekst: `Vragen over ons cookiebeleid? Stuur een e-mail naar info@noah-emma.nl.`,
   },
 ];
 

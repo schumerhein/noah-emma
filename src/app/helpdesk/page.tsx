@@ -139,7 +139,7 @@ export default function HelpdeskPage() {
               <p className="font-bold text-sm text-slate-800 dark:text-white">Direct contact</p>
               <p className="text-xs text-slate-400 leading-relaxed">
                 Niet gevonden wat je zocht? Mail ons op{" "}
-                <a href="mailto:support@noahemma.nl" className="text-primary font-bold">support@noahemma.nl</a>.
+                <a href="mailto:info@noah-emma.nl" className="text-primary font-bold">info@noah-emma.nl</a>.
                 Wij reageren binnen 1 werkdag.
               </p>
             </div>

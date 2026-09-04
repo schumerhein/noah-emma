@@ -142,7 +142,7 @@ export default function SupportPage() {
                   </div>
                 </div>
                 <a
-                  href="mailto:support@noahemma.nl"
+                  href="mailto:info@noah-emma.nl"
                   className="p-5 rounded-2xl bg-white dark:bg-slate-800/80 border border-primary/10 shadow-sm flex flex-col gap-4 active:scale-[0.98] transition-all"
                 >
                   <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">

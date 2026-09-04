@@ -67,7 +67,7 @@ export default function WettelijkPage() {
           <p className="text-sm text-slate-400">BTW: NL123456789B01</p>
           <p className="text-sm text-slate-400">Amsterdam, Nederland</p>
           <p className="text-sm text-slate-400 mt-2">
-            <a href="mailto:legal@noahemma.nl" className="text-primary">legal@noahemma.nl</a>
+            <a href="mailto:info@noah-emma.nl" className="text-primary">info@noah-emma.nl</a>
           </p>
         </div>
 

@@ -59,7 +59,7 @@ const SECTIES = [
 • Advertenties verwijderen.
 • Een account tijdelijk of permanent blokkeren.
 
-Bij strafbare feiten doen wij melding bij de bevoegde autoriteiten. Vragen over deze richtlijnen? Mail naar support@noahemma.nl.`,
+Bij strafbare feiten doen wij melding bij de bevoegde autoriteiten. Vragen over deze richtlijnen? Mail naar info@noah-emma.nl.`,
   },
 ];
 

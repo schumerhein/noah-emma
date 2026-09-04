@@ -8,7 +8,7 @@ const SECTIES = [
     titel: "1. Definities",
     tekst: `In deze algemene voorwaarden wordt verstaan onder:
 
-• Platform: de website en applicatie Noah & Emma (noahemma.nl).
+• Platform: de website en applicatie Noah & Emma (noah-emma.nl).
 • Gebruiker: iedere persoon die een account aanmaakt op het platform.
 • Verkoper: een gebruiker die advertenties plaatst voor de verkoop van producten.
 • Koper: een gebruiker die een product aanschaft via het platform.
@@ -108,7 +108,7 @@ De aansprakelijkheid van Noah & Emma is in alle gevallen beperkt tot het bedrag 
     titel: "12. Contact",
     tekst: `Voor vragen over deze algemene voorwaarden kun je contact opnemen via:
 
-E-mail: info@noahemma.nl
+E-mail: info@noah-emma.nl
 Adres: Noah & Emma, Nederland`,
   },
 ];

@@ -8,7 +8,7 @@ const SECTIES = [
     titel: "1. Wie zijn wij?",
     tekst: `Noah & Emma is een online platform voor de verkoop en aankoop van tweedehands kinderkleding en speelgoed, gericht op ouders van kinderen van 0 tot 12 jaar. Wij hechten veel waarde aan de privacy van onze gebruikers en verwerken persoonsgegevens zorgvuldig en in overeenstemming met de Algemene Verordening Gegevensbescherming (AVG).
 
-Contactgegevens: Noah & Emma, Nederland — support@noahemma.nl`,
+Contactgegevens: Noah & Emma, Nederland — info@noah-emma.nl`,
   },
   {
     titel: "2. Welke gegevens verzamelen wij?",
@@ -59,7 +59,7 @@ Wij verkopen jouw gegevens nooit aan derden.`,
 • Bezwaarrecht: je kunt bezwaar maken tegen bepaalde verwerkingen.
 • Overdraagbaarheidsrecht: je kunt jouw gegevens in een standaardformaat opvragen.
 
-Stuur een e-mail naar privacy@noahemma.nl om een van deze rechten uit te oefenen. Wij reageren binnen 30 dagen.`,
+Stuur een e-mail naar info@noah-emma.nl om een van deze rechten uit te oefenen. Wij reageren binnen 30 dagen.`,
   },
   {
     titel: "7. Cookies en tracking",
@@ -82,7 +82,7 @@ Stuur een e-mail naar privacy@noahemma.nl om een van deze rechten uit te oefenen
     titel: "10. Contact",
     tekst: `Heb je vragen over deze privacyverklaring of over de verwerking van jouw gegevens? Neem dan contact op:
 
-E-mail: privacy@noahemma.nl
+E-mail: info@noah-emma.nl
 Adres: Noah & Emma, Nederland
 
 Je kunt ook een klacht indienen bij de Autoriteit Persoonsgegevens via autoriteitpersoonsgegevens.nl.`,

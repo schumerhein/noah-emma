@@ -19,6 +19,7 @@ Contactgegevens: Noah & Emma, Nederland — info@noah-emma.nl`,
 • Advertentiegegevens: productfoto's, beschrijvingen, prijzen en maten.
 • Berichtgegevens: chats tussen kopers en verkopers.
 • Beoordelingen: reviews na afgeronde transacties.
+• Betaalgegevens: als je een Premium-abonnement of Boost afneemt, verwerkt onze betaaldienstverlener Mollie de betaling. Wij zien en bewaren zelf nooit je volledige kaart- of rekeninggegevens — enkel het transactiebedrag, de datum en een betalingsstatus, nodig voor onze boekhouding.
 • Technische gegevens: apparaattype, browser, IP-adres (verwerkt via Supabase).`,
   },
   {
@@ -66,11 +67,12 @@ Stuur een e-mail naar info@noah-emma.nl om een van deze rechten uit te oefenen. 
     tekst: `Noah & Emma gebruikt functionele cookies die strikt noodzakelijk zijn voor het werken van de applicatie (ingelogd blijven, sessies bijhouden). Wij gebruiken geen tracking cookies van derden voor advertentiedoeleinden.`,
   },
   {
-    titel: "8. Beveiliging",
+    titel: "8. Beveiliging en derde partijen",
     tekst: `Wij nemen passende technische en organisatorische maatregelen om jouw gegevens te beschermen:
 
 • Alle gegevens worden versleuteld opgeslagen en verstuurd (TLS/SSL).
 • Wij maken gebruik van Supabase (ISO 27001 gecertificeerd) als database-provider.
+• Voor het verwerken van betalingen (Premium en Boost) maken wij gebruik van Mollie B.V., een in Nederland gevestigde, vergunninghoudende betaaldienstverlener. Mollie verwerkt jouw betaalgegevens voor eigen rekening als zelfstandig verwerkingsverantwoordelijke — zie het privacybeleid van Mollie op mollie.com/privacy.
 • Toegang tot persoonsgegevens is beperkt tot geautoriseerde medewerkers.
 • Bij een datalek informeren wij jou en de Autoriteit Persoonsgegevens binnen 72 uur.`,
   },
@@ -117,7 +119,7 @@ export default function PrivacyPage() {
           </div>
         </div>
 
-        <p className="text-xs text-slate-400">Laatste wijziging: 1 juni 2025</p>
+        <p className="text-xs text-slate-400">Laatste wijziging: 4 september 2026</p>
 
         {SECTIES.map(sectie => (
           <section key={sectie.titel} className="space-y-3">

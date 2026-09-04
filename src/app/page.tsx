@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { haalGeblokkeerdeIds, filterZichtbaar } from "@/lib/zichtbaarheid";
-import { leesActiefKind, slaActiefKindOp, type ActiefKind } from "@/components/ThemeProvider";
+import { leesActiefKind, slaActiefKindOp, zetViewportHoogte, type ActiefKind } from "@/components/ThemeProvider";
 import { useToast } from "@/hooks/use-toast";
 import { PremiumModal } from "@/components/PremiumModal";
 import { X, Zap, Crown } from "lucide-react";
@@ -88,6 +88,14 @@ export default function Home() {
     checkPremiumEnSwipes();
     laadRecentBekeken();
 
+    // Extra herberekening van de viewporthoogte kort na binnenkomst: na
+    // een navigatie vanaf /login (met het toetsenbord nog open/sluitend)
+    // kan het sluiten van het toetsenbord te laat of helemaal niet als
+    // resize-event doorkomen, waardoor de pagina met de verkeerde (te
+    // kleine) hoogte bleef staan totdat je zelf scrolde.
+    zetViewportHoogte();
+    const t = setTimeout(zetViewportHoogte, 350);
+
     // Herstel de bewaarde filterkeuze
     try {
       const bewaard = localStorage.getItem("filter_op_kind");
@@ -99,7 +107,10 @@ export default function Home() {
       setKind(nieuwKind);
     };
     window.addEventListener("kind-gewisseld", onWissel);
-    return () => window.removeEventListener("kind-gewisseld", onWissel);
+    return () => {
+      window.removeEventListener("kind-gewisseld", onWissel);
+      clearTimeout(t);
+    };
   }, [authChecked]);
 
   useEffect(() => { if (authChecked) laadListings(); }, [authChecked, kind, filterOpKind]);
@@ -363,7 +374,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col bg-background-light dark:bg-background-dark relative font-display overflow-hidden" style={{ height: 'calc(100dvh - 5rem - env(safe-area-inset-bottom))' }}>
+    <div className="flex flex-col bg-background-light dark:bg-background-dark relative font-display overflow-hidden" style={{ height: 'calc(var(--echte-vh, 100dvh) - 5rem - env(safe-area-inset-bottom))' }}>
 
       {/* Header */}
       <header className="pt-12 pb-2 px-6 flex items-center justify-between z-10 shrink-0">

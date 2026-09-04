@@ -35,7 +35,33 @@ export function leesActiefKind(): ActiefKind | null {
   } catch { return null; }
 }
 
+/** Meet de echte, actuele viewporthoogte en zet 'm in --echte-vh. Zie ThemeProvider. */
+export function zetViewportHoogte() {
+  const hoogte = window.visualViewport?.height ?? window.innerHeight;
+  document.documentElement.style.setProperty("--echte-vh", `${hoogte}px`);
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  // Houdt de echte, actuele viewporthoogte bij in een CSS-variabele.
+  // `100dvh` zou dit ook moeten doen, maar na een client-side navigatie
+  // (bijv. van /login naar /) klopt de dvh-waarde op mobiel soms tijdelijk
+  // niet — de pagina rendert dan met de browser-UI (adresbalk) nog
+  // "meegerekend" als zichtbare ruimte, waardoor de inhoud te hoog/klein
+  // oogt totdat een scroll of resize de boel laat herberekenen. Door zelf
+  // te meten via visualViewport (en te blijven luisteren naar wijzigingen)
+  // is de eerste render altijd al correct.
+  useEffect(() => {
+    zetViewportHoogte();
+    window.visualViewport?.addEventListener("resize", zetViewportHoogte);
+    window.addEventListener("resize", zetViewportHoogte);
+    window.addEventListener("orientationchange", zetViewportHoogte);
+    return () => {
+      window.visualViewport?.removeEventListener("resize", zetViewportHoogte);
+      window.removeEventListener("resize", zetViewportHoogte);
+      window.removeEventListener("orientationchange", zetViewportHoogte);
+    };
+  }, []);
+
   useEffect(() => {
     const laadThema = async () => {
       // Gebruik eerst het opgeslagen actieve kind

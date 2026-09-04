@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { haalGeblokkeerdeIds, filterZichtbaar } from "@/lib/zichtbaarheid";
-import { leesActiefKind, type ActiefKind } from "@/components/ThemeProvider";
+import { leesActiefKind, slaActiefKindOp, type ActiefKind } from "@/components/ThemeProvider";
 import { useToast } from "@/hooks/use-toast";
 import { PremiumModal } from "@/components/PremiumModal";
 import { X, Zap, Crown } from "lucide-react";
@@ -79,8 +79,12 @@ export default function Home() {
   useEffect(() => {
     if (!authChecked) return;
     const actief = leesActiefKind();
+    // Toon direct de gecachte waarde (voorkomt een flits van "geen kind"),
+    // maar ververs 'm meteen vanuit de database — de cache kan een oudere
+    // maat bevatten dan wat er nu voor dit kind is ingesteld (bijv. na een
+    // wijziging op een ander apparaat), en die twee moeten altijd overeenkomen.
     if (actief) setKind(actief);
-    else laadKindFallback();
+    laadKindFallback(actief?.id);
     checkPremiumEnSwipes();
     laadRecentBekeken();
 
@@ -150,17 +154,28 @@ export default function Home() {
     }
   };
 
-  const laadKindFallback = async () => {
+  // Haalt het actieve kind vers uit de database op — bij een bekend id
+  // precies dat kind, anders (geen cache, of het kind bestaat niet meer)
+  // het eerst aangemaakte kind. Zet het resultaat ook terug in de cache
+  // zodat andere pagina's (en een volgend bezoek) meteen de juiste maat zien.
+  const laadKindFallback = async (kindId?: string) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    const { data } = await supabase
+    let query = supabase
       .from("children")
       .select("id, naam, maat, geslacht")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: true })
-      .limit(1)
-      .single();
-    if (data) setKind(data as ActiefKind);
+      .eq("user_id", user.id);
+    query = kindId
+      ? query.eq("id", kindId)
+      : query.order("created_at", { ascending: true }).limit(1);
+    const { data } = await query.maybeSingle();
+    if (data) {
+      setKind(data as ActiefKind);
+      slaActiefKindOp(data as ActiefKind);
+    } else if (kindId) {
+      // Het gecachte kind bestaat niet meer (verwijderd) — val terug op het eerste kind.
+      laadKindFallback();
+    }
   };
 
   const laadListings = async () => {

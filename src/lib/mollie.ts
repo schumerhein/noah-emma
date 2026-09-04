@@ -1,6 +1,7 @@
 import { createMollieClient } from "@mollie/api-client";
 import { createClient } from "@supabase/supabase-js";
 import type { User } from "@supabase/supabase-js";
+import { PREMIUM_PRIJS } from "@/lib/prijzen";
 
 export const mollie = createMollieClient({ apiKey: process.env.MOLLIE_API_KEY! });
 
@@ -11,7 +12,7 @@ export const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-export const PREMIUM_PRIJS = 4.99;
+export { PREMIUM_PRIJS };
 const PREMIUM_INTERVAL = "1 month";
 
 export const BOOST_TIERS = {

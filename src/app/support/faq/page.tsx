@@ -12,6 +12,9 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
+import { PREMIUM_PRIJS } from "@/lib/prijzen";
+
+const PREMIUM_PRIJS_TEKST = `€${PREMIUM_PRIJS.toFixed(2).replace(".", ",")}`;
 
 const FAQ_DATA = [
   {
@@ -21,8 +24,8 @@ const FAQ_DATA = [
       { id: "A01", q: "Wat is Noah & Emma?", a: "Noah & Emma is een Nederlandse app waar ouders tweedehands kinderkleding en accessoires kunnen kopen en verkopen. Het platform is speciaal gemaakt voor kinderen van 0 tot en met 12 jaar en combineert een slimme zoekfunctie met een leuke swipe-interface." },
       { id: "A02", q: "Voor wie is Noah & Emma bedoeld?", a: "De app is bedoeld voor ouders van kinderen van 0 tot en met 12 jaar in Nederland. Zowel kopers die slim willen shoppen als verkopers die kwalitatieve kleding een tweede leven willen geven, zijn welkom." },
       { id: "A03", q: "Is Noah & Emma beschikbaar in heel Nederland?", a: "Ja, de app is beschikbaar voor iedereen in Nederland. Voorlopig zijn we nog niet actief in België of andere landen, maar dat staat wel op de planning." },
-      { id: "A04", q: "Is Noah & Emma gratis te gebruiken?", a: "Downloaden en een account aanmaken is gratis. Verkopen is ook gratis. Als koper kun je 10 keer per dag gratis swipen. Wil je onbeperkt swipen en gebruikmaken van extra functies? Dan neem je een abonnement voor €4,99 per maand." },
-      { id: "A05", q: "Hoe verdient Noah & Emma geld?", a: "Noah & Emma heeft twee inkomstenbronnen: het koperabonnement van €4,99 per maand en betaalde boosts waarmee verkopers hun items meer zichtbaarheid kunnen geven." },
+      { id: "A04", q: "Is Noah & Emma gratis te gebruiken?", a: `Downloaden en een account aanmaken is gratis. Verkopen is ook gratis. Als koper kun je 10 keer per dag gratis swipen. Wil je onbeperkt swipen en gebruikmaken van extra functies? Dan neem je een abonnement voor ${PREMIUM_PRIJS_TEKST} per maand.` },
+      { id: "A05", q: "Hoe verdient Noah & Emma geld?", a: `Noah & Emma heeft twee inkomstenbronnen: het koperabonnement van ${PREMIUM_PRIJS_TEKST} per maand en betaalde boosts waarmee verkopers hun items meer zichtbaarheid kunnen geven.` },
       { id: "A06", q: "Hoe verschilt Noah & Emma van Vinted of Marktplaats?", a: "Noah & Emma is volledig gericht op kinderkleding en accessoires, waardoor het aanbod veel relevanter is dan op grote generieke platforms. Dankzij het groeiprofiel zie je altijd items die passen bij de maat en leeftijd van jouw kind, zonder eindeloos te hoeven filteren." },
       { id: "A07", q: "Staan er echte kinderen op de productfoto's?", a: "Nee. Kleding wordt getoond op Noah en Emma, twee AI-gegenereerde kindermodellen. Zo beschermen we de privacy van kinderen en zorg jij er als verkoper voor dat je geen foto's van je eigen kind hoeft te plaatsen." },
       { id: "A08", q: "Is Noah & Emma duurzaam?", a: "Ja. Door kleding een tweede leven te geven, draag je bij aan minder verspilling en een meer circulaire economie. Elk item dat via Noah & Emma wordt verkocht, hoeft niet nieuw geproduceerd te worden." },
@@ -46,7 +49,7 @@ const FAQ_DATA = [
     items: [
       { id: "K01", q: "Hoe werkt het swipen?", a: "Op de ontdekpagina zie je items die passen bij het groeiprofiel van jouw kind. Swipe naar rechts als je een item leuk vindt, naar links als je het overslaat. Items waar je rechts op swipt, worden bewaard in je verlanglijst." },
       { id: "K02", q: "Hoeveel keer kan ik gratis swipen per dag?", a: "Zonder abonnement kun je 10 keer per dag gratis swipen. De teller wordt elke dag om middernacht opnieuw ingesteld. Met een abonnement swipe je onbeperkt." },
-      { id: "K03", q: "Wat kost het abonnement?", a: "Het abonnement kost €4,99 per maand. Je kunt het op elk moment opzeggen, zonder verdere verplichtingen." },
+      { id: "K03", q: "Wat kost het abonnement?", a: `Het abonnement kost ${PREMIUM_PRIJS_TEKST} per maand. Je kunt het op elk moment opzeggen, zonder verdere verplichtingen.` },
       { id: "K04", q: "Wat krijg ik met een abonnement?", a: "Met een abonnement swipe je onbeperkt, heb je toegang tot geavanceerde filters, krijg je als eerste meldingen van nieuw aanbod dat past bij jouw groeiprofiel en profiteer je van exclusieve kortingsacties." },
       { id: "K05", q: "Hoe zeg ik mijn abonnement op?", a: "Ga naar 'Mijn account', kies 'Abonnement' en klik op 'Opzeggen'. Je abonnement blijft actief tot het einde van de lopende betaalperiode." },
       { id: "K06", q: "Hoe betaal ik voor een aankoop?", a: "Noah & Emma werkt als Marktplaats: koper en verkoper spreken zelf een prijs en betaalmethode af via de chat, bijvoorbeeld iDEAL, Tikkie of contant bij ophalen. Wij verwerken zelf geen betalingen en houden geen geld vast — betaal daarom nooit vooraf via een onbekende link." },

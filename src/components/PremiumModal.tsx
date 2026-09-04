@@ -5,6 +5,9 @@ import { X, Crown, Check, Search, BellRing, Sparkles } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { PREMIUM_PRIJS } from "@/lib/prijzen";
+
+const PREMIUM_PRIJS_TEKST = `€${PREMIUM_PRIJS.toFixed(2).replace(".", ",")}`;
 
 type Status = { premiumActief: boolean; heeftAbonnement: boolean; verloopdatum: string | null };
 
@@ -105,7 +108,7 @@ export function PremiumModal({ open, onClose }: { open: boolean; onClose: () => 
               ? "Je abonnement is actief"
               : actiefZonderAbonnement
               ? "Actief tot het einde van de periode"
-              : "Ontgrendel alles voor €4,99/maand"}
+              : `Ontgrendel alles voor ${PREMIUM_PRIJS_TEKST}/maand`}
           </p>
         </div>
 
@@ -141,7 +144,7 @@ export function PremiumModal({ open, onClose }: { open: boolean; onClose: () => 
           ) : (
             <>
               <div className="text-center">
-                <span className="text-2xl font-black text-slate-900 dark:text-white">€4,99</span>
+                <span className="text-2xl font-black text-slate-900 dark:text-white">{PREMIUM_PRIJS_TEKST}</span>
                 <span className="text-xs text-slate-400 font-medium"> / maand</span>
                 <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium mt-0.5">Geen kosten per item — onbeperkt gebruik. Maandelijks opzegbaar.</p>
               </div>

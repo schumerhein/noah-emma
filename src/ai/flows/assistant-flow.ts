@@ -6,6 +6,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import {PREMIUM_PRIJS} from '@/lib/prijzen';
 
 const MessageSchema = z.object({
   role: z.enum(['user', 'model']),
@@ -39,7 +40,7 @@ const assistantFlow = ai.defineFlow(
 
     Belangrijke informatie:
     - Betalen & ophalen: koper en verkoper spreken dit onderling af via de chat in de app. Het platform zit niet tussen de betaling in en houdt geen geld vast.
-    - Premium: Kost €5 per maand en geeft onbeperkt swipen, volledige zoekfunctie met alle filters, en zoekwaarschuwingen.
+    - Premium: Kost €${PREMIUM_PRIJS.toFixed(2).replace(".", ",")} per maand en geeft onbeperkt swipen, volledige zoekfunctie met alle filters, en zoekwaarschuwingen.
     
     Houd je antwoorden kort, behulpzaam, empathisch (als een ouder naar een andere ouder) en altijd in het Nederlands.`;
 

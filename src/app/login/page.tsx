@@ -50,6 +50,10 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Sluit het mobiele toetsenbord vóór de navigatie — anders blijft de
+    // pagina na het inloggen soms omhoog geschoven staan (de viewport was
+    // nog aangepast voor het toetsenbord toen de nieuwe pagina laadde).
+    (document.activeElement as HTMLElement | null)?.blur();
     setLoading(true);
     setError(null);
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -70,6 +74,7 @@ export default function LoginPage() {
     // op het profiel, geen kindprofiel. profiles.naam is leeg totdat de
     // onboarding-stap 'm zet, dus dat is hier het betrouwbare signaal.
     const { data: profiel } = await supabase.from("profiles").select("naam").eq("id", data.user.id).single();
+    window.scrollTo(0, 0);
     if (!profiel?.naam) {
       router.push("/onboarding/kind");
     } else {
@@ -80,6 +85,7 @@ export default function LoginPage() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    (document.activeElement as HTMLElement | null)?.blur();
     setLoading(true);
     setError(null);
     const { data, error } = await supabase.auth.signUp({
@@ -96,6 +102,7 @@ export default function LoginPage() {
       setError(error.message);
     } else if (data.session) {
       // E-mailbevestiging staat uit (of het account was al bevestigd) — meteen door.
+      window.scrollTo(0, 0);
       router.push("/onboarding/kind");
     } else {
       // Geen sessie: e-mailbevestiging is vereist voordat de onboarding kan starten.

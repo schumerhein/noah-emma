@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Camera, ArrowRight, Loader2, Plus, Sparkles, ChevronRight, ChevronLeft, Check, Crown, Wand2 } from "lucide-react";
+import { X, Camera, ArrowRight, Loader2, Plus, Sparkles, ChevronRight, ChevronLeft, Check, Crown, Wand2, Zap, Star, Rocket } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { cn, normaliseerPrijsInvoer } from "@/lib/utils";
@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import { NoahEmmaModel } from "@/components/ai-models/NoahEmmaModel";
 import { compositeClothingOnAvatar, compositeAllAngles, dataUrlToFile } from "@/lib/avatarComposite";
 import { AvatarViewer3D } from "@/components/avatar/AvatarViewer3D";
+import { BOOST_TIERS, type BoostTier } from "@/lib/prijzen";
 
 const CATEGORY_HIERARCHY: Record<string, { icon: string; sub: string[] }> = {
   "Meisjeskleding": { icon: "👧", sub: ["Jurken & Rokken", "Jassen & Vesten", "Truien & Sweaters", "T-shirts & Tops", "Broeken & Leggings", "Zwemkleding & Badpakken", "Pyjama & Ondergoed", "Schoenen & Laarzen", "Sokken & Kousen", "Feest & Galakleding", "Sportkleding", "Mutsen & Sjaals"] },
@@ -53,6 +54,7 @@ export default function SellPage() {
   const [merk, setMerk] = useState("");
   const [allowBidding, setAllowBidding] = useState(false);
   const [kleur, setKleur] = useState("");
+  const [boostTier, setBoostTier] = useState<BoostTier | null>(null);
   const [catSheetOpen, setCatSheetOpen] = useState(false);
   const [catStap, setCatStap] = useState<"hoofd" | "sub">("hoofd");
   const [loading, setLoading] = useState(false);
@@ -225,7 +227,7 @@ export default function SellPage() {
       }
 
       // Listing opslaan in database
-      const { error: insertError } = await supabase.from("listings").insert({
+      const { data: nieuwListing, error: insertError } = await supabase.from("listings").insert({
         user_id: user.id,
         titel: title,
         beschrijving: description,
@@ -240,9 +242,32 @@ export default function SellPage() {
         ai_model: aiModel === "none" ? null : aiModel,
         bieden_toegestaan: allowBidding,
         actief: true,
-      });
+      }).select("id").single();
 
       if (insertError) throw insertError;
+
+      // Boost meteen afrekenen als er bij het plaatsen een pakket is gekozen —
+      // zelfde eindpunt als de losse Boost-knop bij "Mijn items", nu automatisch
+      // aangeroepen zodat je niet na het plaatsen alsnog terug hoeft.
+      if (boostTier && nieuwListing) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          const res = await fetch("/api/betalen/boost", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+            body: JSON.stringify({ listingId: nieuwListing.id, tier: boostTier }),
+          });
+          const data = await res.json();
+          if (res.ok && data.checkoutUrl) {
+            toast({ title: "Product geplaatst! 🎉", description: "Even afrekenen voor je boost…" });
+            window.location.href = data.checkoutUrl;
+            return;
+          }
+          // Boost-betaling starten mislukt — het product staat al online, dus
+          // niet de hele plaatsing laten mislukken. Gewoon doorgaan zonder boost.
+          toast({ variant: "destructive", title: "Boost starten mislukt", description: "Je product staat online, maar de boost kon niet gestart worden. Probeer het later via je profiel." });
+        }
+      }
 
       toast({ title: "Product geplaatst! 🎉", description: "Je advertentie wordt kort beoordeeld en is daarna zichtbaar voor iedereen." });
       router.push("/");
@@ -591,14 +616,41 @@ export default function SellPage() {
         </section>
 
         {/* Advertentieruimte */}
-        <div className="rounded-2xl border-2 border-slate-100 dark:border-slate-800 p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-slate-100 dark:bg-slate-800">
-            <Crown className="w-5 h-5 text-slate-400" />
+        <div className="rounded-2xl border-2 border-slate-100 dark:border-slate-800 p-4 space-y-3">
+          <div className="flex items-center gap-3">
+            <div className={cn("w-10 h-10 rounded-full flex items-center justify-center shrink-0", boostTier ? "bg-amber-400" : "bg-slate-100 dark:bg-slate-800")}>
+              <Crown className={cn("w-5 h-5", boostTier ? "text-white" : "text-slate-400")} />
+            </div>
+            <div>
+              <p className="font-bold text-sm text-slate-900 dark:text-white">Advertentieruimte inkopen</p>
+              <p className="text-xs text-slate-400">Optioneel — verschijn meteen vaker in Ontdekken</p>
+            </div>
           </div>
-          <div>
-            <p className="font-bold text-sm text-slate-900 dark:text-white">Advertentieruimte inkopen</p>
-            <p className="text-xs text-slate-400">Kan na het plaatsen via je profiel &rarr; advertentie &rarr; Boost</p>
+
+          <div className="grid grid-cols-3 gap-2">
+            {(Object.entries(BOOST_TIERS) as [BoostTier, typeof BOOST_TIERS[BoostTier]][]).map(([id, tier]) => {
+              const Icon = id === "fast" ? Zap : id === "popular" ? Star : Rocket;
+              const actief = boostTier === id;
+              return (
+                <button
+                  type="button"
+                  key={id}
+                  onClick={() => setBoostTier(actief ? null : id)}
+                  className={cn(
+                    "rounded-xl border-2 p-2.5 flex flex-col items-center gap-1 text-center transition-all",
+                    actief ? "border-primary bg-primary/5" : "border-slate-100 dark:border-slate-800"
+                  )}
+                >
+                  <Icon className={cn("w-4 h-4", actief ? "text-primary" : "text-slate-400")} />
+                  <span className={cn("text-[11px] font-bold", actief ? "text-primary" : "text-slate-600 dark:text-slate-300")}>{tier.dagen}d</span>
+                  <span className={cn("text-[10px] font-bold", actief ? "text-primary" : "text-slate-400")}>€{tier.prijs.toFixed(2).replace(".", ",")}</span>
+                </button>
+              );
+            })}
           </div>
+          {boostTier && (
+            <p className="text-[11px] text-slate-400 text-center">Je rekent de boost direct na het plaatsen af via Mollie.</p>
+          )}
         </div>
 
         <Button
@@ -610,7 +662,7 @@ export default function SellPage() {
             <Loader2 className="w-6 h-6 animate-spin" />
           ) : (
             <>
-              <span className="text-lg">Product Plaatsen</span>
+              <span className="text-lg">{boostTier ? "Plaatsen & boosten" : "Product Plaatsen"}</span>
               <ArrowRight className="w-5 h-5" />
             </>
           )}

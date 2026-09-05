@@ -1,7 +1,7 @@
 import { createMollieClient } from "@mollie/api-client";
 import { createClient } from "@supabase/supabase-js";
 import type { User } from "@supabase/supabase-js";
-import { PREMIUM_PRIJS } from "@/lib/prijzen";
+import { PREMIUM_PRIJS, BOOST_TIERS, type BoostTier } from "@/lib/prijzen";
 
 export const mollie = createMollieClient({ apiKey: process.env.MOLLIE_API_KEY! });
 
@@ -12,16 +12,9 @@ export const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-export { PREMIUM_PRIJS };
+export { PREMIUM_PRIJS, BOOST_TIERS };
+export type { BoostTier };
 const PREMIUM_INTERVAL = "1 month";
-
-export const BOOST_TIERS = {
-  fast: { naam: "Snel", dagen: 3, prijs: 2.99 },
-  popular: { naam: "Populair", dagen: 7, prijs: 4.99 },
-  max: { naam: "Maximaal", dagen: 14, prijs: 8.99 },
-} as const;
-
-export type BoostTier = keyof typeof BOOST_TIERS;
 
 // Haalt de ingelogde gebruiker op basis van het Supabase-token dat de
 // client meestuurt. Geeft null terug als het token ontbreekt of ongeldig is.

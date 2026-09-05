@@ -49,6 +49,8 @@ type Listing = {
   likes: number;
   moderatie_status?: string;
   verkocht?: boolean;
+  gepromoot?: boolean;
+  promotie_verloopdatum?: string | null;
 };
 
 type Favoriet = {
@@ -672,6 +674,24 @@ export default function ProfilePage() {
                         <span className="absolute top-2 left-2 text-[10px] font-bold px-2 py-1 rounded-full bg-red-100 text-red-600">
                           Afgekeurd
                         </span>
+                      )}
+                      {/* Boost-status en directe boost-knop */}
+                      {item.gepromoot && item.promotie_verloopdatum && new Date(item.promotie_verloopdatum) > new Date() ? (
+                        <button
+                          onClick={(e) => { e.preventDefault(); router.push(`/promote/${item.id}`); }}
+                          className="absolute bottom-2 left-2 flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full bg-amber-400 text-white shadow-sm"
+                        >
+                          <Crown className="w-3 h-3" />
+                          {Math.max(1, Math.round((new Date(item.promotie_verloopdatum).getTime() - Date.now()) / 86400000))}d
+                        </button>
+                      ) : (
+                        <button
+                          onClick={(e) => { e.preventDefault(); router.push(`/promote/${item.id}`); }}
+                          className="absolute bottom-2 left-2 flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full bg-white/90 dark:bg-slate-900/80 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-sm active:scale-95 transition-transform"
+                        >
+                          <Crown className="w-3 h-3" />
+                          Boost
+                        </button>
                       )}
                     </div>
                   ))}

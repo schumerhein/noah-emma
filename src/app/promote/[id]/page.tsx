@@ -8,11 +8,14 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
+import { BOOST_TIERS } from "@/lib/prijzen";
+
+const prijsTekst = (bedrag: number) => `€${bedrag.toFixed(2).replace(".", ",")}`;
 
 const tiers = [
-  { id: "fast", name: "Snel", title: "3 Dagen Boost", price: "€2,99", desc: "Voor een korte, snelle boost in de swipe-flow.", icon: Zap },
-  { id: "popular", name: "Populair", title: "7 Dagen Boost", price: "€4,99", desc: "Een volle week vaker bovenaan — de meest gekozen duur.", icon: Star, badge: "Aanbevolen" },
-  { id: "max", name: "Maximaal", title: "14 Dagen Boost", price: "€8,99", desc: "Twee weken maximale zichtbaarheid voor je beste items.", icon: Rocket },
+  { id: "fast", name: BOOST_TIERS.fast.naam, title: `${BOOST_TIERS.fast.dagen} Dagen Boost`, price: prijsTekst(BOOST_TIERS.fast.prijs), desc: "Voor een korte, snelle boost in de swipe-flow.", icon: Zap },
+  { id: "popular", name: BOOST_TIERS.popular.naam, title: `${BOOST_TIERS.popular.dagen} Dagen Boost`, price: prijsTekst(BOOST_TIERS.popular.prijs), desc: "Een volle week vaker bovenaan — de meest gekozen duur.", icon: Star, badge: "Aanbevolen" },
+  { id: "max", name: BOOST_TIERS.max.naam, title: `${BOOST_TIERS.max.dagen} Dagen Boost`, price: prijsTekst(BOOST_TIERS.max.prijs), desc: "Twee weken maximale zichtbaarheid voor je beste items.", icon: Rocket },
 ];
 
 type Listing = { id: string; titel: string; foto_urls: string[]; gepromoot: boolean };

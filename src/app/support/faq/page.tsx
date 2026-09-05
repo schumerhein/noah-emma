@@ -12,9 +12,10 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
-import { PREMIUM_PRIJS } from "@/lib/prijzen";
+import { PREMIUM_PRIJS, BOOST_TIERS } from "@/lib/prijzen";
 
-const PREMIUM_PRIJS_TEKST = `€${PREMIUM_PRIJS.toFixed(2).replace(".", ",")}`;
+const prijsTekst = (bedrag: number) => `€${bedrag.toFixed(2).replace(".", ",")}`;
+const PREMIUM_PRIJS_TEKST = prijsTekst(PREMIUM_PRIJS);
 
 const FAQ_DATA = [
   {
@@ -62,7 +63,7 @@ const FAQ_DATA = [
     items: [
       { id: "V01", q: "Hoe bied ik een item aan?", a: "Ga naar 'Verkopen' in de app, upload foto's van het item, vul de beschrijving in en stel een prijs in. Na controle door ons systeem wordt jouw advertentie zichtbaar voor kopers." },
       { id: "V02", q: "Wat kost het om te verkopen?", a: "Verkopen is gratis. Je betaalt alleen als je je item wilt boosten voor meer zichtbaarheid." },
-      { id: "V06", q: "Wat is een boost en hoe werkt het?", a: "Met een boost geef je jouw item meer zichtbaarheid in de ontdekfeed van kopers. Je kiest voor 3 dagen (€2,99) of 7 dagen (€4,99). Een geboost item wordt vaker getoond aan relevante kopers." },
+      { id: "V06", q: "Wat is een boost en hoe werkt het?", a: `Met een boost geef je jouw item meer zichtbaarheid in de ontdekfeed van kopers. Je kiest voor ${BOOST_TIERS.fast.dagen} dagen (${prijsTekst(BOOST_TIERS.fast.prijs)}), ${BOOST_TIERS.popular.dagen} dagen (${prijsTekst(BOOST_TIERS.popular.prijs)}) of ${BOOST_TIERS.max.dagen} dagen (${prijsTekst(BOOST_TIERS.max.prijs)}). Een geboost item wordt vaker getoond aan relevante kopers.` },
       { id: "V08", q: "Hoe en wanneer word ik uitbetaald?", a: "Noah & Emma verwerkt zelf geen betalingen: koper en verkoper spreken de betaalmethode (bijvoorbeeld iDEAL, Tikkie of contant) zelf af via de chat, dus de koper betaalt rechtstreeks aan jou." },
       { id: "V09", q: "Wat zijn de verkoopkosten of commissies?", a: "Noah & Emma rekent geen verkoopcommissie en houdt geen geld vast. Je betaalt alleen als je ervoor kiest je item te boosten voor meer zichtbaarheid." },
     ]

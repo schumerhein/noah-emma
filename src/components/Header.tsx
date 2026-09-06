@@ -35,7 +35,6 @@ export function Header() {
     pathname === "/search" ||
     pathname.startsWith("/product/") ||
     pathname === "/profile" ||
-    pathname === "/profile/edit" ||
     pathname.startsWith("/promote/") ||
     pathname === "/messages" ||
     pathname.startsWith("/messages/") ||

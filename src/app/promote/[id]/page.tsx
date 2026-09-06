@@ -18,7 +18,7 @@ const tiers = [
   { id: "max", name: BOOST_TIERS.max.naam, title: `${BOOST_TIERS.max.dagen} Dagen Boost`, price: prijsTekst(BOOST_TIERS.max.prijs), desc: "Twee weken maximale zichtbaarheid voor je beste items.", icon: Rocket },
 ];
 
-type Listing = { id: string; titel: string; foto_urls: string[]; gepromoot: boolean };
+type Listing = { id: string; titel: string; foto_urls: string[]; gepromoot: boolean; promotie_verloopdatum: string | null };
 
 export default function PromotePage() {
   const router = useRouter();
@@ -34,7 +34,7 @@ export default function PromotePage() {
     (async () => {
       const { data } = await supabase
         .from("listings")
-        .select("id, titel, foto_urls, gepromoot")
+        .select("id, titel, foto_urls, gepromoot, promotie_verloopdatum")
         .eq("id", listingId)
         .single();
       setListing(data);
@@ -79,6 +79,12 @@ export default function PromotePage() {
     );
   }
 
+  // gepromoot blijft op true staan totdat er een nieuwe boost gestart wordt —
+  // een verlopen boost telt hier dus niet meer als "al geboost".
+  const boostRestDagen = listing.gepromoot && listing.promotie_verloopdatum && new Date(listing.promotie_verloopdatum) > new Date()
+    ? Math.max(1, Math.ceil((new Date(listing.promotie_verloopdatum).getTime() - Date.now()) / 86400000))
+    : null;
+
   return (
     <div className="font-display bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 min-h-screen flex flex-col">
       <header className="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md px-4 pt-6 pb-4 flex items-center justify-between border-b border-primary/10">
@@ -100,7 +106,7 @@ export default function PromotePage() {
             <p className="text-[10px] font-bold text-primary uppercase tracking-wider">Uw advertentie</p>
             <h3 className="font-bold text-slate-800 dark:text-white truncate max-w-[200px]">{listing.titel}</h3>
             <p className="text-xs text-slate-500">
-              Huidige status: {listing.gepromoot ? "Al geboost" : "Geen boost"}
+              Huidige status: {boostRestDagen ? `Al geboost · nog ${boostRestDagen} ${boostRestDagen === 1 ? "dag" : "dagen"}` : "Geen boost"}
             </p>
           </div>
         </div>

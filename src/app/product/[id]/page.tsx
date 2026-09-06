@@ -40,6 +40,7 @@ type Listing = {
   moderatie_status?: string;
   moderatie_reden?: string | null;
   gepromoot?: boolean;
+  promotie_verloopdatum?: string | null;
   verzending_mogelijk?: boolean;
   verzendkosten?: number | null;
   profiles: {
@@ -380,8 +381,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             </div>
           )}
 
-          {/* Gepromoot badge */}
-          {listing.gepromoot && (
+          {/* Gepromoot badge — alleen tonen zolang de boost echt nog loopt */}
+          {listing.gepromoot && listing.promotie_verloopdatum && new Date(listing.promotie_verloopdatum) > new Date() && (
             <div className="absolute top-16 left-4 z-10 flex items-center gap-1.5 bg-amber-500 px-3 py-1.5 rounded-full shadow-md">
               <Crown className="w-3.5 h-3.5 text-white" />
               <span className="text-xs font-black text-white uppercase tracking-wide">Gepromoot</span>

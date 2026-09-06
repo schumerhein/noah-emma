@@ -88,9 +88,14 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     setKleur(data.kleur || "");
     setBiedenToegestaan(data.bieden_toegestaan || false);
     setActief(data.actief !== false);
-    setGepromoot(data.gepromoot || false);
-    setPromotieVerloopdatum(data.promotie_verloopdatum || null);
-    if (data.gepromoot && data.promotie_verloopdatum) {
+    // gepromoot blijft in de database op true staan totdat er een nieuwe boost
+    // wordt gestart — de boost telt hier dus alleen als echt actief zolang de
+    // verloopdatum nog in de toekomst ligt, anders is de boostperiode gewoon
+    // afgelopen en moet de UI dat ook zo tonen.
+    const boostNogActief = !!(data.gepromoot && data.promotie_verloopdatum && new Date(data.promotie_verloopdatum) > new Date());
+    setGepromoot(boostNogActief);
+    setPromotieVerloopdatum(boostNogActief ? data.promotie_verloopdatum : null);
+    if (boostNogActief) {
       const restDagen = Math.round((new Date(data.promotie_verloopdatum).getTime() - Date.now()) / 86400000);
       if (restDagen > 4) setPromotieDuur(7);
       else if (restDagen > 0) setPromotieDuur(3);

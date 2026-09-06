@@ -27,6 +27,7 @@ type Listing = {
   likes: number;
   user_id: string;
   gepromoot?: boolean;
+  promotie_verloopdatum?: string | null;
   profiles?: {
     naam: string | null;
     stad: string | null;
@@ -192,19 +193,28 @@ export default function Home() {
   const laadListings = async () => {
     setLoading(true);
 
-    // Laad gepromote listings eerst
+    // Laad gepromote listings eerst — gepromoot blijft in de database op true
+    // staan totdat er een nieuwe boost gestart wordt, dus een verlopen boost
+    // (promotie_verloopdatum in het verleden) telt hier niet meer mee. Zonder
+    // deze check zou een item na een betaalde boost van bijv. 3 dagen voor
+    // altijd gratis vooraan blijven staan.
     let queryPromoted = supabase
       .from("listings")
       .select("*, profiles(naam, stad, gemiddelde_beoordeling, totaal_beoordelingen, avatar_url, vakantiestand)")
       .eq("actief", true)
       .eq("gepromoot", true)
+      .gt("promotie_verloopdatum", new Date().toISOString())
       .limit(5);
 
+    // Let op: "niet (meer) gepromoot" is niet hetzelfde als gepromoot=false —
+    // een item met een verlopen boost heeft gepromoot nog op true staan (zie
+    // hierboven), en moet hier dus ook meetellen, anders verdwijnt het uit
+    // beide queries in plaats van gewoon terug te vallen in de normale rij.
     let queryNormaal = supabase
       .from("listings")
       .select("*, profiles(naam, stad, gemiddelde_beoordeling, totaal_beoordelingen, avatar_url, vakantiestand)")
       .eq("actief", true)
-      .eq("gepromoot", false)
+      .or(`gepromoot.eq.false,promotie_verloopdatum.lte.${new Date().toISOString()}`)
       .order("created_at", { ascending: false })
       .limit(50);
 
@@ -522,8 +532,8 @@ export default function Home() {
                     <span className="text-2xl font-black text-rose-500 uppercase tracking-widest">NEE</span>
                   </div>
 
-                  {/* Gepromoot badge */}
-                  {current.gepromoot && (
+                  {/* Gepromoot badge — alleen tonen zolang de boost echt nog loopt */}
+                  {current.gepromoot && current.promotie_verloopdatum && new Date(current.promotie_verloopdatum) > new Date() && (
                     <div className="absolute top-3 left-3 z-20 flex items-center gap-1 bg-amber-500 px-2.5 py-1 rounded-full shadow-md">
                       <Crown className="w-3 h-3 text-white" />
                       <span className="text-[10px] font-black text-white uppercase tracking-wide">Gepromoot</span>

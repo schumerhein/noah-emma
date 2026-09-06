@@ -205,6 +205,13 @@ export default function LandingPage() {
               Bekijk hoe het werkt
             </a>
           </div>
+
+          <Link
+            href="/?gast=1"
+            className="inline-flex items-center gap-1.5 mt-5 text-sm font-bold text-[#5B4F63] hover:text-[#241A2E] transition-colors underline underline-offset-4 decoration-[#241A2E]/30"
+          >
+            Of bekijk eerst het aanbod, zonder account <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
         </div>
 
         <div className="relative z-10 flex items-end justify-center mt-14 sm:mt-16 px-4">

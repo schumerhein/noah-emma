@@ -14,8 +14,14 @@ export function middleware(request: NextRequest) {
   // bijhoudt zodat ingelogde bezoekers niet steeds op de marketingpagina
   // terugvallen.
   const isIngelogd = request.cookies.get("ne_ingelogd")?.value === "1";
+  // Vanaf de marketingpagina kan een bezoeker via "Bekijk het aanbod" naar
+  // ?gast=1 — dat opent de echte (gastvriendelijke) feed op "/" één keer,
+  // en zet daarna een sessiecookie zodat de "Ontdekken"-tab in de eigen
+  // navigatie daarna niet steeds terugvalt op de marketingpagina.
+  const wilGastToegang = request.nextUrl.searchParams.get("gast") === "1";
+  const heeftGastCookie = request.cookies.get("ne_gast")?.value === "1";
 
-  if (isMarketingHost && request.nextUrl.pathname === "/" && !isIngelogd) {
+  if (isMarketingHost && request.nextUrl.pathname === "/" && !isIngelogd && !wilGastToegang && !heeftGastCookie) {
     // Bij een rewrite blijft de URL in de browser "/", waardoor client-side
     // pathname-checks (usePathname() === "/landing") niet kloppen. Geef daarom
     // een marker-header mee die de server-layout wél kan lezen.
@@ -24,7 +30,11 @@ export function middleware(request: NextRequest) {
     return NextResponse.rewrite(new URL("/landing", request.url), { request: { headers } });
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+  if (wilGastToegang && !heeftGastCookie) {
+    response.cookies.set("ne_gast", "1", { path: "/", sameSite: "lax" });
+  }
+  return response;
 }
 
 export const config = {

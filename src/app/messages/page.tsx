@@ -3,7 +3,7 @@
 import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Search, SquarePen, MessageCircle, Heart, TrendingUp, UserPlus, Bell, Package } from "lucide-react";
+import { Search, MessageCircle, Heart, TrendingUp, UserPlus, Bell, Package } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
@@ -321,9 +321,6 @@ function MessagesContent() {
       <header className="px-6 pt-14 pb-2 space-y-4">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-[800] tracking-tight text-slate-800 dark:text-slate-100">Inbox</h1>
-          <button className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary-dark active:scale-95 transition-transform">
-            <SquarePen className="w-5 h-5" />
-          </button>
         </div>
 
         {/* Tabs */}

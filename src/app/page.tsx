@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { haalGeblokkeerdeIds, filterZichtbaar } from "@/lib/zichtbaarheid";
 import { leesActiefKind, slaActiefKindOp, zetViewportHoogte, type ActiefKind } from "@/components/ThemeProvider";
@@ -39,7 +38,6 @@ type Listing = {
 };
 
 export default function Home() {
-  const router = useRouter();
   const { toast } = useToast();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,10 +67,25 @@ export default function Home() {
   const [authChecked, setAuthChecked] = useState(false);
   const [recentBekekenItems, setRecentBekekenItems] = useState<Pick<Listing, "id" | "titel" | "prijs" | "maat" | "foto_urls">[]>([]);
 
+  // Paginering van de "normale" (niet-gepromote) feed — zonder dit was de
+  // feed hard afgekapt op de eerste 50 resultaten, en liet een herbezoek na
+  // het leegswipen exact dezelfde 50 in exact dezelfde volgorde opnieuw zien.
+  const PAGINA_GROOTTE = 20;
+  const [normaalPagina, setNormaalPagina] = useState(0);
+  const [heeftMeerNormaal, setHeeftMeerNormaal] = useState(true);
+  const [meerLaden, setMeerLaden] = useState(false);
+  const [heeftOoitContent, setHeeftOoitContent] = useState(false);
+  const [isGast, setIsGast] = useState(false);
+
   useEffect(() => {
     (async () => {
+      // Gasten mogen nu gewoon rondkijken en swipen — inloggen is pas nodig
+      // zodra ze iets willen dóén (favorieten bewaren, contact opnemen,
+      // bieden). Dat wordt per actie al correct afgedwongen; hier alleen
+      // onthouden of er iemand is ingelogd, voor de UI (bijv. de
+      // swipe-teller, die voor gasten toch niet van toepassing is).
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { router.push("/login"); return; }
+      setIsGast(!user);
       setAuthChecked(true);
     })();
   }, []);
@@ -190,45 +203,68 @@ export default function Home() {
     }
   };
 
+  const schud = <T,>(items: T[]): T[] => {
+    const kopie = [...items];
+    for (let i = kopie.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [kopie[i], kopie[j]] = [kopie[j], kopie[i]];
+    }
+    return kopie;
+  };
+
+  const basisQuery = () => {
+    // "niet (meer) gepromoot" is niet hetzelfde als gepromoot=false — een
+    // item met een verlopen boost heeft gepromoot nog op true staan, en
+    // moet dus ook meetellen als "normaal", anders valt het tussen wal en
+    // schip in plaats van gewoon terug te vallen in de normale rij.
+    let query = supabase
+      .from("listings")
+      .select("*, profiles(naam, stad, gemiddelde_beoordeling, totaal_beoordelingen, avatar_url, vakantiestand)")
+      .eq("actief", true)
+      .or(`gepromoot.eq.false,promotie_verloopdatum.lte.${new Date().toISOString()}`);
+    if (kind && filterOpKind) query = query.eq("maat", kind.maat);
+    if (kind?.geslacht === "jongen") query = query.neq("categorie", "Meisjeskleding");
+    else if (kind?.geslacht === "meisje") query = query.neq("categorie", "Jongenskleding");
+    return query;
+  };
+
+  const haalVoorkeurenOp = async (userId: string | undefined) => {
+    if (!userId) return LEGE_FEED_VOORKEUREN;
+    const { data: profiel } = await supabase
+      .from("profiles")
+      .select("feed_voorkeuren, privacy_instellingen")
+      .eq("id", userId)
+      .single();
+    const gepersonaliseerd = profiel?.privacy_instellingen?.gepersonaliseerde_inhoud !== false;
+    return gepersonaliseerd && profiel?.feed_voorkeuren
+      ? { ...LEGE_FEED_VOORKEUREN, ...profiel.feed_voorkeuren }
+      : LEGE_FEED_VOORKEUREN;
+  };
+
   const laadListings = async () => {
     setLoading(true);
+    setNormaalPagina(0);
+    setHeeftMeerNormaal(true);
+    setHeeftOoitContent(false);
 
-    // Laad gepromote listings eerst — gepromoot blijft in de database op true
-    // staan totdat er een nieuwe boost gestart wordt, dus een verlopen boost
-    // (promotie_verloopdatum in het verleden) telt hier niet meer mee. Zonder
-    // deze check zou een item na een betaalde boost van bijv. 3 dagen voor
-    // altijd gratis vooraan blijven staan.
+    // Laad gepromote listings eerst. Geen limit(5) hier — we halen ALLE nog
+    // actieve boosts op en husselen ze zelf dooreen, zodat bij meer dan 5
+    // gelijktijdige boosts iedere betalende verkoper over meerdere
+    // paginabezoeken een eerlijke kans krijgt vooraan te staan, in plaats
+    // van dat de database willekeurig (en steeds dezelfde) 5 kiest.
     let queryPromoted = supabase
       .from("listings")
       .select("*, profiles(naam, stad, gemiddelde_beoordeling, totaal_beoordelingen, avatar_url, vakantiestand)")
       .eq("actief", true)
       .eq("gepromoot", true)
-      .gt("promotie_verloopdatum", new Date().toISOString())
-      .limit(5);
+      .gt("promotie_verloopdatum", new Date().toISOString());
+    if (kind && filterOpKind) queryPromoted = queryPromoted.eq("maat", kind.maat);
+    if (kind?.geslacht === "jongen") queryPromoted = queryPromoted.neq("categorie", "Meisjeskleding");
+    else if (kind?.geslacht === "meisje") queryPromoted = queryPromoted.neq("categorie", "Jongenskleding");
 
-    // Let op: "niet (meer) gepromoot" is niet hetzelfde als gepromoot=false —
-    // een item met een verlopen boost heeft gepromoot nog op true staan (zie
-    // hierboven), en moet hier dus ook meetellen, anders verdwijnt het uit
-    // beide queries in plaats van gewoon terug te vallen in de normale rij.
-    let queryNormaal = supabase
-      .from("listings")
-      .select("*, profiles(naam, stad, gemiddelde_beoordeling, totaal_beoordelingen, avatar_url, vakantiestand)")
-      .eq("actief", true)
-      .or(`gepromoot.eq.false,promotie_verloopdatum.lte.${new Date().toISOString()}`)
+    const queryNormaal = basisQuery()
       .order("created_at", { ascending: false })
-      .limit(50);
-
-    if (kind && filterOpKind) {
-      queryPromoted = queryPromoted.eq("maat", kind.maat);
-      queryNormaal = queryNormaal.eq("maat", kind.maat);
-    }
-    if (kind?.geslacht === "jongen") {
-      queryPromoted = queryPromoted.neq("categorie", "Meisjeskleding");
-      queryNormaal = queryNormaal.neq("categorie", "Meisjeskleding");
-    } else if (kind?.geslacht === "meisje") {
-      queryPromoted = queryPromoted.neq("categorie", "Jongenskleding");
-      queryNormaal = queryNormaal.neq("categorie", "Jongenskleding");
-    }
+      .range(0, PAGINA_GROOTTE - 1);
 
     const [{ data: promoted }, { data: normaal }, geblokkeerd, { data: { user } }] = await Promise.all([
       queryPromoted,
@@ -237,34 +273,67 @@ export default function Home() {
       supabase.auth.getUser(),
     ]);
 
+    const geschud = schud((promoted || []) as Listing[]);
+    const topPromoted = geschud.slice(0, 5);
+    const restPromoted = geschud.slice(5); // niet in de top-5 deze keer, maar telt gewoon mee in de normale rij
+
     // Zachte personalisatie: advertenties die passen bij de opgeslagen
     // feed-voorkeuren (categorie/maat/merk) worden hoger gerangschikt,
-    // maar nooit hard weggefilterd. Gepromote advertenties blijven altijd
-    // vooraan staan (betaalde plaatsing), personalisatie sorteert alleen
-    // binnen elke groep.
-    let voorkeuren: FeedVoorkeuren = LEGE_FEED_VOORKEUREN;
-    if (user) {
-      const { data: profiel } = await supabase
-        .from("profiles")
-        .select("feed_voorkeuren, privacy_instellingen")
-        .eq("id", user.id)
-        .single();
-      const gepersonaliseerd = profiel?.privacy_instellingen?.gepersonaliseerde_inhoud !== false;
-      if (gepersonaliseerd && profiel?.feed_voorkeuren) {
-        voorkeuren = { ...LEGE_FEED_VOORKEUREN, ...profiel.feed_voorkeuren };
-      }
-    }
+    // maar nooit hard weggefilterd. De top-gepromote advertenties blijven
+    // altijd vooraan staan (betaalde plaatsing), personalisatie sorteert
+    // alleen binnen de rest.
+    const voorkeuren = await haalVoorkeurenOp(user?.id);
     const sorteerOpVoorkeur = (items: Listing[]) =>
       [...items].sort((a, b) => scoreVoorkeurMatch(b, voorkeuren) - scoreVoorkeurMatch(a, voorkeuren));
 
-    const combined = filterZichtbaar(
-      [...sorteerOpVoorkeur((promoted || []) as Listing[]), ...sorteerOpVoorkeur((normaal || []) as Listing[])],
-      geblokkeerd,
-      user?.id
-    );
+    const restNormaal = sorteerOpVoorkeur([...restPromoted, ...((normaal || []) as Listing[])]);
+    const combined = filterZichtbaar([...topPromoted, ...restNormaal], geblokkeerd, user?.id);
+
+    setHeeftMeerNormaal((normaal || []).length === PAGINA_GROOTTE);
+    if (combined.length > 0) setHeeftOoitContent(true);
     setListings(combined as Listing[]);
     setLoading(false);
   };
+
+  // Haalt de volgende pagina normale listings op en plakt die achter de
+  // huidige stapel — zonder dit liep de feed hard vast op de eerste 50
+  // resultaten en liet een herbezoek exact dezelfde volgorde opnieuw zien.
+  const laadMeerListings = async () => {
+    if (meerLaden || !heeftMeerNormaal) return;
+    setMeerLaden(true);
+    const volgendePagina = normaalPagina + 1;
+    const van = volgendePagina * PAGINA_GROOTTE;
+
+    const [{ data: normaal }, geblokkeerd, { data: { user } }] = await Promise.all([
+      basisQuery().order("created_at", { ascending: false }).range(van, van + PAGINA_GROOTTE - 1),
+      haalGeblokkeerdeIds(),
+      supabase.auth.getUser(),
+    ]);
+
+    const voorkeuren = await haalVoorkeurenOp(user?.id);
+    const nieuw = filterZichtbaar(
+      [...((normaal || []) as Listing[])].sort((a, b) => scoreVoorkeurMatch(b, voorkeuren) - scoreVoorkeurMatch(a, voorkeuren)),
+      geblokkeerd,
+      user?.id
+    ) as Listing[];
+
+    setNormaalPagina(volgendePagina);
+    setHeeftMeerNormaal((normaal || []).length === PAGINA_GROOTTE);
+    if (nieuw.length > 0) {
+      setHeeftOoitContent(true);
+      setListings(prev => [...prev, ...nieuw]);
+    }
+    setMeerLaden(false);
+  };
+
+  // Zodra de stapel bijna leeg is, alvast de volgende pagina ophalen — zo
+  // merkt een gebruiker die lekker doorswiped niets van de paginering.
+  useEffect(() => {
+    if (authChecked && !loading && listings.length <= 3 && heeftMeerNormaal && !meerLaden) {
+      laadMeerListings();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listings.length, heeftMeerNormaal, authChecked, loading]);
 
   const registreerSwipe = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -279,6 +348,12 @@ export default function Home() {
   };
 
   const handleSwipeAction = (direction: "left" | "right") => {
+    // Een kaart die al wegzwaait niet nog eens laten triggeren — anders kan
+    // snel dubbel tikken op de knoppen (buiten het sleep-gebaar om, dat dit
+    // al via `swiping` blokkeert) een like of swipe-telling dubbel tellen
+    // voor wat voor de gebruiker één enkele swipe lijkt.
+    if (swiping) return;
+
     // Check swipe limiet
     if (!isPremium && swipesVandaag >= SWIPE_LIMIET) {
       setToonPremiumModal(true);
@@ -390,8 +465,14 @@ export default function Home() {
       <header className="pt-12 pb-2 px-6 flex items-center justify-between z-10 shrink-0">
         <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white leading-none">Ontdekken</h1>
         <div className="flex items-center gap-2">
-          {/* Swipe teller */}
-          {!isPremium && (
+          {/* Swipe teller — de dagelijkse limiet geldt niet voor gasten (die
+              worden pas bij een concrete actie naar inloggen gestuurd), dus
+              toon in plaats daarvan een duidelijke inlog-uitnodiging. */}
+          {isGast ? (
+            <Link href="/login" className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary text-white text-xs font-bold">
+              Log in
+            </Link>
+          ) : !isPremium && (
             <button
               onClick={() => setToonPremiumModal(true)}
               className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700"
@@ -458,8 +539,22 @@ export default function Home() {
         {!loading && listings.length === 0 && (
           <div className="flex-1 flex items-center justify-center">
             <div className="flex flex-col items-center gap-4 px-8 text-center">
-              <span className="material-icons-round text-slate-300 text-6xl">inventory_2</span>
-              {kind && filterOpKind ? (
+              <span className="material-icons-round text-slate-300 text-6xl">
+                {heeftOoitContent ? "celebration" : "inventory_2"}
+              </span>
+              {heeftOoitContent ? (
+                <>
+                  <h2 className="text-xl font-bold text-slate-700 dark:text-slate-200">Je hebt alles gezien!</h2>
+                  <p className="text-slate-400 text-sm">
+                    {kind && filterOpKind
+                      ? `Je hebt alle huidige items in maat ${kind.maat} bekeken. Kom later terug voor nieuwe aanbod.`
+                      : "Je hebt alle huidige items bekeken. Kom later terug voor nieuwe aanbod."}
+                  </p>
+                  <button onClick={() => laadListings()} className="mt-2 bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm">
+                    Opnieuw beginnen
+                  </button>
+                </>
+              ) : kind && filterOpKind ? (
                 <>
                   <h2 className="text-xl font-bold text-slate-700 dark:text-slate-200">Geen producten in maat {kind.maat}</h2>
                   <p className="text-slate-400 text-sm">Er zijn nog geen items in de huidige maat van {kind.naam || "je kind"}.</p>
@@ -603,7 +698,8 @@ export default function Home() {
             <div className="flex items-center justify-center gap-8 py-7 shrink-0">
               <button
                 onClick={() => handleSwipeAction("left")}
-                className="w-16 h-16 rounded-full bg-white dark:bg-zinc-800 border border-slate-100 dark:border-zinc-700 shadow-lg flex items-center justify-center text-slate-400 active:scale-90 transition-transform"
+                disabled={!!swiping}
+                className="w-16 h-16 rounded-full bg-white dark:bg-zinc-800 border border-slate-100 dark:border-zinc-700 shadow-lg flex items-center justify-center text-slate-400 active:scale-90 transition-transform disabled:opacity-50"
               >
                 <span className="material-icons-round text-3xl">close</span>
               </button>
@@ -616,7 +712,8 @@ export default function Home() {
 
               <button
                 onClick={() => handleSwipeAction("right")}
-                className="w-16 h-16 rounded-full bg-white dark:bg-zinc-800 border-2 border-primary/40 shadow-lg flex items-center justify-center text-primary-dark active:scale-90 transition-transform"
+                disabled={!!swiping}
+                className="w-16 h-16 rounded-full bg-white dark:bg-zinc-800 border-2 border-primary/40 shadow-lg flex items-center justify-center text-primary-dark active:scale-90 transition-transform disabled:opacity-50"
               >
                 <span className="material-icons-round text-3xl">favorite_border</span>
               </button>

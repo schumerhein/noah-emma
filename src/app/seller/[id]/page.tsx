@@ -71,6 +71,31 @@ export default function SellerPage({ params }: { params: Promise<{ id: string }>
     const { data: { user } } = await supabase.auth.getUser();
     if (user) setCurrentUserId(user.id);
 
+    // Als DEZE verkoper mij geblokkeerd heeft, het profiel niet tonen — anders
+    // is "blokkeren verbergt je advertenties" makkelijk te omzeilen via een
+    // directe link. Heb ík hén geblokkeerd, dan blijft het profiel juist wél
+    // bereikbaar: dat is de enige plek waar je kunt deblokkeren.
+    let ikBenGeblokkeerd = false;
+    if (user && user.id !== id) {
+      const { data: blokkade } = await supabase
+        .from("blocks")
+        .select("id")
+        .eq("blokkeerder_id", id)
+        .eq("geblokkeerd_id", user.id)
+        .maybeSingle();
+      if (blokkade) {
+        setLoading(false);
+        return;
+      }
+      const { data: doorMijGeblokkeerd } = await supabase
+        .from("blocks")
+        .select("id")
+        .eq("blokkeerder_id", user.id)
+        .eq("geblokkeerd_id", id)
+        .maybeSingle();
+      ikBenGeblokkeerd = !!doorMijGeblokkeerd;
+    }
+
     const [profileRes, listingsRes, reviewsRes] = await Promise.all([
       supabase.from("profiles").select("id, naam, stad, bio, avatar_url, gemiddelde_beoordeling, totaal_verkopen, aantalvolgers, lid_sinds, vakantiestand").eq("id", id).single(),
       supabase.from("listings").select("*").eq("user_id", id).eq("actief", true).order("created_at", { ascending: false }),
@@ -78,17 +103,15 @@ export default function SellerPage({ params }: { params: Promise<{ id: string }>
     ]);
 
     if (profileRes.data) setSeller(profileRes.data as SellerProfile);
-    if (listingsRes.data) setListings(filterZichtbaar(listingsRes.data as (Listing & { user_id?: string; moderatie_status?: string })[], new Set(), user?.id));
+    // Ik heb deze verkoper zelf geblokkeerd: diens listings blijven voor mij verborgen.
+    if (listingsRes.data) setListings(filterZichtbaar(listingsRes.data as (Listing & { user_id?: string; moderatie_status?: string })[], ikBenGeblokkeerd ? new Set([id]) : new Set(), user?.id));
     if (reviewsRes.data) setReviews(reviewsRes.data as unknown as Review[]);
 
-    // Check of al volgend + of geblokkeerd
+    // Check of al volgend
     if (user) {
-      const [volgRes, blokRes] = await Promise.all([
-        supabase.from("followers").select("id").eq("follower_id", user.id).eq("following_id", id).maybeSingle(),
-        supabase.from("blocks").select("id").eq("blokkeerder_id", user.id).eq("geblokkeerd_id", id).maybeSingle(),
-      ]);
-      if (volgRes.data) setVolgt(true);
-      if (blokRes.data) setGeblokkeerd(true);
+      const { data: volgRes } = await supabase.from("followers").select("id").eq("follower_id", user.id).eq("following_id", id).maybeSingle();
+      if (volgRes) setVolgt(true);
+      setGeblokkeerd(ikBenGeblokkeerd);
     }
 
     setLoading(false);

@@ -7,15 +7,24 @@ type ZichtbaarItem = {
   profiles?: { vakantiestand?: boolean | null } | null;
 };
 
-// Haal de ids op van gebruikers die de ingelogde gebruiker geblokkeerd heeft
+// Haal de ids op van gebruikers waarmee een blokkade bestaat, in beide
+// richtingen: zowel wie de ingelogde gebruiker zelf geblokkeerd heeft, als wie
+// de ingelogde gebruiker heeft geblokkeerd. Zo verbergt filterZichtbaar()
+// listings ook voor de kant die geblokkeerd is (voorheen zag een geblokkeerde
+// gebruiker de advertenties van de blokkeerder gewoon nog, ondanks dat de app
+// expliciet belooft dat blokkeren dat voorkomt).
 export async function haalGeblokkeerdeIds(): Promise<Set<string>> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return new Set();
-  const { data } = await supabase
-    .from("blocks")
-    .select("geblokkeerd_id")
-    .eq("blokkeerder_id", user.id);
-  return new Set((data || []).map((b: { geblokkeerd_id: string }) => b.geblokkeerd_id));
+  const [{ data: doorMij }, { data: doorAnder }] = await Promise.all([
+    supabase.from("blocks").select("geblokkeerd_id").eq("blokkeerder_id", user.id),
+    supabase.from("blocks").select("blokkeerder_id").eq("geblokkeerd_id", user.id),
+  ]);
+  const ids = [
+    ...(doorMij || []).map((b: { geblokkeerd_id: string }) => b.geblokkeerd_id),
+    ...(doorAnder || []).map((b: { blokkeerder_id: string }) => b.blokkeerder_id),
+  ];
+  return new Set(ids);
 }
 
 // Filter een lijst listings op zichtbaarheid:

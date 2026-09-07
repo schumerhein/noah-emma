@@ -15,6 +15,7 @@ import { groeiCheck, lengteBijMaat } from "@/lib/groei";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
+import { verkleinAfbeelding } from "@/lib/afbeelding";
 
 type Profile = {
   id: string;
@@ -28,6 +29,7 @@ type Profile = {
   vakantiestand: boolean | null;
   is_premium: boolean | null;
   premium_verloopdatum: string | null;
+  is_admin?: boolean;
 };
 
 type Kind = {
@@ -86,8 +88,6 @@ export default function ProfilePage() {
   const [favorieten, setFavorieten] = useState<Favoriet[]>([]);
   const [loading, setLoading] = useState(true);
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [maatBewerken, setMaatBewerken] = useState<string | null>(null); // id van kind dat bewerkt wordt
-  const [nieuweMaat, setNieuweMaat] = useState("");
   const [actieveTab, setActieveTab] = useState<"items" | "favorieten" | "reviews">("favorieten");
   const [vakantiestand, setVakantiestand] = useState(false);
   const [actiefKindId, setActiefKindId] = useState<string | null>(null);
@@ -97,6 +97,7 @@ export default function ProfilePage() {
   const [bewerktBio, setBewerktBio] = useState("");
   const [opslaan, setOpslaan] = useState(false);
   const [avatarUploaden, setAvatarUploaden] = useState(false);
+  const [wachtendCount, setWachtendCount] = useState(0);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -137,7 +138,7 @@ export default function ProfilePage() {
     const actiefId = actief?.id ?? null;
 
     const [profileRes, kinderenRes, itemsRes, favorietenRes, reviewsRes] = await Promise.all([
-      supabase.from("profiles").select("id, naam, stad, bio, avatar_url, lid_sinds, gemiddelde_beoordeling, totaal_verkopen, vakantiestand, is_premium, premium_verloopdatum").eq("id", user.id).single(),
+      supabase.from("profiles").select("id, naam, stad, bio, avatar_url, lid_sinds, gemiddelde_beoordeling, totaal_verkopen, vakantiestand, is_premium, premium_verloopdatum, is_admin").eq("id", user.id).single(),
       supabase.from("children").select("id, naam, geboortedatum, lengte, maat, geslacht").eq("user_id", user.id).order("created_at"),
       supabase.from("listings").select("*")
         .eq("user_id", user.id).order("created_at", { ascending: false }),
@@ -162,6 +163,13 @@ export default function ProfilePage() {
       setBewerktStad(profileRes.data.stad || "");
       setBewerktBio(profileRes.data.bio || "");
       setVakantiestand(profileRes.data.vakantiestand === true);
+      if (profileRes.data.is_admin) {
+        const { count } = await supabase
+          .from("listings")
+          .select("id", { count: "exact", head: true })
+          .eq("moderatie_status", "wachtend");
+        setWachtendCount(count || 0);
+      }
     }
     if (kinderenRes.data) {
       setKinderen(kinderenRes.data);
@@ -243,7 +251,6 @@ export default function ProfilePage() {
     }
     const bijgewerkt = kinderen.map(k => k.id === kindId ? { ...k, maat } : k);
     setKinderen(bijgewerkt);
-    setMaatBewerken(null);
     // Als dit het actieve kind is, update ook localStorage
     if (kindId === actiefKindId) {
       const kind = bijgewerkt.find(k => k.id === kindId);
@@ -253,10 +260,13 @@ export default function ProfilePage() {
   };
 
   const uploadAvatar = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !profile) return;
+    const gekozenBestand = e.target.files?.[0];
+    if (!gekozenBestand || !profile) return;
     setAvatarUploaden(true);
 
+    // Een foto rechtstreeks van een telefooncamera hoeft niet groter dan dit
+    // te zijn voor een profielfoto — voorkomt trage uploads en opgeblazen opslag.
+    const { file } = await verkleinAfbeelding(gekozenBestand, 800, 0.85);
     const ext = file.name.split(".").pop();
     const pad = `${profile.id}/avatar.${ext}`;
 
@@ -311,7 +321,9 @@ export default function ProfilePage() {
   }
 
   const initialen = (profile.naam || "U").charAt(0).toUpperCase();
-  const actieveItems = mijneItems.filter(i => i.actief);
+  // "wachtend" (nog niet goedgekeurd) telt niet mee als actief: zo'n item is
+  // nog onzichtbaar voor kopers, ook al staat het flag-technisch op actief.
+  const actieveItems = mijneItems.filter(i => i.actief && i.moderatie_status !== "wachtend");
   const lidSinds = profile.lid_sinds ? new Date(profile.lid_sinds).getFullYear() : new Date().getFullYear();
   const isPremium = !!profile.is_premium &&
     (!profile.premium_verloopdatum || new Date(profile.premium_verloopdatum) > new Date());
@@ -537,40 +549,6 @@ export default function ProfilePage() {
                       </div>
                     )}
 
-                    {/* Inline maatpicker */}
-                    {maatBewerken === kind.id && (
-                      <div className="px-4 pb-4 space-y-3 border-t border-slate-100 dark:border-slate-700 pt-3">
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Kies de juiste maat</p>
-                        <div className="grid grid-cols-5 gap-1.5">
-                          {["50","56","62","68","74","80","86","92","98","104","110","116","122","128","134"].map(m => (
-                            <button
-                              key={m}
-                              onClick={() => setNieuweMaat(m)}
-                              className={cn(
-                                "py-2.5 rounded-xl text-xs font-bold transition-all border-2",
-                                nieuweMaat === m
-                                  ? "bg-primary text-white border-primary shadow-sm"
-                                  : "bg-slate-50 dark:bg-slate-700 text-slate-500 border-transparent"
-                              )}
-                            >
-                              {m}
-                            </button>
-                          ))}
-                        </div>
-                        <div className="flex gap-2">
-                          <button onClick={() => setMaatBewerken(null)} className="flex-1 h-10 rounded-xl border-2 border-slate-200 text-slate-500 font-bold text-sm">
-                            Annuleren
-                          </button>
-                          <button
-                            onClick={() => slaKindMaatOp(kind.id, nieuweMaat)}
-                            disabled={!nieuweMaat || nieuweMaat === kind.maat}
-                            className="flex-1 h-10 rounded-xl bg-primary text-white font-bold text-sm disabled:opacity-40"
-                          >
-                            Opslaan — Maat {nieuweMaat}
-                          </button>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 );
               })}
@@ -837,16 +815,21 @@ export default function ProfilePage() {
             { icon: <Bell className="w-5 h-5" />, label: "Notificaties", href: "/notificaties" },
             { icon: <Package className="w-5 h-5" />, label: "Bestellingen", href: "/orders" },
             { icon: <Settings className="w-5 h-5" />, label: "Instellingen", href: "/instellingen" },
-            ...((profile as Profile & { is_admin?: boolean }).is_admin
-              ? [{ icon: <CheckCircle2 className="w-5 h-5" />, label: "Moderatie (beheer)", href: "/admin/moderatie" }]
+            ...(profile?.is_admin
+              ? [{ icon: <CheckCircle2 className="w-5 h-5" />, label: "Moderatie (beheer)", href: "/admin/moderatie", badge: wachtendCount }]
               : []),
-          ].map(({ icon, label, href }) => (
+          ].map(({ icon, label, href, badge }) => (
             <Link key={label} href={href}>
               <div className="flex items-center gap-4 p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 active:scale-[0.98] transition-transform mb-2">
                 <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500">
                   {icon}
                 </div>
                 <span className="flex-1 font-semibold text-slate-700 dark:text-slate-200">{label}</span>
+                {!!badge && (
+                  <span className="min-w-[22px] h-[22px] px-1.5 rounded-full bg-primary text-white text-[11px] font-bold flex items-center justify-center">
+                    {badge}
+                  </span>
+                )}
                 <ChevronRight className="w-4 h-4 text-slate-300" />
               </div>
             </Link>

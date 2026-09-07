@@ -25,6 +25,7 @@ export function Navigation() {
     pathname === "/sell" ||
     pathname === "/premium" ||
     pathname.startsWith("/promote/") ||
+    pathname.startsWith("/instellingen") ||
     pathname === "/landing"
   ) return null;
 

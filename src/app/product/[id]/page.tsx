@@ -43,6 +43,7 @@ type Listing = {
   promotie_verloopdatum?: string | null;
   verzending_mogelijk?: boolean;
   verzendkosten?: number | null;
+  bieden_toegestaan?: boolean;
   profiles: {
     naam: string | null;
     stad: string | null;
@@ -153,9 +154,25 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
     if (!error && data) {
       const l = data as Listing;
+      const { data: { user } } = await supabase.auth.getUser();
+
+      // Bij een blokkade (in beide richtingen) de advertentie niet tonen —
+      // anders is het "kan je advertenties niet zien"-effect van blokkeren
+      // makkelijk te omzeilen via een directe link.
+      if (user && user.id !== l.user_id) {
+        const { data: blokkade } = await supabase
+          .from("blocks")
+          .select("id")
+          .or(`and(blokkeerder_id.eq.${user.id},geblokkeerd_id.eq.${l.user_id}),and(blokkeerder_id.eq.${l.user_id},geblokkeerd_id.eq.${user.id})`)
+          .limit(1);
+        if (blokkade && blokkade.length > 0) {
+          setLoading(false);
+          return;
+        }
+      }
+
       setListing(l);
       laadTabData(l);
-      const { data: { user } } = await supabase.auth.getUser();
       if (user) voegRecentBekekenToe(user.id, l.id);
     }
     setLoading(false);
@@ -770,20 +787,22 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           </div>
         ) : (
           <div className="flex gap-3">
-            <button
-              onClick={() => {
-                if (!currentUserId) {
-                  toast({ title: "Log in om een bod te doen" });
-                  router.push("/login");
-                  return;
-                }
-                setToonBodModal(true);
-              }}
-              className="flex items-center justify-center gap-2 h-14 px-4 rounded-2xl border-2 border-primary/30 text-primary font-bold text-sm bg-primary/5 active:scale-95 transition-transform shrink-0"
-            >
-              <TrendingDown className="w-4 h-4" />
-              Bod
-            </button>
+            {listing.bieden_toegestaan && (
+              <button
+                onClick={() => {
+                  if (!currentUserId) {
+                    toast({ title: "Log in om een bod te doen" });
+                    router.push("/login");
+                    return;
+                  }
+                  setToonBodModal(true);
+                }}
+                className="flex items-center justify-center gap-2 h-14 px-4 rounded-2xl border-2 border-primary/30 text-primary font-bold text-sm bg-primary/5 active:scale-95 transition-transform shrink-0"
+              >
+                <TrendingDown className="w-4 h-4" />
+                Bod
+              </button>
+            )}
             <Button
               onClick={handleContact}
               className="flex-1 h-14 rounded-2xl bg-primary text-white font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2"

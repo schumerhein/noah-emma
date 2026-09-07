@@ -56,16 +56,29 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    init();
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let geannuleerd = false;
+
+    init((ch) => { channel = ch; }, () => geannuleerd);
+
+    return () => {
+      geannuleerd = true;
+      if (channel) supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const init = async () => {
+  const init = async (
+    onChannel: (channel: ReturnType<typeof supabase.channel>) => void,
+    isGeannuleerd: () => boolean,
+  ) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push("/login"); return; }
+    if (isGeannuleerd()) return;
     setCurrentUserId(user.id);
 
     // Laad conversation
@@ -122,9 +135,11 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
       .eq("conversation_id", id)
       .neq("sender_id", user.id);
 
+    if (isGeannuleerd()) return;
     setLoading(false);
 
-    // Realtime subscriptie
+    // Realtime subscriptie — de channel wordt teruggegeven aan de caller
+    // (useEffect), die 'm bij unmount/id-wissel echt opruimt.
     const channel = supabase
       .channel(`messages:${id}`)
       .on("postgres_changes", {
@@ -133,14 +148,15 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
         table: "messages",
         filter: `conversation_id=eq.${id}`,
       }, (payload) => {
-        setMessages(prev => [...prev, payload.new as Message]);
-        if ((payload.new as Message).sender_id !== user.id) {
-          supabase.from("messages").update({ gelezen: true }).eq("id", payload.new.id);
+        const nieuw = payload.new as Message;
+        setMessages(prev => prev.some(m => m.id === nieuw.id) ? prev : [...prev, nieuw]);
+        if (nieuw.sender_id !== user.id) {
+          supabase.from("messages").update({ gelezen: true }).eq("id", nieuw.id);
         }
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    onChannel(channel);
   };
 
   const laadBerichten = async () => {

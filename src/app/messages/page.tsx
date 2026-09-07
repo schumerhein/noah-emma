@@ -57,8 +57,39 @@ function MessagesContent() {
   const [zoekterm, setZoekterm] = useState("");
   const [ongelezen, setOngelezen] = useState(0);
   const [nieuweNotifs, setNieuweNotifs] = useState(0);
+  const [gezienTot, setGezienTot] = useState<string | null>(null);
 
   useEffect(() => { init(); }, []);
+
+  // Live updates op de lijst: zonder dit verscheen een net binnengekomen
+  // bericht pas na een handmatige herlaad-actie, terwijl de chatpagina zelf
+  // wel realtime is.
+  useEffect(() => {
+    if (!currentUserId) return;
+
+    const ververs = async (updated: { id: string; last_message: string | null; last_message_at: string; buyer_id: string; seller_id: string }) => {
+      const { count } = await supabase.from("messages").select("*", { count: "exact", head: true })
+        .eq("conversation_id", updated.id).eq("gelezen", false).neq("sender_id", currentUserId);
+      setConversations(prev => {
+        const bestaand = prev.find(c => c.id === updated.id);
+        if (!bestaand) return prev; // nieuw gesprek: volgende volledige laadConversations() pakt 'm mee
+        const merged: Conversation = { ...bestaand, last_message: updated.last_message, last_message_at: updated.last_message_at, unread: (count || 0) > 0 };
+        const nieuweLijst = [merged, ...prev.filter(c => c.id !== updated.id)];
+        setOngelezen(nieuweLijst.filter(c => c.unread).length);
+        return nieuweLijst;
+      });
+    };
+
+    const channel = supabase
+      .channel(`inbox:${currentUserId}`)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "conversations", filter: `buyer_id=eq.${currentUserId}` }, (p) => ververs(p.new as never))
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "conversations", filter: `seller_id=eq.${currentUserId}` }, (p) => ververs(p.new as never))
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "conversations", filter: `buyer_id=eq.${currentUserId}` }, () => laadConversations(currentUserId))
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "conversations", filter: `seller_id=eq.${currentUserId}` }, () => laadConversations(currentUserId))
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [currentUserId]);
 
   const init = async () => {
     const verkoperId = searchParams.get("verkoper");
@@ -68,23 +99,36 @@ function MessagesContent() {
     if (!user) { router.push("/login"); return; }
     setCurrentUserId(user.id);
 
+    const { data: eigenProfiel } = await supabase.from("profiles").select("notificaties_gezien_tot").eq("id", user.id).single();
+    const gezienTotWaarde = eigenProfiel?.notificaties_gezien_tot ?? null;
+    setGezienTot(gezienTotWaarde);
+
     if (verkoperId && listingId && verkoperId !== user.id) {
       const { data: bestaand } = await supabase
         .from("conversations").select("id")
         .eq("buyer_id", user.id).eq("seller_id", verkoperId).eq("listing_id", listingId).single();
 
       if (bestaand) { router.replace(`/messages/${bestaand.id}`); return; }
-      else {
-        const { data: nieuw } = await supabase
-          .from("conversations")
-          .insert({ buyer_id: user.id, seller_id: verkoperId, listing_id: listingId })
-          .select("id").single();
-        if (nieuw) { router.replace(`/messages/${nieuw.id}`); return; }
+
+      const { data: nieuw, error: insertError } = await supabase
+        .from("conversations")
+        .insert({ buyer_id: user.id, seller_id: verkoperId, listing_id: listingId })
+        .select("id").single();
+
+      if (nieuw) { router.replace(`/messages/${nieuw.id}`); return; }
+
+      // Iemand anders (dubbele tap, ander tabblad) won de race en maakte
+      // ondertussen al hetzelfde gesprek aan — pak dat gesprek dan alsnog.
+      if (insertError?.code === "23505") {
+        const { data: race } = await supabase
+          .from("conversations").select("id")
+          .eq("buyer_id", user.id).eq("seller_id", verkoperId).eq("listing_id", listingId).single();
+        if (race) { router.replace(`/messages/${race.id}`); return; }
       }
     }
 
     laadConversations(user.id);
-    laadNotificaties(user.id);
+    laadNotificaties(user.id, gezienTotWaarde);
   };
 
   const laadConversations = async (userId: string) => {
@@ -95,24 +139,32 @@ function MessagesContent() {
       .order("last_message_at", { ascending: false });
 
     if (!error && data) {
-      let totalUnread = 0;
-      const enriched = await Promise.all(data.map(async (conv) => {
+      const otherIds = Array.from(new Set(data.map(c => c.buyer_id === userId ? c.seller_id : c.buyer_id)));
+      const convIds = data.map(c => c.id);
+
+      const [{ data: profielen }, { data: ongelezenBerichten }] = await Promise.all([
+        otherIds.length > 0
+          ? supabase.from("profiles").select("id, naam, avatar_url").in("id", otherIds)
+          : Promise.resolve({ data: [] as { id: string; naam: string | null; avatar_url: string | null }[] }),
+        convIds.length > 0
+          ? supabase.from("messages").select("conversation_id").eq("gelezen", false).neq("sender_id", userId).in("conversation_id", convIds)
+          : Promise.resolve({ data: [] as { conversation_id: string }[] }),
+      ]);
+
+      const profielMap = new Map((profielen || []).map(p => [p.id, p]));
+      const ongelezenIds = new Set((ongelezenBerichten || []).map(m => m.conversation_id));
+
+      const enriched = data.map((conv) => {
         const otherUserId = conv.buyer_id === userId ? conv.seller_id : conv.buyer_id;
-        const { data: profile } = await supabase.from("profiles").select("naam, avatar_url").eq("id", otherUserId).single();
-        const { count } = await supabase.from("messages").select("*", { count: "exact", head: true })
-          .eq("conversation_id", conv.id).eq("gelezen", false).neq("sender_id", userId);
-        if ((count || 0) > 0) totalUnread++;
-        return { ...conv, other_user: profile, unread: (count || 0) > 0 };
-      }));
+        return { ...conv, other_user: profielMap.get(otherUserId), unread: ongelezenIds.has(conv.id) };
+      });
       setConversations(enriched as Conversation[]);
-      setOngelezen(totalUnread);
+      setOngelezen(enriched.filter(c => c.unread).length);
     }
     setLoadingConvs(false);
   };
 
-  const laadNotificaties = async (userId: string) => {
-    const alleNotifs: Notificatie[] = [];
-
+  const laadNotificaties = async (userId: string, gezienTotWaarde: string | null) => {
     // 1. Mijn listings ophalen
     const { data: myListings } = await supabase.from("listings").select("id").eq("user_id", userId);
     const myIds = myListings?.map((l: { id: string }) => l.id) || [];
@@ -122,117 +174,105 @@ function MessagesContent() {
     const toonFavorietNotificaties = eigenProfiel?.privacy_instellingen?.favoriet_notificatie_verkoper !== false;
 
     // 2. Favorieten op mijn listings
-    if (myIds.length > 0 && toonFavorietNotificaties) {
-      const { data: favs } = await supabase
-        .from("favorites")
-        .select("id, created_at, listing_id, listings(titel, foto_urls), user_id")
-        .in("listing_id", myIds)
-        .neq("user_id", userId) // eigen likes niet als notificatie tonen
-        .order("created_at", { ascending: false })
-        .limit(30);
+    const favsPromise = (myIds.length > 0 && toonFavorietNotificaties)
+      ? supabase.from("favorites").select("id, created_at, listing_id, listings(titel, foto_urls), user_id")
+          .in("listing_id", myIds).neq("user_id", userId).order("created_at", { ascending: false }).limit(30)
+      : Promise.resolve({ data: null });
 
-      if (favs) {
-        for (const fav of favs) {
-          const { data: profiel } = await supabase.from("profiles").select("naam, avatar_url").eq("id", fav.user_id).single();
-          const listing = fav.listings as unknown as { titel: string; foto_urls: string[] } | null;
-          alleNotifs.push({
-            id: `fav_${fav.id}`,
-            type: "favoriet",
-            created_at: fav.created_at,
-            naam: profiel?.naam || "Iemand",
-            avatar_url: profiel?.avatar_url || null,
-            titel: listing?.titel,
-            foto_url: listing?.foto_urls?.[0],
-            listing_id: fav.listing_id,
-          });
-        }
-      }
-    }
-
-    if (myIds.length > 0) {
-      // 3. Biedingen op mijn listings
-      const { data: bids } = await supabase
-        .from("biedingen")
-        .select("id, created_at, listing_id, bedrag, bieder_id, listings(titel, foto_urls)")
-        .in("listing_id", myIds)
-        .neq("bieder_id", userId) // eigen biedingen niet als notificatie tonen
-        .order("created_at", { ascending: false })
-        .limit(20);
-
-      if (bids) {
-        for (const bid of bids) {
-          const { data: profiel } = await supabase.from("profiles").select("naam, avatar_url").eq("id", bid.bieder_id).single();
-          const listing = bid.listings as unknown as { titel: string; foto_urls: string[] } | null;
-          alleNotifs.push({
-            id: `bid_${bid.id}`,
-            type: "bod",
-            created_at: bid.created_at,
-            naam: profiel?.naam || "Iemand",
-            avatar_url: profiel?.avatar_url || null,
-            titel: listing?.titel,
-            foto_url: listing?.foto_urls?.[0],
-            bedrag: bid.bedrag,
-            listing_id: bid.listing_id,
-          });
-        }
-      }
-    }
+    // 3. Biedingen op mijn listings
+    const bidsPromise = myIds.length > 0
+      ? supabase.from("biedingen").select("id, created_at, listing_id, bedrag, bieder_id, listings(titel, foto_urls)")
+          .in("listing_id", myIds).neq("bieder_id", userId).order("created_at", { ascending: false }).limit(20)
+      : Promise.resolve({ data: null });
 
     // 4. Nieuwe volgers (mensen die mij volgen)
-    const { data: volgers } = await supabase
-      .from("followers")
-      .select("id, created_at, follower_id")
-      .eq("following_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(20);
+    const volgersPromise = supabase.from("followers").select("id, created_at, follower_id")
+      .eq("following_id", userId).order("created_at", { ascending: false }).limit(20);
 
-    if (volgers) {
-      for (const v of volgers) {
-        const { data: profiel } = await supabase.from("profiles").select("naam, avatar_url").eq("id", v.follower_id).single();
-        alleNotifs.push({
-          id: `volg_${v.id}`,
-          type: "volger",
-          created_at: v.created_at,
-          naam: profiel?.naam || "Iemand",
-          avatar_url: profiel?.avatar_url || null,
-        });
-      }
-    }
+    // 5. Verkopers die ik volg, en hun nieuwe listings van de laatste 30 dagen
+    const volgendPromise = supabase.from("followers").select("following_id").eq("follower_id", userId);
 
-    // 5. Nieuwe listings van verkopers die ik volg
-    const { data: volgend } = await supabase
-      .from("followers")
-      .select("following_id")
-      .eq("follower_id", userId);
+    const [{ data: favs }, { data: bids }, { data: volgers }, { data: volgend }] = await Promise.all([
+      favsPromise, bidsPromise, volgersPromise, volgendPromise,
+    ]);
 
     const volgendeIds = volgend?.map((v: { following_id: string }) => v.following_id) || [];
+    const dertigDagenGeleden = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const { data: nieuweLijsten } = volgendeIds.length > 0
+      ? await supabase.from("listings").select("id, created_at, titel, foto_urls, user_id")
+          .in("user_id", volgendeIds).eq("actief", true).gte("created_at", dertigDagenGeleden)
+          .order("created_at", { ascending: false }).limit(25)
+      : { data: null };
 
-    if (volgendeIds.length > 0) {
-      const dertigDagenGeleden = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-      const { data: nieuweLijsten } = await supabase
-        .from("listings")
-        .select("id, created_at, titel, foto_urls, user_id")
-        .in("user_id", volgendeIds)
-        .eq("actief", true)
-        .gte("created_at", dertigDagenGeleden)
-        .order("created_at", { ascending: false })
-        .limit(25);
+    // Alle benodigde profiel-ids in één keer ophalen i.p.v. per notificatie
+    // een aparte round-trip (dat liep bij veel activiteit flink op).
+    const profielIds = new Set<string>();
+    (favs || []).forEach(f => profielIds.add(f.user_id));
+    (bids || []).forEach(b => profielIds.add(b.bieder_id));
+    (volgers || []).forEach(v => profielIds.add(v.follower_id));
+    (nieuweLijsten || []).forEach(l => profielIds.add(l.user_id));
 
-      if (nieuweLijsten) {
-        for (const listing of nieuweLijsten) {
-          const { data: profiel } = await supabase.from("profiles").select("naam, avatar_url").eq("id", listing.user_id).single();
-          alleNotifs.push({
-            id: `listing_${listing.id}`,
-            type: "nieuwe_listing",
-            created_at: listing.created_at,
-            naam: profiel?.naam || "Iemand",
-            avatar_url: profiel?.avatar_url || null,
-            titel: listing.titel,
-            foto_url: listing.foto_urls?.[0],
-            listing_id: listing.id,
-          });
-        }
-      }
+    const { data: profielen } = profielIds.size > 0
+      ? await supabase.from("profiles").select("id, naam, avatar_url").in("id", Array.from(profielIds))
+      : { data: [] as { id: string; naam: string | null; avatar_url: string | null }[] };
+    const profielMap = new Map((profielen || []).map(p => [p.id, p]));
+
+    const alleNotifs: Notificatie[] = [];
+
+    for (const fav of favs || []) {
+      const profiel = profielMap.get(fav.user_id);
+      const listing = fav.listings as unknown as { titel: string; foto_urls: string[] } | null;
+      alleNotifs.push({
+        id: `fav_${fav.id}`,
+        type: "favoriet",
+        created_at: fav.created_at,
+        naam: profiel?.naam || "Iemand",
+        avatar_url: profiel?.avatar_url || null,
+        titel: listing?.titel,
+        foto_url: listing?.foto_urls?.[0],
+        listing_id: fav.listing_id,
+      });
+    }
+
+    for (const bid of bids || []) {
+      const profiel = profielMap.get(bid.bieder_id);
+      const listing = bid.listings as unknown as { titel: string; foto_urls: string[] } | null;
+      alleNotifs.push({
+        id: `bid_${bid.id}`,
+        type: "bod",
+        created_at: bid.created_at,
+        naam: profiel?.naam || "Iemand",
+        avatar_url: profiel?.avatar_url || null,
+        titel: listing?.titel,
+        foto_url: listing?.foto_urls?.[0],
+        bedrag: bid.bedrag,
+        listing_id: bid.listing_id,
+      });
+    }
+
+    for (const v of volgers || []) {
+      const profiel = profielMap.get(v.follower_id);
+      alleNotifs.push({
+        id: `volg_${v.id}`,
+        type: "volger",
+        created_at: v.created_at,
+        naam: profiel?.naam || "Iemand",
+        avatar_url: profiel?.avatar_url || null,
+      });
+    }
+
+    for (const listing of nieuweLijsten || []) {
+      const profiel = profielMap.get(listing.user_id);
+      alleNotifs.push({
+        id: `listing_${listing.id}`,
+        type: "nieuwe_listing",
+        created_at: listing.created_at,
+        naam: profiel?.naam || "Iemand",
+        avatar_url: profiel?.avatar_url || null,
+        titel: listing.titel,
+        foto_url: listing.foto_urls?.[0],
+        listing_id: listing.id,
+      });
     }
 
     // 6. Nieuwe artikelen die passen bij mijn zoekwaarschuwingen
@@ -276,8 +316,20 @@ function MessagesContent() {
     // Sorteer op datum
     alleNotifs.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     setNotificaties(alleNotifs);
-    setNieuweNotifs(Math.min(alleNotifs.length, 99));
+    // Alleen meldingen na het laatste bezoek aan deze tab tellen als "nieuw" —
+    // anders bleef het badge-cijfer voor altijd op het totale aantal staan.
+    const gezienTotTijd = gezienTotWaarde ? new Date(gezienTotWaarde).getTime() : 0;
+    const nieuw = alleNotifs.filter(n => new Date(n.created_at).getTime() > gezienTotTijd).length;
+    setNieuweNotifs(Math.min(nieuw, 99));
     setLoadingNotifs(false);
+  };
+
+  const markeerNotificatiesGezien = async () => {
+    if (!currentUserId || nieuweNotifs === 0) return;
+    const nu = new Date().toISOString();
+    setGezienTot(nu);
+    setNieuweNotifs(0);
+    await supabase.from("profiles").update({ notificaties_gezien_tot: nu }).eq("id", currentUserId);
   };
 
   const gefilterd = conversations.filter(c =>
@@ -343,7 +395,7 @@ function MessagesContent() {
             )}
           </button>
           <button
-            onClick={() => setTab("notificaties")}
+            onClick={() => { setTab("notificaties"); markeerNotificatiesGezien(); }}
             className={cn(
               "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all",
               tab === "notificaties"

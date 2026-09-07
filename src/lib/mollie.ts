@@ -1,16 +1,11 @@
 import { createMollieClient } from "@mollie/api-client";
-import { createClient } from "@supabase/supabase-js";
 import type { User } from "@supabase/supabase-js";
 import { PREMIUM_PRIJS, BOOST_TIERS, type BoostTier } from "@/lib/prijzen";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export const mollie = createMollieClient({ apiKey: process.env.MOLLIE_API_KEY! });
 
-// Server-only client met volledige rechten (service role), voor het
-// verwerken van betalingen los van de rechten van de ingelogde gebruiker.
-export const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+export { supabaseAdmin };
 
 export { PREMIUM_PRIJS, BOOST_TIERS };
 export type { BoostTier };

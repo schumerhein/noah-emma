@@ -13,7 +13,7 @@ const navItems = [
   { href: "/profile", label: "Profiel", icon: "person" },
 ];
 
-export function Navigation() {
+export function Navigation({ ongelezen = 0 }: { ongelezen?: number }) {
   const pathname = usePathname();
 
   // Hide navigation on login and full-screen edit pages
@@ -77,7 +77,7 @@ export function Navigation() {
             )}>
               {label}
             </span>
-            {label === "Berichten" && (
+            {label === "Berichten" && ongelezen > 0 && (
               <div className="absolute top-1 right-1/4 w-2 h-2 bg-primary border border-background rounded-full"></div>
             )}
           </Link>

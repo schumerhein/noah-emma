@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { Header } from "@/components/Header";
 import { Navigation } from "@/components/Navigation";
+import { useInboxMeldingen } from "@/hooks/use-inbox-meldingen";
 
 /**
  * De app zelf is ontworpen als mobiele swipe-app en wordt daarom altijd
@@ -13,6 +14,9 @@ import { Navigation } from "@/components/Navigation";
 export function AppFrame({ children, forceMarketing = false }: { children: React.ReactNode; forceMarketing?: boolean }) {
   const pathname = usePathname();
   const isMarketing = forceMarketing || pathname === "/landing";
+  // Altijd aanroepen (Rules of Hooks) — AppFrame blijft over navigaties heen
+  // gemonteerd, ook wanneer isMarketing wisselt.
+  const { ongelezen } = useInboxMeldingen();
 
   if (isMarketing) {
     return <>{children}</>;
@@ -24,7 +28,7 @@ export function AppFrame({ children, forceMarketing = false }: { children: React
       <main className="flex-1 overflow-y-auto pb-safe-bottom pt-safe-top">
         {children}
       </main>
-      <Navigation />
+      <Navigation ongelezen={ongelezen} />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Search as SearchIcon, SlidersHorizontal, X, Check, ChevronLeft, Bell, BellOff, ArrowUpDown } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -13,78 +13,9 @@ import { haalGeblokkeerdeIds, filterZichtbaar } from "@/lib/zichtbaarheid";
 import { PremiumModal } from "@/components/PremiumModal";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
+import { CATEGORY_HIERARCHY } from "@/lib/categorieen";
 
 // ── Constants ──────────────────────────────────────────────────────────────
-
-const CATEGORY_HIERARCHY: Record<string, { icon: string; sub: string[] }> = {
-  "Meisjeskleding": { icon: "👧", sub: [
-    "Jurken & Rokken", "Jassen & Vesten", "Truien & Sweaters", "T-shirts & Tops",
-    "Broeken & Leggings", "Zwemkleding & Badpakken", "Pyjama & Ondergoed",
-    "Schoenen & Laarzen", "Sokken & Kousen", "Feest & Galakleding",
-    "Sportkleding", "Mutsen & Sjaals",
-  ]},
-  "Jongenskleding": { icon: "👦", sub: [
-    "Jassen & Vesten", "Truien & Sweaters", "T-shirts & Poloshirts",
-    "Overhemden", "Broeken & Shorts", "Joggingbroeken & Trainingskleding",
-    "Zwemkleding", "Pyjama & Ondergoed", "Schoenen & Laarzen",
-    "Sokken", "Sportkleding", "Feestkleding",
-  ]},
-  "Speelgoed": { icon: "🧸", sub: [
-    "Houten Speelgoed", "Educatief Speelgoed", "Knuffels & Poppen",
-    "Buitenspeelgoed", "Puzzels & Gezelschapsspellen", "Constructie & Lego",
-    "Rollenspel & Verkleedkleding", "Muziek & Creativiteit",
-    "Baby & Peuter Speelgoed", "Voertuigen & RC-speelgoed",
-    "Treinen & Banen", "Waterspeelgoed",
-  ]},
-  "Kinderwagens, buggy's & autostoeltjes": { icon: "🛒", sub: [
-    "Combinatiewagens", "Buggy's & Wandelwagens", "Tweelingwagens",
-    "Autostoeltjes Groep 0-0+", "Autostoeltjes Groep 1-2-3",
-    "Maxi-Cosi Accessoires", "Draagdoeken & Draagzakken",
-    "Fietsstoeltjes & Fietskarren", "Reisbassins & Reiswiegjes",
-    "Regenhoes & Muggennet",
-  ]},
-  "Meubilair & decoratie": { icon: "🛏️", sub: [
-    "Bedjes & Wiegjes", "Matrassen", "Kasten & Commodes",
-    "Kinderstoelen & Hoge Stoelen", "Bureaus & Kindertafels",
-    "Decoratie & Wanddecoratie", "Verlichting",
-    "Opbergers & Dozen", "Babykamerset", "Boxen & Boxkleden",
-  ]},
-  "Badderen & verschonen": { icon: "🛁", sub: [
-    "Babybadjes", "Verschoontafels & -matten", "Luiers & Doekjes",
-    "Babyverzorging", "Badcapes & Washandjes", "Luierzakken & Etuis",
-  ]},
-  "Veiligheid in en om het huis": { icon: "🔒", sub: [
-    "Babyhekjes & Afzettingen", "Stopcontact- & Meubelbeveiliging",
-    "Babyfoons & Slaapmonitors", "Gordijnen & Raamdecoratie",
-    "Helmen & Bescherming", "Anti-valmatten",
-  ]},
-  "Gezondheid & zwangerschap": { icon: "🤰", sub: [
-    "Zwangerschapskleding", "Zwangerschapskussens",
-    "Borstvoeding Accessoires", "Kolfapparaten & Flesjes",
-    "Thermometers & Monitoren", "Vitaminen & Supplementen",
-  ]},
-  "Voeden": { icon: "🍼", sub: [
-    "Zuigflessen & Tepels", "Borstkolven", "Eetservies & Slabbetjes",
-    "Kinderstoelen (eten)", "Potjes & Knijpzakjes",
-    "Sterilisatoren & Warmers", "Diepvriesbewaarzakjes",
-  ]},
-  "Slapen & beddengoed": { icon: "😴", sub: [
-    "Slaapzakken", "Wiegjes & Reiswiegjes", "Kussens & Dekbedden",
-    "Hoeslakens & Beddengoed", "Nachtlampjes & Schemerlicht",
-    "Speendoekjes & Troostobjecten",
-  ]},
-  "Schoolbenodigdheden": { icon: "🎒", sub: [
-    "Schooltassen & Rugzakken", "Pennenetuis & Schrijfgerei",
-    "Lunchboxen & Drinkflessen", "Gymtassen & Sportspullen",
-    "Leesboeken & Lesmateriaal", "Knutsel- & Tekenmateriaal",
-  ]},
-  "Overige kinderartikelen": { icon: "📦", sub: [
-    "Speelmatten & Activiteitencentra", "Wipstoelen & Schommels",
-    "Looprekjes & Loopwagens", "Zwemspeelgoed & Waterspelen",
-    "Baby Monitors & Tech", "Cadeaus & Feestartikelen",
-    "Boeken & Films",
-  ]},
-};
 
 const SIZES = ["50","56","62","68","74","80","86","92","98","104","110","116","122","128","134","140","146","152","158/164"];
 const CONDITIONS = ["Nieuw met prijskaartje", "Zo goed als nieuw", "Goed", "Gebruikt"];
@@ -152,6 +83,8 @@ const INIT_FILTERS: Filters = {
   maxPrijs: "",
 };
 
+const PAGINA_GROOTTE = 60;
+
 // ── Component ──────────────────────────────────────────────────────────────
 
 export default function SearchPage() {
@@ -168,6 +101,11 @@ export default function SearchPage() {
   const [waarschuwingBezig, setWaarschuwingBezig] = useState(false);
   const [filters, setFilters] = useState<Filters>(INIT_FILTERS);
   const [isPremium, setIsPremium] = useState<boolean | null>(null);
+  const [toonPremiumModal, setToonPremiumModal] = useState(false);
+  const [heeftMeerResultaten, setHeeftMeerResultaten] = useState(false);
+  const [meerBezig, setMeerBezig] = useState(false);
+  const paginaRef = useRef(0);
+  const contextRef = useRef<{ term: string; f: Filters; sort: SorteerOptie }>({ term: "", f: INIT_FILTERS, sort: "nieuwste" });
 
   useEffect(() => {
     (async () => {
@@ -179,6 +117,34 @@ export default function SearchPage() {
     })();
   }, []);
 
+  const bouwQuery = (term: string, f: Filters, sort: SorteerOptie) => {
+    // Geen actief-filter in de query: verkochte items tonen we mét badge.
+    // Handmatig verborgen items filteren we hieronder alsnog weg.
+    let query = supabase
+      .from("listings")
+      .select("*, profiles(naam, stad, vakantiestand)");
+
+    if (sort === "prijs_laag") query = query.order("prijs", { ascending: true });
+    else if (sort === "prijs_hoog") query = query.order("prijs", { ascending: false });
+    else if (sort === "relevantie") query = query.order("likes", { ascending: false });
+    else query = query.order("created_at", { ascending: false });
+
+    const sizeActive = !(f.sizeMinIdx === 0 && f.sizeMaxIdx === SIZES.length - 1);
+    // subcategorie meenemen: bij categorie-browsen (bv. "Jurken & Rokken") staat de
+    // gekozen tekst alleen in dat veld, niet in categorie/titel/merk/beschrijving.
+    if (term) query = query.or(`titel.ilike.%${term}%,beschrijving.ilike.%${term}%,merk.ilike.%${term}%,categorie.ilike.%${term}%,subcategorie.ilike.%${term}%`);
+    if (sizeActive) query = query.in("maat", SIZES.slice(f.sizeMinIdx, f.sizeMaxIdx + 1));
+    if (f.conditions.length > 0) query = query.in("conditie", f.conditions);
+    if (f.colors.length > 0) query = query.in("kleur", f.colors);
+    // Merk is vrije tekst bij het uploaden (geen vaste lijst), dus hoofdletterongevoelig
+    // matchen in plaats van een exacte .in()-vergelijking die anders bijna nooit raak schiet.
+    if (f.merken.length > 0) query = query.or(f.merken.map(m => `merk.ilike.${m}`).join(","));
+    if (f.materialen.length > 0) query = query.in("materiaal", f.materialen);
+    if (f.minPrijs) query = query.gte("prijs", parseFloat(f.minPrijs));
+    if (f.maxPrijs) query = query.lte("prijs", parseFloat(f.maxPrijs));
+    return query;
+  };
+
   const zoek = useCallback(async (
     term: string,
     f: Filters = filters,
@@ -188,31 +154,14 @@ export default function SearchPage() {
     const hasFilter = sizeActive || f.conditions.length > 0 || f.colors.length > 0 ||
       f.merken.length > 0 || f.materialen.length > 0 || !!f.minPrijs || !!f.maxPrijs;
 
-    if (!term && !hasFilter) { setResultaten([]); setHeeftGezocht(false); return; }
+    if (!term && !hasFilter) { setResultaten([]); setHeeftGezocht(false); setHeeftMeerResultaten(false); return; }
 
     setLadenResultaten(true);
     setHeeftGezocht(true);
+    contextRef.current = { term, f, sort };
+    paginaRef.current = 0;
 
-    // Geen actief-filter in de query: verkochte items tonen we mét badge.
-    // Handmatig verborgen items filteren we hieronder alsnog weg.
-    let query = supabase
-      .from("listings")
-      .select("*, profiles(naam, stad, vakantiestand)")
-      .limit(60);
-
-    if (sort === "prijs_laag") query = query.order("prijs", { ascending: true });
-    else if (sort === "prijs_hoog") query = query.order("prijs", { ascending: false });
-    else if (sort === "relevantie") query = query.order("likes", { ascending: false });
-    else query = query.order("created_at", { ascending: false });
-
-    if (term) query = query.or(`titel.ilike.%${term}%,beschrijving.ilike.%${term}%,merk.ilike.%${term}%,categorie.ilike.%${term}%`);
-    if (sizeActive) query = query.in("maat", SIZES.slice(f.sizeMinIdx, f.sizeMaxIdx + 1));
-    if (f.conditions.length > 0) query = query.in("conditie", f.conditions);
-    if (f.colors.length > 0) query = query.in("kleur", f.colors);
-    if (f.merken.length > 0) query = query.in("merk", f.merken);
-    if (f.materialen.length > 0) query = query.in("materiaal", f.materialen);
-    if (f.minPrijs) query = query.gte("prijs", parseFloat(f.minPrijs));
-    if (f.maxPrijs) query = query.lte("prijs", parseFloat(f.maxPrijs));
+    const query = bouwQuery(term, f, sort).range(0, PAGINA_GROOTTE - 1);
 
     const [{ data }, geblokkeerd, { data: { user } }] = await Promise.all([
       query,
@@ -225,8 +174,30 @@ export default function SearchPage() {
       // Verkochte items achteraan
       .sort((a, b) => Number(a.verkocht === true) - Number(b.verkocht === true));
     setResultaten(zichtbaar);
+    setHeeftMeerResultaten((data?.length || 0) === PAGINA_GROOTTE);
     setLadenResultaten(false);
   }, [filters, sortering]);
+
+  const laadMeerResultaten = async () => {
+    if (meerBezig || !heeftMeerResultaten) return;
+    setMeerBezig(true);
+    const volgendePagina = paginaRef.current + 1;
+    const van = volgendePagina * PAGINA_GROOTTE;
+    const { term, f, sort } = contextRef.current;
+    const query = bouwQuery(term, f, sort).range(van, van + PAGINA_GROOTTE - 1);
+
+    const [{ data }, geblokkeerd, { data: { user } }] = await Promise.all([
+      query,
+      haalGeblokkeerdeIds(),
+      supabase.auth.getUser(),
+    ]);
+    const zichtbaar = filterZichtbaar((data as Listing[]) || [], geblokkeerd, user?.id)
+      .filter(l => l.actief !== false || l.verkocht === true);
+    setResultaten(prev => [...prev, ...zichtbaar].sort((a, b) => Number(a.verkocht === true) - Number(b.verkocht === true)));
+    paginaRef.current = volgendePagina;
+    setHeeftMeerResultaten((data?.length || 0) === PAGINA_GROOTTE);
+    setMeerBezig(false);
+  };
 
   useEffect(() => {
     const t = setTimeout(() => zoek(zoekterm), 300);
@@ -248,7 +219,7 @@ export default function SearchPage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push("/login"); return; }
     if (!waarschuwingActief && !isPremium) {
-      toast({ variant: "destructive", title: "Zoekwaarschuwingen zijn Premium", description: "Activeer Premium om alerts in te stellen." });
+      setToonPremiumModal(true);
       return;
     }
     setWaarschuwingBezig(true);
@@ -614,6 +585,14 @@ export default function SearchPage() {
                   </Link>
                 ))}
               </div>
+              {heeftMeerResultaten && (
+                <div className="flex justify-center pt-5">
+                  <button onClick={laadMeerResultaten} disabled={meerBezig}
+                    className="px-6 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-sm font-bold text-slate-600 dark:text-slate-300 disabled:opacity-60">
+                    {meerBezig ? "Laden…" : "Meer resultaten laden"}
+                  </button>
+                </div>
+              )}
             </div>
           )
         ) : (
@@ -673,7 +652,7 @@ export default function SearchPage() {
         )}
       </main>
 
-      <PremiumModal open={isPremium === false} onClose={() => router.back()} />
+      <PremiumModal open={toonPremiumModal} onClose={() => setToonPremiumModal(false)} />
     </div>
   );
 }

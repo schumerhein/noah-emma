@@ -10,17 +10,14 @@ import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { CATEGORY_HIERARCHY } from "@/lib/categorieen";
 
-const CATEGORIES: Record<string, string[]> = {
-  "Meisjeskleding": ["Jurken & Rokken","Jassen & Vesten","Truien & Sweaters","T-shirts & Tops","Broeken & Leggings","Zwemkleding","Pyjama & Ondergoed","Schoenen & Laarzen","Sportkleding"],
-  "Jongenskleding": ["Jassen & Vesten","Truien & Sweaters","T-shirts & Poloshirts","Broeken & Shorts","Zwemkleding","Pyjama & Ondergoed","Schoenen & Laarzen","Sportkleding"],
-  "Speelgoed": ["Houten Speelgoed","Educatief","Knuffels & Poppen","Buitenspeelgoed","Puzzels & Spellen","Constructie & Lego"],
-  "Kinderwagens, buggy's & autostoeltjes": ["Combinatiewagens","Buggy's","Autostoeltjes","Draagdoeken","Accessoires"],
-  "Meubilair & decoratie": ["Bedjes & Wiegjes","Kasten","Kinderstoelen","Bureaus","Decoratie"],
-  "Voeden": ["Flesjes","Borstkolven","Eetservies","Kinderstoelen (eten)","Sterilisatoren"],
-  "Slapen & beddengoed": ["Slaapzakken","Kussens & Dekbedden","Beddengoed"],
-  "Overige kinderartikelen": ["Speelmatten","Wipstoelen","Schoolspullen","Overig"],
-};
+// Zelfde bron als bij uploaden/zoeken — voorheen had deze pagina een eigen,
+// onvolledige en afwijkende lijst, waardoor je bij het bewerken soms niet
+// eens de categorie kon terugvinden die je bij het uploaden had gekozen.
+const CATEGORIES: Record<string, string[]> = Object.fromEntries(
+  Object.entries(CATEGORY_HIERARCHY).map(([naam, { sub }]) => [naam, sub])
+);
 
 const SIZES = ["50","56","62","68","74","80","86","92","98","104","110","116","122","128","134","140","146","152","158/164"];
 const CONDITIONS = ["Nieuw met prijskaartje","Zo goed als nieuw","Goed","Gebruikt"];

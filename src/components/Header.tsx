@@ -43,7 +43,6 @@ export function Header() {
     pathname === "/support" ||
     pathname === "/support/faq" ||
     pathname === "/support/ai-chat" ||
-    pathname.startsWith("/search/results") ||
     pathname.startsWith("/orders/") ||
     pathname.startsWith("/onboarding/") ||
     pathname.startsWith("/seller/") ||

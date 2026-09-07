@@ -18,21 +18,10 @@ import { NoahEmmaModel } from "@/components/ai-models/NoahEmmaModel";
 import { compositeClothingOnAvatar, compositeAllAngles, dataUrlToFile } from "@/lib/avatarComposite";
 import { AvatarViewer3D } from "@/components/avatar/AvatarViewer3D";
 import { BOOST_TIERS, type BoostTier } from "@/lib/prijzen";
+import { CATEGORY_HIERARCHY } from "@/lib/categorieen";
+import { verkleinAfbeelding } from "@/lib/afbeelding";
 
-const CATEGORY_HIERARCHY: Record<string, { icon: string; sub: string[] }> = {
-  "Meisjeskleding": { icon: "👧", sub: ["Jurken & Rokken", "Jassen & Vesten", "Truien & Sweaters", "T-shirts & Tops", "Broeken & Leggings", "Zwemkleding & Badpakken", "Pyjama & Ondergoed", "Schoenen & Laarzen", "Sokken & Kousen", "Feest & Galakleding", "Sportkleding", "Mutsen & Sjaals"] },
-  "Jongenskleding": { icon: "👦", sub: ["Jassen & Vesten", "Truien & Sweaters", "T-shirts & Poloshirts", "Broeken & Shorts", "Zwemkleding", "Pyjama & Ondergoed", "Schoenen & Laarzen", "Sokken", "Sportkleding", "Mutsen & Sjaals"] },
-  "Speelgoed": { icon: "🧸", sub: ["Houten Speelgoed", "Educatief Speelgoed", "Knuffels & Poppen", "Buitenspeelgoed", "Puzzels & Spellen", "Constructie & Lego", "Rijdend Speelgoed", "Muziekinstrumenten"] },
-  "Kinderwagens, buggy's & autostoeltjes": { icon: "🛒", sub: ["Combinatiewagens", "Buggy's & Wandelwagens", "Autostoeltjes", "Draagdoeken & Carriers", "Wagen-accessoires"] },
-  "Meubilair & decoratie": { icon: "🛏️", sub: ["Bedjes & Wiegjes", "Kasten & Opbergers", "Kinderstoelen", "Bureaus & Tafels", "Babyfoons", "Wanddecoratie", "Gordijnen & Raamdecoratie"] },
-  "Badderen & verschonen": { icon: "🛁", sub: ["Badje & Accessoires", "Luiers & Doekjes", "Luierzakken & -tassen", "Verzorgingsproducten", "Commode-accessoires"] },
-  "Veiligheid in en om het huis": { icon: "🔒", sub: ["Babyfoons", "Bedhekjes & Traplekken", "Hoekbeschermers", "Stopcontactbeveiliging"] },
-  "Gezondheid & zwangerschap": { icon: "🤰", sub: ["Zwangerschapskleding", "Borstvoeding", "Kolfapparaten", "Vitamines & Supplementen", "Zwangerschapskussens"] },
-  "Voeden": { icon: "🍼", sub: ["Flesjes & Spenen", "Borstkolven", "Eetservies & Bekers", "Kinderstoelen", "Sterilisatoren", "Babyvoeding"] },
-  "Slapen & beddengoed": { icon: "😴", sub: ["Slaapzakken", "Kussens & Dekbedden", "Beddengoed & Hoeslakens", "Bedbumpers", "Nachtlampjes"] },
-  "Schoolbenodigdheden": { icon: "🎒", sub: ["Rugzakken & Tassen", "Brooddozen & Drinkflessen", "Pennen & Schrijfgerei", "Tekenmaterialen"] },
-  "Overige kinderartikelen": { icon: "📦", sub: ["Speelmatten & Boxen", "Wipstoelen & Schommels", "Zwembaden & Waterspeelgoed", "Feestartikelen", "Overig"] },
-};
+const MAX_FOTOS = 8;
 
 export default function SellPage() {
   const router = useRouter();
@@ -59,18 +48,22 @@ export default function SellPage() {
   const [catStap, setCatStap] = useState<"hoofd" | "sub">("hoofd");
   const [loading, setLoading] = useState(false);
   const [aiModel, setAiModel] = useState<"none" | "noah" | "emma">("none");
-  const [kindMaat, setKindMaat] = useState("86");
   const aiModelRef = useRef<"none" | "noah" | "emma">("none");
   const imageCountRef = useRef(0); // bijhouden hoeveel afbeeldingen er al zijn
+  const maatHandmatigRef = useRef(false); // true zodra de verkoper zelf een maat kiest
   const { toast } = useToast();
 
-  // Laad het kindprofiel van de ingelogde gebruiker
+  // Laad het kindprofiel van de ingelogde gebruiker en stel de maat daarop in
+  // — tenzij de verkoper zelf al een maat gekozen heeft.
   useEffect(() => {
     const laadKind = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       const { data } = await supabase.from("children").select("maat").eq("user_id", user.id).order("created_at").limit(1).single();
-      if (data?.maat) setKindMaat(data.maat);
+      if (data?.maat && !maatHandmatigRef.current) {
+        setSize(data.maat);
+        sizeRef.current = data.maat;
+      }
     };
     laadKind();
   }, []);
@@ -113,17 +106,19 @@ export default function SellPage() {
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
-    const fileList = Array.from(files);
+    let fileList = Array.from(files);
     const currentModel = aiModelRef.current;
 
-    // Laad alle bestanden parallel als dataUrls
-    const loaded = await Promise.all(fileList.map((file) =>
-      new Promise<{ file: File; dataUrl: string }>((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve({ file, dataUrl: reader.result as string });
-        reader.readAsDataURL(file);
-      })
-    ));
+    const ruimteOver = MAX_FOTOS - imageCountRef.current;
+    if (fileList.length > ruimteOver) {
+      fileList = fileList.slice(0, Math.max(0, ruimteOver));
+      toast({ variant: "destructive", title: "Maximaal 8 foto's", description: `Alleen de eerste ${fileList.length} foto's zijn toegevoegd.` });
+    }
+    if (fileList.length === 0) return;
+
+    // Laad + verklein alle bestanden parallel (voorkomt trage uploads en
+    // onnodig grote opslag bij foto's rechtstreeks van een telefooncamera)
+    const loaded = await Promise.all(fileList.map((file) => verkleinAfbeelding(file)));
 
     // Sla startIndex op vóór state-update (via ref, niet stale closure)
     const startIndex = imageCountRef.current;
@@ -197,6 +192,10 @@ export default function SellPage() {
       toast({ variant: "destructive", title: "Oeps!", description: "Vul een geldige prijs in." });
       return;
     }
+    if (!mainCategory) {
+      toast({ variant: "destructive", title: "Oeps!", description: "Kies een categorie, anders is je advertentie niet terug te vinden." });
+      return;
+    }
 
     setLoading(true);
 
@@ -234,7 +233,7 @@ export default function SellPage() {
         prijs: parseFloat(price),
         maat: size,
         conditie: condition,
-        categorie: mainCategory || "Overig",
+        categorie: mainCategory || "Overige kinderartikelen",
         subcategorie: subCategory || null,
         merk: merk || null,
         kleur: kleur || null,
@@ -353,10 +352,12 @@ export default function SellPage() {
                 <Image src={img} alt={`Thumb ${idx}`} fill className="object-cover" />
               </div>
             ))}
-            <label className="w-16 h-16 rounded-lg bg-slate-100 dark:bg-slate-800 flex flex-col items-center justify-center flex-shrink-0 cursor-pointer border-2 border-dashed border-slate-200">
-              <Plus className="w-6 h-6 text-slate-400" />
-              <input type="file" multiple accept="image/*" className="hidden" onChange={handleImageUpload} />
-            </label>
+            {imagePreviews.length < MAX_FOTOS && (
+              <label className="w-16 h-16 rounded-lg bg-slate-100 dark:bg-slate-800 flex flex-col items-center justify-center flex-shrink-0 cursor-pointer border-2 border-dashed border-slate-200">
+                <Plus className="w-6 h-6 text-slate-400" />
+                <input type="file" multiple accept="image/*" className="hidden" onChange={handleImageUpload} />
+              </label>
+            )}
           </div>
         </section>
 
@@ -401,7 +402,7 @@ export default function SellPage() {
 
             <NoahEmmaModel
               naam="noah"
-              maat={size || kindMaat}
+              maat={size}
               size="sm"
               selected={aiModel === "noah"}
               onClick={() => handleAiModelChange("noah")}
@@ -409,7 +410,7 @@ export default function SellPage() {
 
             <NoahEmmaModel
               naam="emma"
-              maat={size || kindMaat}
+              maat={size}
               size="sm"
               selected={aiModel === "emma"}
               onClick={() => handleAiModelChange("emma")}
@@ -420,7 +421,7 @@ export default function SellPage() {
             <div className="bg-primary/10 rounded-xl p-3 flex items-center gap-2">
               <Wand2 className="w-4 h-4 text-primary shrink-0" />
               <p className="text-xs font-bold text-primary-dark">
-                {aiModel === "noah" ? "Noah" : "Emma"} presenteert jouw item · Maat {size || kindMaat}
+                {aiModel === "noah" ? "Noah" : "Emma"} presenteert jouw item · Maat {size}
               </p>
             </div>
           )}
@@ -445,7 +446,7 @@ export default function SellPage() {
 
           {/* Categorie kiezer */}
           <div className="space-y-3">
-            <label className="text-sm font-bold text-slate-500">Categorie</label>
+            <label className="text-sm font-bold text-slate-500">Categorie <span className="text-primary">*</span></label>
             <button
               type="button"
               onClick={() => { setCatStap("hoofd"); setCatSheetOpen(true); }}
@@ -544,7 +545,7 @@ export default function SellPage() {
             <label className="text-sm font-bold text-slate-500">Maat</label>
             <div className="grid grid-cols-4 gap-2">
               {["50", "56", "62", "68", "74", "80", "86", "92", "98", "104", "110", "116", "122", "128", "134", "140", "146", "152", "158/164"].map(s => (
-                <button key={s} onClick={() => setSize(s)} className={cn(
+                <button key={s} onClick={() => { maatHandmatigRef.current = true; setSize(s); }} className={cn(
                   "py-2.5 rounded-xl text-xs font-bold transition-all",
                   size === s ? "bg-pink-50 text-primary-dark border-2 border-primary" : "bg-slate-50 dark:bg-slate-800 text-slate-500"
                 )}>{s}</button>

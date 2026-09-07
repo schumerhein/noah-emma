@@ -152,7 +152,9 @@ export default function LandingPage() {
               <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border-2 border-white shadow-md"><NoahFace size={36} /></div>
               <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border-2 border-white shadow-md -ml-2"><EmmaFace size={36} /></div>
             </div>
-            <span className="font-headline font-extrabold text-base sm:text-lg tracking-tight truncate">Noah &amp; Emma</span>
+            <span className="font-headline font-extrabold text-base sm:text-lg tracking-tight truncate">
+              <span style={{ color: "#1C7FA8" }}>Noah</span> &amp; <span style={{ color: "#D63D74" }}>Emma</span>
+            </span>
           </div>
           <nav className="hidden md:flex items-center gap-8">
             <a href="#hoe-het-werkt" className="text-sm font-semibold text-[#5B4F63] hover:text-[#241A2E] transition-colors">Hoe het werkt</a>
@@ -355,7 +357,9 @@ export default function LandingPage() {
               <div className="w-7 h-7 rounded-full overflow-hidden border-2 border-white shadow-sm"><NoahFace size={28} /></div>
               <div className="w-7 h-7 rounded-full overflow-hidden border-2 border-white shadow-sm -ml-2"><EmmaFace size={28} /></div>
             </div>
-            <span className="font-headline font-bold text-sm">Noah &amp; Emma</span>
+            <span className="font-headline font-bold text-sm">
+              <span style={{ color: "#1C7FA8" }}>Noah</span> &amp; <span style={{ color: "#D63D74" }}>Emma</span>
+            </span>
           </div>
           <p className="text-xs text-[#8A7E90]">
             © {new Date().getFullYear()} Noah &amp; Emma — De makkelijkste manier om kinderkleding en accessoires te kopen en verkopen.

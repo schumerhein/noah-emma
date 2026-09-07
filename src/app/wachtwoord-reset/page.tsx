@@ -63,7 +63,11 @@ export default function WachtwoordResetPage() {
         <div className="mb-4">
           <NoahEmmaLogo size={56} />
         </div>
-        <h2 className="text-accent text-2xl font-bold tracking-[0.2em] uppercase">NOAH &amp; EMMA</h2>
+        <h2 className="text-2xl font-bold tracking-[0.2em] uppercase">
+          <span style={{ color: "#1C7FA8" }}>NOAH</span>{" "}
+          <span className="text-slate-900 dark:text-white">&amp;</span>{" "}
+          <span style={{ color: "#D63D74" }}>EMMA</span>
+        </h2>
         <p className="text-slate-500 dark:text-slate-400 text-sm mt-2 font-medium">De marketplace voor kinderkleding</p>
       </div>
 

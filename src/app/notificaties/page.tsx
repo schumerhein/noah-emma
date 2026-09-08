@@ -10,6 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 
 type NotificatieKeys = {
   nieuw_bericht: boolean;
+  nieuw_bod: boolean;
+  deal_gesloten: boolean;
   nieuwe_feedback: boolean;
   afgeprijsde_artikelen: boolean;
   favoriet_artikel: boolean;
@@ -22,6 +24,8 @@ type NotificatieKeys = {
 
 const DEFAULTS: NotificatieKeys = {
   nieuw_bericht: true,
+  nieuw_bod: true,
+  deal_gesloten: true,
   nieuwe_feedback: false,
   afgeprijsde_artikelen: false,
   favoriet_artikel: false,
@@ -39,6 +43,8 @@ const SECTIES = [
     header: "Belangrijke notificaties",
     items: [
       { key: "nieuw_bericht" as keyof NotificatieKeys, label: "Nieuwe berichten" },
+      { key: "nieuw_bod" as keyof NotificatieKeys, label: "Nieuwe biedingen" },
+      { key: "deal_gesloten" as keyof NotificatieKeys, label: "Verkocht / deal gesloten" },
       { key: "nieuwe_feedback" as keyof NotificatieKeys, label: "Nieuwe feedback" },
       { key: "afgeprijsde_artikelen" as keyof NotificatieKeys, label: "Afgeprijsde artikelen" },
     ],
@@ -111,7 +117,7 @@ export default function PushmeldingPage() {
           <button onClick={() => router.back()}>
             <ChevronLeft className="w-6 h-6 text-slate-600 dark:text-slate-300" />
           </button>
-          <h1 className="text-xl font-black text-slate-900 dark:text-white">Pushmeldingen</h1>
+          <h1 className="text-xl font-black text-slate-900 dark:text-white">Meldingen in de app</h1>
         </div>
       </header>
 
@@ -133,7 +139,6 @@ export default function PushmeldingPage() {
                     checked={inst[item.key] as boolean}
                     onCheckedChange={val => toggle(item.key, val)}
                     className="data-[state=checked]:bg-primary"
-                    disabled={!inst.push_aan}
                   />
                 </div>
               ))}
@@ -157,10 +162,13 @@ export default function PushmeldingPage() {
           </div>
         </div>
 
-        {/* Pushmeldingen aan/uit */}
+        {/* Pushmeldingen aan/uit — telefoon-pushmeldingen komen in een latere update */}
         <div className="mt-5 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
           <div className="flex items-center justify-between px-6 py-4">
-            <span className="text-[17px] text-slate-900 dark:text-white">Pushmeldingen aanzetten</span>
+            <div>
+              <span className="text-[17px] text-slate-900 dark:text-white block">Pushmeldingen op je telefoon</span>
+              <span className="text-sm text-slate-400">Binnenkort beschikbaar</span>
+            </div>
             <Switch
               checked={inst.push_aan}
               onCheckedChange={val => toggle("push_aan", val)}

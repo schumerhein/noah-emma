@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { stuurEmail, emailSjabloon } from "@/lib/email";
+import { magEmailKrijgen } from "@/lib/notificatieVoorkeuren";
 
 // Wordt aangeroepen door een Supabase Database Webhook op INSERT in
 // "biedingen". Stuurt de verkoper een e-mail dat er een bod is gedaan.
@@ -25,6 +26,7 @@ export async function POST(request: Request) {
 
   const { data: { user: verkoper } } = await supabaseAdmin.auth.admin.getUserById(listing.user_id);
   if (!verkoper?.email) return NextResponse.json({ ok: true });
+  if (!(await magEmailKrijgen(listing.user_id, "nieuw_bod"))) return NextResponse.json({ ok: true });
 
   const { data: bieder } = await supabaseAdmin.from("profiles").select("naam").eq("id", bod.bieder_id).single();
   const bieder_naam = bieder?.naam || "Iemand";

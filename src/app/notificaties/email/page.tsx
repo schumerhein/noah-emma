@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 export default function EmailNotificatiesPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [emailAan, setEmailAan] = useState(false);
+  const [emailAan, setEmailAan] = useState(true);
   const [laden, setLaden] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
 
@@ -20,9 +20,8 @@ export default function EmailNotificatiesPage() {
       if (!user) { router.push("/login"); return; }
       setUserId(user.id);
       const { data } = await supabase.from("profiles").select("notificatie_instellingen").eq("id", user.id).single();
-      if (data?.notificatie_instellingen?.email_aan !== undefined) {
-        setEmailAan(data.notificatie_instellingen.email_aan);
-      }
+      // Standaard aan: alleen een expliciete "uit" in het verleden telt.
+      setEmailAan(data?.notificatie_instellingen?.email_aan !== false);
       setLaden(false);
     })();
   }, []);
@@ -78,7 +77,7 @@ export default function EmailNotificatiesPage() {
         </div>
 
         <p className="text-sm text-slate-400 px-6 py-4 leading-relaxed">
-          Mogelijk ontvang je nog steeds verplichte updates over belangrijke wettelijke wijzigingen, of berichten over verkopen en aankopen.
+          Zet je dit uit, dan stoppen alle e-mails: nieuwe berichten, biedingen en verkocht-bevestigingen. Je ziet nieuwe berichten en biedingen dan alleen nog in de app zelf.
         </p>
       </main>
     </div>

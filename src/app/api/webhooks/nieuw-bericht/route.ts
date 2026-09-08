@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { stuurEmail, emailSjabloon } from "@/lib/email";
+import { magEmailKrijgen } from "@/lib/notificatieVoorkeuren";
 
 // Wordt aangeroepen door een Supabase Database Webhook op INSERT in
 // "messages". Stuurt de ontvanger (niet de afzender) een e-mail dat er een
@@ -31,6 +32,12 @@ export async function POST(request: Request) {
   if (!conversation) return NextResponse.json({ ok: true });
 
   const ontvangerId = conversation.buyer_id === bericht.sender_id ? conversation.seller_id : conversation.buyer_id;
+
+  const isDealGesloten = typeof bericht.tekst === "string" && bericht.tekst.startsWith("🎉 Deal gesloten");
+  if (!(await magEmailKrijgen(ontvangerId, isDealGesloten ? "deal_gesloten" : "nieuw_bericht"))) {
+    return NextResponse.json({ ok: true });
+  }
+
   const { data: { user: ontvanger } } = await supabaseAdmin.auth.admin.getUserById(ontvangerId);
   if (!ontvanger?.email) return NextResponse.json({ ok: true });
 
@@ -41,15 +48,26 @@ export async function POST(request: Request) {
 
   await stuurEmail({
     naar: ontvanger.email,
-    onderwerp: `${afzenderNaam} heeft je een bericht gestuurd`,
-    html: emailSjabloon({
-      titel: `Nieuw bericht van ${afzenderNaam}`,
-      tekst: listing?.titel
-        ? `${afzenderNaam} heeft je een bericht gestuurd over "${listing.titel}".`
-        : `${afzenderNaam} heeft je een bericht gestuurd.`,
-      knopTekst: "Bekijk gesprek",
-      knopUrl: `${origin}/messages/${conversation.id}`,
-    }),
+    onderwerp: isDealGesloten
+      ? `Deal gesloten voor "${listing?.titel ?? "je advertentie"}"`
+      : `${afzenderNaam} heeft je een bericht gestuurd`,
+    html: isDealGesloten
+      ? emailSjabloon({
+          titel: "Deal gesloten! 🎉",
+          tekst: listing?.titel
+            ? `${afzenderNaam} heeft de deal voor "${listing.titel}" afgerond. Vergeet niet een review achter te laten.`
+            : `${afzenderNaam} heeft jullie deal afgerond. Vergeet niet een review achter te laten.`,
+          knopTekst: "Bekijk gesprek",
+          knopUrl: `${origin}/messages/${conversation.id}`,
+        })
+      : emailSjabloon({
+          titel: `Nieuw bericht van ${afzenderNaam}`,
+          tekst: listing?.titel
+            ? `${afzenderNaam} heeft je een bericht gestuurd over "${listing.titel}".`
+            : `${afzenderNaam} heeft je een bericht gestuurd.`,
+          knopTekst: "Bekijk gesprek",
+          knopUrl: `${origin}/messages/${conversation.id}`,
+        }),
   });
 
   return NextResponse.json({ ok: true });

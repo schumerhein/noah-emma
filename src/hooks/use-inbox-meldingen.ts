@@ -66,13 +66,23 @@ export function useInboxMeldingen() {
         .order("created_at", { ascending: false }).limit(1).single();
       if (!laatste || laatste.sender_id === userId) return;
 
+      const isDealGesloten = laatste.tekst?.startsWith("🎉 Deal gesloten");
+      const isBod = laatste.tekst?.startsWith("💸 Ik doe een bod van");
+      const type = isDealGesloten ? "deal_gesloten" : isBod ? "nieuw_bod" : "nieuw_bericht";
+
+      const { data: eigenProfiel } = await supabase.from("profiles")
+        .select("notificatie_instellingen").eq("id", userId).single();
+      const inst = (eigenProfiel?.notificatie_instellingen || {}) as Record<string, unknown>;
+      // Standaard aan, tenzij dit type (of alles) expliciet is uitgezet.
+      if (inst[type] === false) return;
+
       const { data: afzender } = await supabase.from("profiles")
         .select("naam").eq("id", laatste.sender_id).single();
       const naam = afzender?.naam || "Iemand";
 
       let titel = `Nieuw bericht van ${naam}`;
-      if (laatste.tekst?.startsWith("💸 Ik doe een bod van")) titel = `${naam} doet een bod`;
-      else if (laatste.tekst?.startsWith("🎉 Deal gesloten")) titel = "Deal gesloten!";
+      if (isBod) titel = `${naam} doet een bod`;
+      else if (isDealGesloten) titel = "Deal gesloten!";
 
       toast({ title: titel, description: laatste.tekst ?? undefined });
     };

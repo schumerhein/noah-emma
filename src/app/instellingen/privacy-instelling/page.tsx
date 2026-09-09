@@ -8,14 +8,14 @@ import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 
 type PrivacyKeys = {
-  marketing_campagnes: boolean;
+  verberg_locatie: boolean;
   favoriet_notificatie_verkoper: boolean;
   gepersonaliseerde_inhoud: boolean;
   recent_bekeken_tonen: boolean;
 };
 
 const DEFAULTS: PrivacyKeys = {
-  marketing_campagnes: true,
+  verberg_locatie: false,
   favoriet_notificatie_verkoper: true,
   gepersonaliseerde_inhoud: true,
   recent_bekeken_tonen: true,
@@ -23,9 +23,9 @@ const DEFAULTS: PrivacyKeys = {
 
 const ITEMS: { key: keyof PrivacyKeys; label: string; sub: string }[] = [
   {
-    key: "marketing_campagnes",
-    label: "Toon mijn artikelen in marketingcampagnes om hopelijk nog sneller te verkopen",
-    sub: "Hiermee kan Noah & Emma jouw artikelen op social media en andere kanalen laten zien. Meer zichtbaarheid kan ervoor zorgen dat je sneller verkoopt.",
+    key: "verberg_locatie",
+    label: "Verberg mijn stad voor andere gebruikers",
+    sub: "Je stad wordt dan nergens getoond op je advertenties of profiel — ook niet aan kopers die interesse hebben.",
   },
   {
     key: "favoriet_notificatie_verkoper",

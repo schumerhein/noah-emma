@@ -53,6 +53,7 @@ type Listing = {
     totaal_verkopen?: number | null;
     aantalvolgers?: number | null;
     lid_sinds?: string | null;
+    privacy_instellingen?: { verberg_locatie?: boolean } | null;
   } | null;
 };
 
@@ -148,7 +149,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   const laadListing = async () => {
     const { data, error } = await supabase
       .from("listings")
-      .select("*, profiles(naam, stad, avatar_url, gemiddelde_beoordeling, totaal_beoordelingen, totaal_verkopen, aantalvolgers, lid_sinds)")
+      .select("*, profiles(naam, stad, avatar_url, gemiddelde_beoordeling, totaal_beoordelingen, totaal_verkopen, aantalvolgers, lid_sinds, privacy_instellingen)")
       .eq("id", id)
       .single();
 
@@ -496,7 +497,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                   </span>
                 </Link>
               )}
-              {listing.profiles?.stad && (
+              {listing.profiles?.stad && !listing.profiles.privacy_instellingen?.verberg_locatie && (
                 <span className="text-xs text-slate-400">📍 {listing.profiles.stad}</span>
               )}
               <span className="text-xs text-slate-400">{relatieveTijd(listing.created_at)}</span>
@@ -527,7 +528,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                     <h4 className="font-bold text-[16px] text-slate-900 dark:text-white leading-tight">{verkoperNaam}</h4>
                   </Link>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
-                    {listing.profiles?.stad && (
+                    {listing.profiles?.stad && !listing.profiles.privacy_instellingen?.verberg_locatie && (
                       <span className="text-xs text-slate-400">📍 {listing.profiles.stad}</span>
                     )}
                     {listing.profiles?.lid_sinds && (

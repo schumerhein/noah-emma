@@ -34,6 +34,7 @@ type Listing = {
     totaal_beoordelingen: number | null;
     avatar_url: string | null;
     vakantiestand: boolean | null;
+    privacy_instellingen?: { verberg_locatie?: boolean } | null;
   };
 };
 
@@ -219,7 +220,7 @@ export default function Home() {
     // schip in plaats van gewoon terug te vallen in de normale rij.
     let query = supabase
       .from("listings")
-      .select("*, profiles(naam, stad, gemiddelde_beoordeling, totaal_beoordelingen, avatar_url, vakantiestand)")
+      .select("*, profiles(naam, stad, gemiddelde_beoordeling, totaal_beoordelingen, avatar_url, vakantiestand, privacy_instellingen)")
       .eq("actief", true)
       .or(`gepromoot.eq.false,promotie_verloopdatum.lte.${new Date().toISOString()}`);
     if (kind && filterOpKind) query = query.eq("maat", kind.maat);
@@ -254,7 +255,7 @@ export default function Home() {
     // van dat de database willekeurig (en steeds dezelfde) 5 kiest.
     let queryPromoted = supabase
       .from("listings")
-      .select("*, profiles(naam, stad, gemiddelde_beoordeling, totaal_beoordelingen, avatar_url, vakantiestand)")
+      .select("*, profiles(naam, stad, gemiddelde_beoordeling, totaal_beoordelingen, avatar_url, vakantiestand, privacy_instellingen)")
       .eq("actief", true)
       .eq("gepromoot", true)
       .gt("promotie_verloopdatum", new Date().toISOString());
@@ -684,7 +685,7 @@ export default function Home() {
                     ) : (
                       <span className="text-[10px] font-medium text-slate-400 bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded-md shrink-0">Nieuw</span>
                     )}
-                    {current.profiles?.stad && (
+                    {current.profiles?.stad && !current.profiles.privacy_instellingen?.verberg_locatie && (
                       <span className="text-xs font-medium text-slate-500 dark:text-slate-400 truncate ml-auto shrink-0">
                         📍 {current.profiles.stad}
                       </span>

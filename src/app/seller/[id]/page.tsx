@@ -21,6 +21,7 @@ type SellerProfile = {
   aantalvolgers: number | null;
   lid_sinds: string | null;
   vakantiestand: boolean;
+  privacy_instellingen: { verberg_locatie?: boolean } | null;
 };
 
 type Listing = {
@@ -97,7 +98,7 @@ export default function SellerPage({ params }: { params: Promise<{ id: string }>
     }
 
     const [profileRes, listingsRes, reviewsRes] = await Promise.all([
-      supabase.from("profiles").select("id, naam, stad, bio, avatar_url, gemiddelde_beoordeling, totaal_verkopen, aantalvolgers, lid_sinds, vakantiestand").eq("id", id).single(),
+      supabase.from("profiles").select("id, naam, stad, bio, avatar_url, gemiddelde_beoordeling, totaal_verkopen, aantalvolgers, lid_sinds, vakantiestand, privacy_instellingen").eq("id", id).single(),
       supabase.from("listings").select("*").eq("user_id", id).eq("actief", true).order("created_at", { ascending: false }),
       supabase.from("reviews").select("id, beoordeling, tekst, created_at, reviewer:profiles!reviews_reviewer_id_fkey(naam)").eq("reviewed_id", id).order("created_at", { ascending: false }),
     ]);
@@ -269,7 +270,7 @@ export default function SellerPage({ params }: { params: Promise<{ id: string }>
 
           <div className="flex-1 min-w-0">
             <h2 className="text-xl font-extrabold text-slate-900 dark:text-white truncate">{seller.naam || "Gebruiker"}</h2>
-            {seller.stad && (
+            {seller.stad && !seller.privacy_instellingen?.verberg_locatie && (
               <div className="flex items-center gap-1 mt-0.5">
                 <MapPin className="w-3 h-3 text-slate-400" />
                 <span className="text-xs text-slate-400 font-medium">{seller.stad}</span>

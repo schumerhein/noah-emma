@@ -58,7 +58,7 @@ type Listing = {
   moderatie_status?: string;
   actief?: boolean;
   verkocht?: boolean;
-  profiles?: { naam: string | null; stad: string | null; vakantiestand: boolean | null };
+  profiles?: { naam: string | null; stad: string | null; vakantiestand: boolean | null; privacy_instellingen?: { verberg_locatie?: boolean } | null };
 };
 
 type Filters = {
@@ -122,7 +122,7 @@ export default function SearchPage() {
     // Handmatig verborgen items filteren we hieronder alsnog weg.
     let query = supabase
       .from("listings")
-      .select("*, profiles(naam, stad, vakantiestand)");
+      .select("*, profiles(naam, stad, vakantiestand, privacy_instellingen)");
 
     if (sort === "prijs_laag") query = query.order("prijs", { ascending: true });
     else if (sort === "prijs_hoog") query = query.order("prijs", { ascending: false });
@@ -579,7 +579,7 @@ export default function SearchPage() {
                             Maat {item.maat}
                           </span>
                         </div>
-                        {item.profiles?.stad && <p className="text-[11px] text-slate-400">{item.profiles.stad}</p>}
+                        {item.profiles?.stad && !item.profiles.privacy_instellingen?.verberg_locatie && <p className="text-[11px] text-slate-400">{item.profiles.stad}</p>}
                       </div>
                     </div>
                   </Link>

@@ -1,15 +1,38 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ChevronLeft, LogOut, Clock } from "lucide-react";
-import { useState } from "react";
+import { ChevronLeft, LogOut, MonitorSmartphone } from "lucide-react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
+
+type LoginSessie = {
+  id: string;
+  device_label: string | null;
+  created_at: string;
+};
 
 export default function SessiesPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [bezig, setBezig] = useState(false);
+  const [sessies, setSessies] = useState<LoginSessie[]>([]);
+  const [laden, setLaden] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { router.push("/login"); return; }
+      const { data } = await supabase
+        .from("login_sessions")
+        .select("id, device_label, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(10);
+      setSessies(data || []);
+      setLaden(false);
+    })();
+  }, []);
 
   const uitloggenOveral = async () => {
     setBezig(true);
@@ -30,12 +53,35 @@ export default function SessiesPage() {
       </header>
 
       <main className="pt-6">
-        <div className="mx-6 flex items-start gap-3 rounded-2xl bg-slate-100 dark:bg-slate-800/60 px-4 py-3.5">
-          <Clock className="w-5 h-5 text-slate-400 shrink-0 mt-0.5" />
-          <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-            Een overzicht per apparaat is <strong>binnenkort beschikbaar</strong>. Twijfel je of iemand anders toegang
-            heeft tot je account? Log dan hieronder overal in één keer uit.
-          </p>
+        <p className="px-6 text-xs text-slate-400 leading-relaxed">
+          Recente keren dat er is ingelogd op je account. Herken je een moment niet? Log dan hieronder overal uit en wijzig meteen je wachtwoord.
+        </p>
+
+        <div className="mt-4 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
+          {laden ? (
+            <div className="px-6 py-8 flex justify-center">
+              <span className="material-icons-round text-primary text-2xl animate-spin">progress_activity</span>
+            </div>
+          ) : sessies.length === 0 ? (
+            <p className="px-6 py-6 text-sm text-slate-400">Nog geen activiteit vastgelegd.</p>
+          ) : (
+            sessies.map((s, idx) => (
+              <div
+                key={s.id}
+                className={`flex items-center gap-4 px-6 py-4 ${idx < sessies.length - 1 ? "border-b border-slate-100 dark:border-slate-800" : ""}`}
+              >
+                <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                  <MonitorSmartphone className="w-5 h-5 text-slate-400" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[15px] font-semibold text-slate-800 dark:text-white truncate">{s.device_label || "Onbekend apparaat"}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    {new Date(s.created_at).toLocaleString("nl-NL", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}
+                  </p>
+                </div>
+              </div>
+            ))
+          )}
         </div>
 
         <div className="mt-6 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">

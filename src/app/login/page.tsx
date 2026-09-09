@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { NoahEmmaLogo } from "@/components/Header";
 import { MailCheck } from "lucide-react";
+import { leesbareDeviceLabel } from "@/lib/deviceLabel";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -65,6 +66,19 @@ export default function LoginPage() {
       }
       setLoading(false);
       return;
+    }
+
+    // Vastleggen voor het inlog-activiteitenoverzicht — mag het inloggen
+    // zelf nooit blokkeren of vertragen, dus bewust niet awaited.
+    if (data.session) {
+      fetch("/api/account/log-in-sessie", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${data.session.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ device_label: leesbareDeviceLabel(navigator.userAgent) }),
+      }).catch(() => {});
     }
 
     // Bij registratie met verplichte e-mailbevestiging komt een gebruiker

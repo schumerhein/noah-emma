@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// Geen keuze-UI: er is nog geen vertaallaag in de app, dus elke andere taal
+// dan Nederlands zou een lege belofte zijn. Zodra er echt meertaligheid komt,
+// hoort hier ook opslag (profiel of localStorage) bij.
 const TALEN = [
   { code: "nl", naam: "Nederlands", vlag: "🇳🇱", regio: "Nederland", beschikbaar: true },
   { code: "en", naam: "English", vlag: "🇬🇧", regio: "United Kingdom", beschikbaar: false },
@@ -14,7 +16,6 @@ const TALEN = [
 
 export default function TaalPage() {
   const router = useRouter();
-  const [geselecteerd, setGeselecteerd] = useState("nl");
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-20">
@@ -30,14 +31,12 @@ export default function TaalPage() {
       <main className="px-5 pt-6 space-y-6">
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
           {TALEN.map((taal, idx) => (
-            <button
+            <div
               key={taal.code}
-              onClick={() => taal.beschikbaar && setGeselecteerd(taal.code)}
-              disabled={!taal.beschikbaar}
               className={cn(
-                "w-full flex items-center gap-4 px-5 py-4 text-left transition-colors",
+                "w-full flex items-center gap-4 px-5 py-4 text-left",
                 idx < TALEN.length - 1 ? "border-b border-slate-100 dark:border-slate-800" : "",
-                taal.beschikbaar ? "active:bg-slate-50 dark:active:bg-slate-800" : "opacity-40 cursor-not-allowed"
+                taal.beschikbaar ? "" : "opacity-40"
               )}
             >
               <span className="text-3xl">{taal.vlag}</span>
@@ -51,13 +50,13 @@ export default function TaalPage() {
                     Binnenkort
                   </span>
                 )}
-                {geselecteerd === taal.code && taal.beschikbaar && (
+                {taal.beschikbaar && (
                   <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
                     <Check className="w-4 h-4 text-white" />
                   </div>
                 )}
               </div>
-            </button>
+            </div>
           ))}
         </div>
 

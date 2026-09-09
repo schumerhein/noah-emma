@@ -13,6 +13,11 @@ export default function BeveiligingPage() {
       href: "/instellingen/email",
     },
     {
+      label: "Telefoonnummer",
+      sub: "Handig voor ophaalafspraken en herstel van je account.",
+      href: "/instellingen/telefoon",
+    },
+    {
       label: "Wachtwoord",
       sub: "Beveilig je account met een sterker wachtwoord.",
       href: "/instellingen/wachtwoord",

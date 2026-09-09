@@ -82,6 +82,7 @@ function InstellingenInner() {
       header: "Privacy-instellingen",
       items: [
         { label: "Privacy-instellingen", href: "/instellingen/privacy-instelling" },
+        { label: "Geblokkeerde gebruikers", href: "/instellingen/geblokkeerd" },
       ],
     },
     {

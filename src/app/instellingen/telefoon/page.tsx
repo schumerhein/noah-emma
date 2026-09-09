@@ -27,9 +27,10 @@ export default function TelefoonPage() {
   }, []);
 
   const formatNummer = (val: string) => val.replace(/\D/g, "").slice(0, 10);
+  const nummerGeldig = /^06\d{8}$/.test(nummer);
 
   const opslaanNummer = async () => {
-    if (!userId) return;
+    if (!userId || !nummerGeldig) return;
     setOpslaan(true);
     const { error } = await supabase.from("profiles").update({ telefoonnummer: nummer || null }).eq("id", userId);
     setOpslaan(false);
@@ -86,6 +87,9 @@ export default function TelefoonPage() {
               className="flex-1 h-12 px-4 rounded-xl border-2 border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white font-medium outline-none focus:border-primary transition-colors"
             />
           </div>
+          {nummer.length > 0 && !nummerGeldig && (
+            <p className="text-xs text-red-500">Vul een geldig Nederlands mobiel nummer in, beginnend met 06.</p>
+          )}
         </div>
 
         <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-4 flex gap-3">
@@ -107,10 +111,10 @@ export default function TelefoonPage() {
       <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto px-5 py-4 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-100 dark:border-slate-800">
         <button
           onClick={opslaanNummer}
-          disabled={opslaan || nummer.length < 9}
+          disabled={opslaan || !nummerGeldig}
           className={cn(
             "w-full h-14 rounded-2xl font-bold text-base transition-all",
-            nummer.length >= 9 ? "bg-primary text-white shadow-lg shadow-primary/20 active:scale-[0.98]" : "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
+            nummerGeldig ? "bg-primary text-white shadow-lg shadow-primary/20 active:scale-[0.98]" : "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
           )}
         >
           {opslaan ? "Opslaan…" : "Opslaan"}

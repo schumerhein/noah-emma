@@ -49,17 +49,20 @@ export default function ProfielInstellingenPage() {
   const uploadAvatar = async (file: File) => {
     if (!userId) return;
     setAvatarBezig(true);
-    const pad = `${userId}/avatar-${Date.now()}.${file.name.split(".").pop()}`;
-    const { error } = await supabase.storage.from("avatars").upload(pad, file, { upsert: true });
+    // Eén vast pad per gebruiker zodat een nieuwe foto de oude overschrijft
+    // in plaats van als losse blob in de opslag te blijven staan.
+    const pad = `${userId}/avatar.${file.name.split(".").pop()}`;
+    const { error } = await supabase.storage.from("avatars").upload(pad, file, { upsert: true, contentType: file.type });
     if (error) { toast({ variant: "destructive", title: "Upload mislukt" }); setAvatarBezig(false); return; }
     const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(pad);
-    const { error: updateError } = await supabase.from("profiles").update({ avatar_url: publicUrl }).eq("id", userId);
+    const url = `${publicUrl}?t=${Date.now()}`;
+    const { error: updateError } = await supabase.from("profiles").update({ avatar_url: url }).eq("id", userId);
     setAvatarBezig(false);
     if (updateError) {
       toast({ variant: "destructive", title: "Profielfoto bijwerken mislukt", description: "Probeer het zo nog eens." });
       return;
     }
-    setAvatarUrl(publicUrl);
+    setAvatarUrl(url);
     toast({ title: "Profielfoto bijgewerkt ✓" });
   };
 

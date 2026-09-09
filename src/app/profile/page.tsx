@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  Heart, ChevronRight, Baby, Edit2, LogOut, Bell, Package, Star, Plus, X, Check, Settings, Umbrella,
+  Heart, ChevronRight, Baby, Edit2, LogOut, Bell, Package, Star, Plus, X, Settings, Umbrella,
   HelpCircle, Headphones, Sliders, FileText, Cookie, CheckCircle2, Crown
 } from "lucide-react";
 import { slaActiefKindOp, leesActiefKind } from "@/components/ThemeProvider";
@@ -91,11 +91,6 @@ export default function ProfilePage() {
   const [actieveTab, setActieveTab] = useState<"items" | "favorieten" | "reviews">("favorieten");
   const [vakantiestand, setVakantiestand] = useState(false);
   const [actiefKindId, setActiefKindId] = useState<string | null>(null);
-  const [bewerken, setBewerken] = useState(false);
-  const [bewerktNaam, setBewerktNaam] = useState("");
-  const [bewerktStad, setBewerktStad] = useState("");
-  const [bewerktBio, setBewerktBio] = useState("");
-  const [opslaan, setOpslaan] = useState(false);
   const [avatarUploaden, setAvatarUploaden] = useState(false);
   const [wachtendCount, setWachtendCount] = useState(0);
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -159,9 +154,6 @@ export default function ProfilePage() {
 
     if (profileRes.data) {
       setProfile(profileRes.data);
-      setBewerktNaam(profileRes.data.naam || "");
-      setBewerktStad(profileRes.data.stad || "");
-      setBewerktBio(profileRes.data.bio || "");
       setVakantiestand(profileRes.data.vakantiestand === true);
       if (profileRes.data.is_admin) {
         const { count } = await supabase
@@ -187,24 +179,6 @@ export default function ProfilePage() {
     if (favorietenRes.data) setFavorieten(favorietenRes.data as unknown as Favoriet[]);
     if (reviewsRes.data) setReviews(reviewsRes.data as unknown as Review[]);
     setLoading(false);
-  };
-
-  const slaProfielOp = async () => {
-    if (!profile) return;
-    setOpslaan(true);
-    const { error } = await supabase.from("profiles").update({
-      naam: bewerktNaam,
-      stad: bewerktStad,
-      bio: bewerktBio,
-    }).eq("id", profile.id);
-    setOpslaan(false);
-    if (error) {
-      toast({ variant: "destructive", title: "Opslaan mislukt", description: "Probeer het zo nog eens." });
-      return;
-    }
-    setProfile(prev => prev ? { ...prev, naam: bewerktNaam, stad: bewerktStad, bio: bewerktBio } : prev);
-    setBewerken(false);
-    toast({ title: "Profiel opgeslagen ✓" });
   };
 
   const verwijderFavoriet = async (favorietId: string) => {
@@ -365,24 +339,15 @@ export default function ProfilePage() {
               onChange={uploadAvatar}
             />
             <div>
-              {bewerken ? (
-                <input
-                  value={bewerktNaam}
-                  onChange={e => setBewerktNaam(e.target.value)}
-                  className="font-black text-xl text-slate-900 dark:text-white bg-transparent border-b-2 border-primary outline-none w-full"
-                  placeholder="Jouw naam"
-                />
-              ) : (
-                <div className="flex items-center gap-2">
-                  <h1 className="font-black text-xl text-slate-900 dark:text-white">{profile.naam || "Gebruiker"}</h1>
-                  {isPremium && (
-                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 shrink-0">
-                      <Crown className="w-3 h-3 text-amber-500" />
-                      <span className="text-[11px] font-bold text-amber-700">Premium</span>
-                    </span>
-                  )}
-                </div>
-              )}
+              <div className="flex items-center gap-2">
+                <h1 className="font-black text-xl text-slate-900 dark:text-white">{profile.naam || "Gebruiker"}</h1>
+                {isPremium && (
+                  <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 shrink-0">
+                    <Crown className="w-3 h-3 text-amber-500" />
+                    <span className="text-[11px] font-bold text-amber-700">Premium</span>
+                  </span>
+                )}
+              </div>
               <div className="flex items-center gap-2 mt-1">
                 {profile.gemiddelde_beoordeling && profile.gemiddelde_beoordeling > 0 ? (
                   <div className="flex items-center gap-1">
@@ -392,46 +357,20 @@ export default function ProfilePage() {
                 ) : null}
                 <span className="text-xs text-slate-400">Lid sinds {lidSinds}</span>
               </div>
-              {bewerken ? (
-                <input
-                  value={bewerktStad}
-                  onChange={e => setBewerktStad(e.target.value)}
-                  className="text-xs text-slate-400 bg-transparent border-b border-slate-200 outline-none mt-1"
-                  placeholder="Stad"
-                />
-              ) : profile.stad ? (
+              {profile.stad ? (
                 <p className="text-xs text-slate-400 mt-1">📍 {profile.stad}</p>
               ) : null}
             </div>
           </div>
 
           <div className="flex gap-2">
-            {bewerken ? (
-              <>
-                <button onClick={() => setBewerken(false)} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                  <X className="w-5 h-5 text-slate-500" />
-                </button>
-                <button onClick={slaProfielOp} disabled={opslaan} className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                  <Check className="w-5 h-5 text-white" />
-                </button>
-              </>
-            ) : (
-              <button onClick={() => setBewerken(true)} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                <Edit2 className="w-4 h-4 text-slate-500" />
-              </button>
-            )}
+            <button onClick={() => router.push("/instellingen/profiel")} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+              <Edit2 className="w-4 h-4 text-slate-500" />
+            </button>
           </div>
         </div>
 
-        {bewerken ? (
-          <textarea
-            value={bewerktBio}
-            onChange={e => setBewerktBio(e.target.value)}
-            className="w-full text-sm text-slate-500 bg-slate-50 dark:bg-slate-800 rounded-xl p-3 border border-slate-200 dark:border-slate-700 outline-none resize-none"
-            placeholder="Schrijf iets over jezelf..."
-            rows={2}
-          />
-        ) : profile.bio ? (
+        {profile.bio ? (
           <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{profile.bio}</p>
         ) : null}
 

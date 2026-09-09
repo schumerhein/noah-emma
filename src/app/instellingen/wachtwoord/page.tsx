@@ -56,6 +56,15 @@ export default function WachtwoordInstellingenPage() {
     } else {
       toast({ title: "Wachtwoord gewijzigd ✓", description: "Je nieuwe wachtwoord is actief." });
       setHuidig(""); setNieuw(""); setBevestig("");
+      // Bevestigingsmail als extra beveiligingslaag — mag de gebruiker niet
+      // blokkeren als het versturen zelf faalt, de wijziging staat al vast.
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        fetch("/api/account/wachtwoord-gewijzigd", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        }).catch(() => {});
+      }
       router.back();
     }
     setBezig(false);

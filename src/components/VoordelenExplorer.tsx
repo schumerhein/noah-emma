@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { EyeOff, Ruler, Users, Heart, Leaf } from "lucide-react";
+import { EyeOff, Ruler, Users, Heart, Leaf, Sparkles } from "lucide-react";
 
 const VOORDELEN = [
   {
@@ -9,6 +9,12 @@ const VOORDELEN = [
     kleur: "blue" as const,
     titel: "Geen kinderhoofden zichtbaar",
     tekst: "Noah of Emma draagt automatisch elk kledingstuk in de advertentie. Het gezicht van jouw kind komt nooit online.",
+  },
+  {
+    icon: Sparkles,
+    kleur: "pink" as const,
+    titel: "Vraag het Noah of Emma",
+    tekst: "Beschrijf gewoon wat je zoekt — \"een winterjas maat 92 voor mijn neefje\" — en de AI-zoekassistent vindt het voor je. Exclusief voor Premium-leden.",
   },
   {
     icon: Ruler,

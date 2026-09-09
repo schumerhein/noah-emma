@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Search as SearchIcon, SlidersHorizontal, X, Check, ChevronLeft, Bell, BellOff, ArrowUpDown } from "lucide-react";
+import { Search as SearchIcon, SlidersHorizontal, X, Check, ChevronLeft, Bell, BellOff, ArrowUpDown, Sparkles, Send } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
@@ -104,6 +104,10 @@ export default function SearchPage() {
   const [toonPremiumModal, setToonPremiumModal] = useState(false);
   const [heeftMeerResultaten, setHeeftMeerResultaten] = useState(false);
   const [meerBezig, setMeerBezig] = useState(false);
+  const [aiChatOpen, setAiChatOpen] = useState(false);
+  const [aiVraag, setAiVraag] = useState("");
+  const [aiBezig, setAiBezig] = useState(false);
+  const [aiAntwoord, setAiAntwoord] = useState<string | null>(null);
   const paginaRef = useRef(0);
   const contextRef = useRef<{ term: string; f: Filters; sort: SorteerOptie }>({ term: "", f: INIT_FILTERS, sort: "nieuwste" });
 
@@ -242,6 +246,54 @@ export default function SearchPage() {
       }
     }
     setWaarschuwingBezig(false);
+  };
+
+  const stelAiVraag = async () => {
+    if (!aiVraag.trim()) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { router.push("/login"); return; }
+    if (!isPremium) { setAiChatOpen(false); setToonPremiumModal(true); return; }
+
+    setAiBezig(true);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { router.push("/login"); return; }
+
+    try {
+      const res = await fetch("/api/ai-zoeken", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ vraag: aiVraag }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast({ variant: "destructive", title: "Kon je vraag niet verwerken", description: data.error || "Probeer het opnieuw." });
+        return;
+      }
+
+      const minIdx = data.sizeMin ? SIZES.indexOf(data.sizeMin) : -1;
+      const maxIdx = data.sizeMax ? SIZES.indexOf(data.sizeMax) : -1;
+      const nieuweFilters: Filters = {
+        sizeMinIdx: minIdx >= 0 ? minIdx : 0,
+        sizeMaxIdx: maxIdx >= 0 ? maxIdx : SIZES.length - 1,
+        conditions: data.conditions || [],
+        colors: data.colors || [],
+        merken: data.merken || [],
+        materialen: data.materialen || [],
+        minPrijs: data.minPrijs != null ? String(data.minPrijs) : "",
+        maxPrijs: data.maxPrijs != null ? String(data.maxPrijs) : "",
+      };
+      const term = data.zoekterm || aiVraag;
+      setFilters(nieuweFilters);
+      setZoekterm(term);
+      setAiAntwoord(data.antwoord || null);
+      zoek(term, nieuweFilters);
+      setAiChatOpen(false);
+      setAiVraag("");
+    } catch {
+      toast({ variant: "destructive", title: "Er ging iets mis", description: "Probeer het later opnieuw." });
+    } finally {
+      setAiBezig(false);
+    }
   };
 
   const toggleFilter = (key: "conditions" | "colors" | "merken" | "materialen", value: string) => {
@@ -487,6 +539,49 @@ export default function SearchPage() {
           </Sheet>
         </div>
 
+        {/* AI-zoekchat entry point — USP, altijd zichtbaar boven de resultaten */}
+        <button
+          onClick={() => setAiChatOpen(true)}
+          className="w-full flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-gradient-to-r from-primary to-primary-dark text-white shadow-md shadow-primary/20 active:scale-[0.98] transition-all"
+        >
+          <Sparkles className="w-4 h-4 shrink-0" />
+          <span className="text-sm font-bold flex-1 min-w-0 text-left truncate">Vraag het Noah of Emma</span>
+          {!isPremium && (
+            <span className="text-[9px] font-black bg-white/25 px-2 py-1 rounded-full uppercase tracking-wider shrink-0">Premium</span>
+          )}
+        </button>
+
+        <Sheet open={aiChatOpen} onOpenChange={setAiChatOpen}>
+          <SheetContent side="bottom" className="rounded-t-3xl p-0 max-w-md mx-auto">
+            <SheetHeader className="px-6 pt-6 pb-2">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-primary" />
+                <SheetTitle className="text-lg font-black">Vraag het Noah of Emma</SheetTitle>
+              </div>
+              <p className="text-sm text-slate-400 text-left">
+                Beschrijf in gewone taal wat je zoekt, bijv. &quot;een winterjas maat 92 voor mijn neefje&quot;.
+              </p>
+            </SheetHeader>
+            <div className="px-6 pb-6 pt-3 space-y-3">
+              <textarea
+                value={aiVraag}
+                onChange={e => setAiVraag(e.target.value)}
+                placeholder="Ik zoek..."
+                rows={3}
+                maxLength={500}
+                className="w-full px-4 py-3 rounded-xl border-2 border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white text-sm font-medium outline-none focus:border-primary resize-none"
+              />
+              <Button
+                onClick={stelAiVraag}
+                disabled={aiBezig || !aiVraag.trim()}
+                className="w-full h-12 bg-primary text-white font-bold rounded-2xl border-none flex items-center justify-center gap-2"
+              >
+                {aiBezig ? <span className="material-icons-round animate-spin text-sm">progress_activity</span> : <><Send className="w-4 h-4" /> Vraag het</>}
+              </Button>
+            </div>
+          </SheetContent>
+        </Sheet>
+
         {/* Sorteer + waarschuwing balk */}
         {heeftGezocht && (
           <div className="flex items-center gap-2">
@@ -524,6 +619,12 @@ export default function SearchPage() {
 
       {/* ── Content ── */}
       <main className="px-5 pt-5 space-y-6">
+        {aiAntwoord && (
+          <div className="flex items-start gap-2.5 px-4 py-3 rounded-2xl bg-primary/8 border border-primary/20">
+            <Sparkles className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+            <p className="text-sm text-primary-dark font-medium">{aiAntwoord}</p>
+          </div>
+        )}
         {heeftGezocht ? (
           ladenResultaten ? (
             <div className="flex justify-center py-12">

@@ -22,6 +22,8 @@ import { CATEGORY_HIERARCHY } from "@/lib/categorieen";
 import { verkleinAfbeelding } from "@/lib/afbeelding";
 
 const MAX_FOTOS = 8;
+const KLEDING_CATEGORIEEN = ["Meisjeskleding", "Jongenskleding"];
+const LEEFTIJDEN = ["0-1 jaar", "1-3 jaar", "3-6 jaar", "6-9 jaar", "9-12 jaar", "Alle leeftijden"];
 
 export default function SellPage() {
   const router = useRouter();
@@ -36,8 +38,10 @@ export default function SellPage() {
   const [description, setDescription] = useState("");
   const [mainCategory, setMainCategory] = useState<string>("");
   const [subCategory, setSubCategory] = useState<string>("");
+  const isKleding = KLEDING_CATEGORIEEN.includes(mainCategory);
   const [size, setSize] = useState("68");
   const sizeRef = useRef("68");
+  const [leeftijd, setLeeftijd] = useState("");
   const [condition, setCondition] = useState("Nieuw met prijskaartje");
   const [price, setPrice] = useState("");
   const [merk, setMerk] = useState("");
@@ -179,6 +183,17 @@ export default function SellPage() {
     }
   };
 
+  // Virtual try-on op Noah/Emma is alleen zinvol voor kleding — bij het
+  // wisselen naar een andere hoofdcategorie een eventueel actief AI-model
+  // weer uitzetten, anders blijft een kinderwagen-foto per ongeluk
+  // "gepresenteerd door Noah" staan.
+  useEffect(() => {
+    if (!isKleding && aiModelRef.current !== "none") {
+      handleAiModelChange("none");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isKleding]);
+
   const handlePost = async () => {
     if (imagePreviews.length === 0) {
       toast({ variant: "destructive", title: "Oeps!", description: "Voeg eerst minstens één foto toe." });
@@ -231,7 +246,7 @@ export default function SellPage() {
         titel: title,
         beschrijving: description,
         prijs: parseFloat(price),
-        maat: size,
+        maat: isKleding ? size : (leeftijd || null),
         conditie: condition,
         categorie: mainCategory || "Overige kinderartikelen",
         subcategorie: subCategory || null,
@@ -374,7 +389,8 @@ export default function SellPage() {
           </div>
         )}
 
-        {/* AI Model sectie */}
+        {/* AI Model sectie — alleen zinvol voor kleding (virtual try-on) */}
+        {isKleding && (
         <section className="bg-gradient-to-br from-[#fff0f3] to-white dark:from-slate-900 dark:to-slate-800 rounded-3xl p-5 border border-pink-100 dark:border-slate-700 space-y-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-primary/20 flex items-center justify-center">
@@ -426,6 +442,7 @@ export default function SellPage() {
             </div>
           )}
         </section>
+        )}
 
         {/* Details sectie */}
         <section className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-pink-50 dark:border-slate-800 space-y-6">
@@ -541,17 +558,31 @@ export default function SellPage() {
             </SheetContent>
           </Sheet>
 
-          <div className="space-y-3">
-            <label className="text-sm font-bold text-slate-500">Maat</label>
-            <div className="grid grid-cols-4 gap-2">
-              {["50", "56", "62", "68", "74", "80", "86", "92", "98", "104", "110", "116", "122", "128", "134", "140", "146", "152", "158/164"].map(s => (
-                <button key={s} onClick={() => { maatHandmatigRef.current = true; setSize(s); }} className={cn(
-                  "py-2.5 rounded-xl text-xs font-bold transition-all",
-                  size === s ? "bg-pink-50 text-primary-dark border-2 border-primary" : "bg-slate-50 dark:bg-slate-800 text-slate-500"
-                )}>{s}</button>
-              ))}
+          {isKleding ? (
+            <div className="space-y-3">
+              <label className="text-sm font-bold text-slate-500">Maat</label>
+              <div className="grid grid-cols-4 gap-2">
+                {["50", "56", "62", "68", "74", "80", "86", "92", "98", "104", "110", "116", "122", "128", "134", "140", "146", "152", "158/164"].map(s => (
+                  <button key={s} onClick={() => { maatHandmatigRef.current = true; setSize(s); }} className={cn(
+                    "py-2.5 rounded-xl text-xs font-bold transition-all",
+                    size === s ? "bg-pink-50 text-primary-dark border-2 border-primary" : "bg-slate-50 dark:bg-slate-800 text-slate-500"
+                  )}>{s}</button>
+                ))}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="space-y-3">
+              <label className="text-sm font-bold text-slate-500">Leeftijd (optioneel)</label>
+              <div className="grid grid-cols-3 gap-2">
+                {LEEFTIJDEN.map(l => (
+                  <button key={l} type="button" onClick={() => setLeeftijd(leeftijd === l ? "" : l)} className={cn(
+                    "py-2.5 rounded-xl text-xs font-bold transition-all",
+                    leeftijd === l ? "bg-pink-50 text-primary-dark border-2 border-primary" : "bg-slate-50 dark:bg-slate-800 text-slate-500"
+                  )}>{l}</button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="space-y-3">
             <label className="text-sm font-bold text-slate-500">Kleur (optioneel)</label>

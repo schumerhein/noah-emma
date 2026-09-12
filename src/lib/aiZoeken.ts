@@ -65,7 +65,7 @@ const RESPONSE_SCHEMA = {
 
 export async function vertaalZoekvraag(vraag: string): Promise<AiZoekFilters> {
   const response = await getClient().models.generateContent({
-    model: "gemini-2.5-flash",
+    model: "gemini-3.6-flash",
     contents: vraag,
     config: {
       systemInstruction: SYSTEEM_PROMPT,

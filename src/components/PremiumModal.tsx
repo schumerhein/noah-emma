@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Crown, Check, Search, BellRing, Sparkles } from "lucide-react";
+import { X, Crown, Check, Search, BellRing, Sparkles, MessageCircleQuestion } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
@@ -13,6 +13,7 @@ type Status = { premiumActief: boolean; heeftAbonnement: boolean; verloopdatum: 
 
 const VOORDELEN = [
   { icon: Sparkles, tekst: "Onbeperkt swipen in Ontdekken" },
+  { icon: MessageCircleQuestion, tekst: "Vraag het Noah of Emma — zoeken met AI" },
   { icon: Search, tekst: "Volledig zoeken & filteren (merk, maat, kleur, prijs)" },
   { icon: BellRing, tekst: "Zoekwaarschuwingen instellen" },
 ];
@@ -29,7 +30,9 @@ export function PremiumModal({ open, onClose }: { open: boolean; onClose: () => 
     const res = await fetch("/api/betalen/premium/status", {
       headers: { Authorization: `Bearer ${session.access_token}` },
     });
-    if (res.ok) setStatus(await res.json());
+    if (!res.ok) return;
+    const data = await res.json().catch(() => null);
+    if (data) setStatus(data);
   };
 
   useEffect(() => { if (open) laadStatus(); }, [open]);
@@ -44,8 +47,8 @@ export function PremiumModal({ open, onClose }: { open: boolean; onClose: () => 
         method: "POST",
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
-      const data = await res.json();
-      if (!res.ok || !data.checkoutUrl) throw new Error(data.error || "Betaling starten mislukt");
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.checkoutUrl) throw new Error(data?.error || "Betaling starten mislukt");
       window.location.href = data.checkoutUrl;
     } catch (err) {
       toast({ variant: "destructive", title: "Er ging iets mis", description: err instanceof Error ? err.message : "Probeer het zo nog eens." });

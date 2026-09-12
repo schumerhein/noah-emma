@@ -7,9 +7,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Niet ingelogd" }, { status: 401 });
   }
 
-  const resultaat = await zegAbonnementOp(user.id);
-  if ("error" in resultaat) {
-    return NextResponse.json(resultaat, { status: 400 });
+  try {
+    const resultaat = await zegAbonnementOp(user.id);
+    if ("error" in resultaat) {
+      return NextResponse.json(resultaat, { status: 400 });
+    }
+    return NextResponse.json(resultaat);
+  } catch (err) {
+    console.error("Abonnement opzeggen mislukt:", err);
+    return NextResponse.json({ error: "Opzeggen is niet gelukt. Probeer het zo nog eens." }, { status: 500 });
   }
-  return NextResponse.json(resultaat);
 }

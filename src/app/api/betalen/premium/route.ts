@@ -17,32 +17,37 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Je hebt al een lopend Premium-abonnement" }, { status: 400 });
   }
 
-  const customerId = await haalOfMaakMollieKlant(user);
+  try {
+    const customerId = await haalOfMaakMollieKlant(user);
 
-  const origin = new URL(request.url).origin;
-  // Mollie accepteert alleen een https-webhookUrl. Lokaal (http://localhost)
-  // laten we 'm weg — de bevestigingspagina rondt de betaling dan zelf af.
-  const webhookUrl = origin.startsWith("https://") ? `${origin}/api/betalen/webhook` : undefined;
+    const origin = new URL(request.url).origin;
+    // Mollie accepteert alleen een https-webhookUrl. Lokaal (http://localhost)
+    // laten we 'm weg — de bevestigingspagina rondt de betaling dan zelf af.
+    const webhookUrl = origin.startsWith("https://") ? `${origin}/api/betalen/webhook` : undefined;
 
-  // Eerste betaling: legt meteen de machtiging vast voor het doorlopende
-  // abonnement (zie verwerkBetaling in src/lib/mollie.ts).
-  const payment = await mollie.payments.create({
-    amount: { currency: "EUR", value: PREMIUM_PRIJS.toFixed(2) },
-    description: "Noah & Emma Premium (eerste maand)",
-    redirectUrl: `${origin}/premium/bevestiging`,
-    webhookUrl,
-    customerId,
-    sequenceType: SequenceType.first,
-    metadata: { type: "premium", userId: user.id },
-  });
+    // Eerste betaling: legt meteen de machtiging vast voor het doorlopende
+    // abonnement (zie verwerkBetaling in src/lib/mollie.ts).
+    const payment = await mollie.payments.create({
+      amount: { currency: "EUR", value: PREMIUM_PRIJS.toFixed(2) },
+      description: "Noah & Emma Premium (eerste maand)",
+      redirectUrl: `${origin}/premium/bevestiging`,
+      webhookUrl,
+      customerId,
+      sequenceType: SequenceType.first,
+      metadata: { type: "premium", userId: user.id },
+    });
 
-  await supabaseAdmin.from("betalingen").insert({
-    mollie_payment_id: payment.id,
-    user_id: user.id,
-    type: "premium",
-    bedrag: PREMIUM_PRIJS,
-    status: "open",
-  });
+    await supabaseAdmin.from("betalingen").insert({
+      mollie_payment_id: payment.id,
+      user_id: user.id,
+      type: "premium",
+      bedrag: PREMIUM_PRIJS,
+      status: "open",
+    });
 
-  return NextResponse.json({ checkoutUrl: payment.getCheckoutUrl(), paymentId: payment.id });
+    return NextResponse.json({ checkoutUrl: payment.getCheckoutUrl(), paymentId: payment.id });
+  } catch (err) {
+    console.error("Premium-betaling starten mislukt:", err);
+    return NextResponse.json({ error: "Betaling starten is niet gelukt. Probeer het zo nog eens." }, { status: 500 });
+  }
 }

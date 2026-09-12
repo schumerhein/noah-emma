@@ -27,23 +27,28 @@ export async function POST(request: Request) {
   const origin = new URL(request.url).origin;
   const webhookUrl = origin.startsWith("https://") ? `${origin}/api/betalen/webhook` : undefined;
 
-  const payment = await mollie.payments.create({
-    amount: { currency: "EUR", value: gekozenTier.prijs.toFixed(2) },
-    description: `Boost "${listing.titel}" — ${gekozenTier.naam} (${gekozenTier.dagen} dagen)`,
-    redirectUrl: `${origin}/promote/${listingId}/bevestiging`,
-    webhookUrl,
-    metadata: { type: "boost", userId: user.id, listingId, tier },
-  });
+  try {
+    const payment = await mollie.payments.create({
+      amount: { currency: "EUR", value: gekozenTier.prijs.toFixed(2) },
+      description: `Boost "${listing.titel}" — ${gekozenTier.naam} (${gekozenTier.dagen} dagen)`,
+      redirectUrl: `${origin}/promote/${listingId}/bevestiging`,
+      webhookUrl,
+      metadata: { type: "boost", userId: user.id, listingId, tier },
+    });
 
-  await supabaseAdmin.from("betalingen").insert({
-    mollie_payment_id: payment.id,
-    user_id: user.id,
-    type: "boost",
-    listing_id: listingId,
-    tier,
-    bedrag: gekozenTier.prijs,
-    status: "open",
-  });
+    await supabaseAdmin.from("betalingen").insert({
+      mollie_payment_id: payment.id,
+      user_id: user.id,
+      type: "boost",
+      listing_id: listingId,
+      tier,
+      bedrag: gekozenTier.prijs,
+      status: "open",
+    });
 
-  return NextResponse.json({ checkoutUrl: payment.getCheckoutUrl(), paymentId: payment.id });
+    return NextResponse.json({ checkoutUrl: payment.getCheckoutUrl(), paymentId: payment.id });
+  } catch (err) {
+    console.error("Boost-betaling starten mislukt:", err);
+    return NextResponse.json({ error: "Betaling starten is niet gelukt. Probeer het zo nog eens." }, { status: 500 });
+  }
 }

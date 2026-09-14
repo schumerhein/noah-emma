@@ -576,11 +576,17 @@ export default function ProfilePage() {
                           </div>
                         </div>
                       </Link>
-                      <button onClick={() => toggleListingActief(item)}
-                        className={cn("absolute top-2 right-2 text-[10px] font-bold px-2 py-1 rounded-full",
-                          item.actief ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-500")}>
-                        {item.actief ? "Actief" : "Verborgen"}
-                      </button>
+                      {item.verkocht ? (
+                        <span className="absolute top-2 right-2 text-[10px] font-bold px-2 py-1 rounded-full bg-slate-700 text-white">
+                          Verkocht
+                        </span>
+                      ) : (
+                        <button onClick={() => toggleListingActief(item)}
+                          className={cn("absolute top-2 right-2 text-[10px] font-bold px-2 py-1 rounded-full",
+                            item.actief ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-500")}>
+                          {item.actief ? "Actief" : "Verborgen"}
+                        </button>
+                      )}
                       {/* Moderatiestatus */}
                       {item.moderatie_status === "wachtend" && (
                         <span className="absolute top-2 left-2 text-[10px] font-bold px-2 py-1 rounded-full bg-amber-100 text-amber-700">

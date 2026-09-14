@@ -33,6 +33,7 @@ type Conversation = {
     prijs: number;
     foto_urls: string[];
     actief: boolean;
+    verkocht?: boolean;
     user_id: string;
   } | null;
   other_user?: { naam: string | null; avatar_url: string | null; gemiddelde_beoordeling?: number };
@@ -84,7 +85,7 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
     // Laad conversation
     const { data: conv } = await supabase
       .from("conversations")
-      .select("*, listing:listing_id(id, titel, prijs, foto_urls, actief, user_id)")
+      .select("*, listing:listing_id(id, titel, prijs, foto_urls, actief, verkocht, user_id)")
       .eq("id", id)
       .single();
 
@@ -309,7 +310,7 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
         </div>
 
         {/* Knop verkopen afronden (alleen zichtbaar voor verkoper, als deal nog niet afgerond) */}
-        {isVerkoper && !dealAfgerond && conversation?.listing && (
+        {isVerkoper && !dealAfgerond && !conversation?.listing?.verkocht && conversation?.listing && (
           <button
             onClick={() => setToonDealModal(true)}
             className="flex items-center gap-1.5 bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-sm active:scale-95 transition-transform shrink-0"
@@ -335,13 +336,13 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
             </div>
             <span className={cn(
               "text-[10px] font-bold px-2 py-1 rounded-full shrink-0",
-              dealAfgerond
+              dealAfgerond || conversation.listing.verkocht
                 ? "bg-slate-100 text-slate-500"
                 : conversation.listing.actief
                   ? "bg-emerald-100 text-emerald-700"
                   : "bg-slate-100 text-slate-500"
             )}>
-              {dealAfgerond ? "Verkocht" : conversation.listing.actief ? "Beschikbaar" : "Niet beschikbaar"}
+              {dealAfgerond || conversation.listing.verkocht ? "Verkocht" : conversation.listing.actief ? "Beschikbaar" : "Niet beschikbaar"}
             </span>
           </div>
         </Link>

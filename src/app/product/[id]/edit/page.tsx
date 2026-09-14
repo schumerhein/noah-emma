@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Camera, X, Loader2, Trash2, Check, Crown } from "lucide-react";
+import { ChevronLeft, Camera, X, Loader2, Trash2, Check, Crown, CheckCircle2 } from "lucide-react";
 
 import { cn, normaliseerPrijsInvoer } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
@@ -45,6 +45,9 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   const [opslaan, setOpslaan] = useState(false);
   const [verwijderen, setVerwijderen] = useState(false);
   const [bevestigVerwijder, setBevestigVerwijder] = useState(false);
+  const [verkocht, setVerkocht] = useState(false);
+  const [verkopenBezig, setVerkopenBezig] = useState(false);
+  const [bevestigVerkocht, setBevestigVerkocht] = useState(false);
 
   // Form state
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
@@ -85,6 +88,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     setKleur(data.kleur || "");
     setBiedenToegestaan(data.bieden_toegestaan || false);
     setActief(data.actief !== false);
+    setVerkocht(data.verkocht === true);
     // gepromoot blijft in de database op true staan totdat er een nieuwe boost
     // wordt gestart — de boost telt hier dus alleen als echt actief zolang de
     // verloopdatum nog in de toekomst ligt, anders is de boostperiode gewoon
@@ -178,6 +182,33 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
       return;
     }
     toast({ title: "Artikel verwijderd." });
+    router.push("/profile");
+  };
+
+  // Voor een verkoop die buiten de chat om is geregeld (bv. in persoon of aan
+  // een bekende) — zonder deze knop kon een verkoper een verkocht artikel
+  // alleen kwijtraken door het te verbergen, wat het verschil met "nog niet
+  // verkocht maar tijdelijk verborgen" wegpoetst en de verkoopteller niet
+  // meetelt.
+  const markeerVerkocht = async () => {
+    if (!bevestigVerkocht) { setBevestigVerkocht(true); return; }
+    setVerkopenBezig(true);
+
+    const { error } = await supabase.from("listings").update({ verkocht: true, actief: false }).eq("id", id);
+    if (error) {
+      toast({ variant: "destructive", title: "Bijwerken mislukt", description: "Probeer het zo nog eens." });
+      setVerkopenBezig(false);
+      return;
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: profiel } = await supabase.from("profiles").select("totaal_verkopen").eq("id", user.id).single();
+      await supabase.from("profiles").update({ totaal_verkopen: (profiel?.totaal_verkopen || 0) + 1 }).eq("id", user.id);
+    }
+
+    setVerkopenBezig(false);
+    toast({ title: "Artikel gemarkeerd als verkocht ✓" });
     router.push("/profile");
   };
 
@@ -324,13 +355,43 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
         </div>
 
         {/* Zichtbaarheid */}
-        <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl">
-          <div>
-            <p className="font-bold text-sm text-slate-800 dark:text-white">Artikel zichtbaar</p>
-            <p className="text-xs text-slate-400">Zet uit om te verbergen zonder te verwijderen</p>
+        {!verkocht && (
+          <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl">
+            <div>
+              <p className="font-bold text-sm text-slate-800 dark:text-white">Artikel zichtbaar</p>
+              <p className="text-xs text-slate-400">Zet uit om te verbergen zonder te verwijderen</p>
+            </div>
+            <Switch checked={actief} onCheckedChange={setActief} className="data-[state=checked]:bg-emerald-500" />
           </div>
-          <Switch checked={actief} onCheckedChange={setActief} className="data-[state=checked]:bg-emerald-500" />
-        </div>
+        )}
+
+        {/* Verkocht */}
+        {verkocht ? (
+          <div className="flex items-center gap-2 p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <p className="font-bold text-sm text-emerald-700 dark:text-emerald-300">Dit artikel is gemarkeerd als verkocht</p>
+          </div>
+        ) : (
+          <div className="pt-2 space-y-2">
+            <button
+              onClick={markeerVerkocht}
+              disabled={verkopenBezig}
+              className={cn("w-full h-12 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all border-2",
+                bevestigVerkocht
+                  ? "bg-emerald-500 text-white border-emerald-500"
+                  : "border-emerald-200 text-emerald-600")}
+            >
+              {verkopenBezig ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+              {bevestigVerkocht ? "Ja, markeer als verkocht" : "Markeer als verkocht"}
+            </button>
+            {bevestigVerkocht && (
+              <button onClick={() => setBevestigVerkocht(false)} className="w-full text-center text-sm text-slate-400 font-medium">
+                Annuleren
+              </button>
+            )}
+            <p className="text-xs text-slate-400 px-1">Gebruik dit als je het buiten de chat om hebt verkocht.</p>
+          </div>
+        )}
 
         {/* Promoot sectie */}
         <button

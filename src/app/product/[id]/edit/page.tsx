@@ -11,6 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { CATEGORY_HIERARCHY } from "@/lib/categorieen";
+import { controleerFoto } from "@/lib/fotoVeiligheid";
+import { verkleinAfbeelding } from "@/lib/afbeelding";
 
 // Zelfde bron als bij uploaden/zoeken — voorheen had deze pagina een eigen,
 // onvolledige en afwijkende lijst, waardoor je bij het bewerken soms niet
@@ -106,16 +108,27 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     setLaden(false);
   };
 
-  const handleFotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Nieuwe foto's gaan eerst door de privacycontrole: op deze pagina is er
+  // geen Noah/Emma-verwerking, dus een foto met een gezicht wordt geweigerd.
+  const [fotosControleren, setFotosControleren] = useState(0);
+  const handleFotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreviews(prev => [...prev, reader.result as string]);
+    e.target.value = "";
+    setFotosControleren(n => n + files.length);
+    await Promise.all(files.map(async (origineel) => {
+      try {
+        const { file, dataUrl } = await verkleinAfbeelding(origineel);
+        const controle = await controleerFoto(dataUrl, "none");
+        if (!controle.ok) {
+          toast({ variant: "destructive", title: "Foto niet toegestaan", description: controle.reden });
+          return;
+        }
+        setImagePreviews(prev => [...prev, dataUrl]);
         setImageFiles(prev => [...prev, file]);
-      };
-      reader.readAsDataURL(file);
-    });
+      } finally {
+        setFotosControleren(n => n - 1);
+      }
+    }));
   };
 
   const verwijderFoto = (idx: number) => {
@@ -126,6 +139,10 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   const slaOp = async () => {
     if (!titel || !prijs) {
       toast({ title: "Vul minstens een titel en prijs in." });
+      return;
+    }
+    if (fotosControleren > 0) {
+      toast({ title: "Even geduld", description: "Je nieuwe foto's worden nog gecontroleerd." });
       return;
     }
     setOpslaan(true);
@@ -167,7 +184,11 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     if (error) {
       toast({ title: "Opslaan mislukt", description: error.message });
     } else {
-      toast({ title: "Artikel bijgewerkt!" });
+      const nieuweFotos = imageFiles.some(f => f instanceof File);
+      toast({
+        title: "Artikel bijgewerkt!",
+        description: nieuweFotos ? "Je nieuwe foto's worden eerst kort beoordeeld." : undefined,
+      });
       router.push(`/product/${id}`);
     }
   };
@@ -244,6 +265,12 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 </button>
               </div>
             ))}
+            {fotosControleren > 0 && (
+              <div className="w-24 h-24 rounded-xl border border-slate-100 dark:border-slate-700 flex flex-col items-center justify-center gap-1">
+                <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                <span className="text-[10px] font-bold text-slate-400">Controleren…</span>
+              </div>
+            )}
             {imagePreviews.length < 6 && (
               <label className="w-24 h-24 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center gap-1 cursor-pointer active:bg-slate-50">
                 <Camera className="w-5 h-5 text-slate-400" />

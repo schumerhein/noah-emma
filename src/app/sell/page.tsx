@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Camera, ArrowRight, Loader2, Plus, Sparkles, ChevronRight, ChevronLeft, Check, Crown, Wand2, Zap, Star, Rocket } from "lucide-react";
+import { X, Camera, ArrowRight, Loader2, Plus, Sparkles, ChevronRight, ChevronLeft, Check, Crown, Zap, Star, Rocket, ShieldAlert } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { cn, normaliseerPrijsInvoer } from "@/lib/utils";
@@ -14,12 +14,10 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
-import { NoahEmmaModel } from "@/components/ai-models/NoahEmmaModel";
-import { compositeClothingOnAvatar, compositeAllAngles, dataUrlToFile } from "@/lib/avatarComposite";
-import { AvatarViewer3D } from "@/components/avatar/AvatarViewer3D";
 import { BOOST_TIERS, type BoostTier } from "@/lib/prijzen";
 import { CATEGORY_HIERARCHY } from "@/lib/categorieen";
 import { verkleinAfbeelding } from "@/lib/afbeelding";
+import { controleerFoto } from "@/lib/fotoVeiligheid";
 
 const MAX_FOTOS = 8;
 const KLEDING_CATEGORIEEN = ["Meisjeskleding", "Jongenskleding"];
@@ -27,12 +25,15 @@ const LEEFTIJDEN = ["0-1 jaar", "1-3 jaar", "3-6 jaar", "6-9 jaar", "9-12 jaar",
 
 export default function SellPage() {
   const router = useRouter();
-  const [imageFiles, setImageFiles] = useState<File[]>([]);           // verwerkte bestanden (voor upload)
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);     // verwerkte previews
-  const [originalFiles, setOriginalFiles] = useState<File[]>([]);       // originele bestanden
-  const [originalPreviews, setOriginalPreviews] = useState<string[]>([]); // originele previews
-  const [processingIndices, setProcessingIndices] = useState<Set<number>>(new Set());
-  const [backComposites, setBackComposites] = useState<(string | null)[]>([]);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);           // bestanden (voor upload)
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);     // previews
+  // Privacycontrole per foto: alleen foto's met status "ok" mogen geüpload worden.
+  const [fotoCheck, setFotoCheck] = useState<{ status: "bezig" | "ok" | "geweigerd"; reden: string | null }[]>([]);
+  // Per foto een uniek versienummer: schuiven de indexen na het verwijderen
+  // van een foto, dan wordt een lopende controle genegeerd in plaats van dat
+  // die op de verkeerde foto terechtkomt.
+  const verwerkVersie = useRef<number[]>([]);
+  const laatsteVersie = useRef(0);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -40,7 +41,6 @@ export default function SellPage() {
   const [subCategory, setSubCategory] = useState<string>("");
   const isKleding = KLEDING_CATEGORIEEN.includes(mainCategory);
   const [size, setSize] = useState("68");
-  const sizeRef = useRef("68");
   const [leeftijd, setLeeftijd] = useState("");
   const [condition, setCondition] = useState("Nieuw met prijskaartje");
   const [price, setPrice] = useState("");
@@ -51,8 +51,6 @@ export default function SellPage() {
   const [catSheetOpen, setCatSheetOpen] = useState(false);
   const [catStap, setCatStap] = useState<"hoofd" | "sub">("hoofd");
   const [loading, setLoading] = useState(false);
-  const [aiModel, setAiModel] = useState<"none" | "noah" | "emma">("none");
-  const aiModelRef = useRef<"none" | "noah" | "emma">("none");
   const imageCountRef = useRef(0); // bijhouden hoeveel afbeeldingen er al zijn
   const maatHandmatigRef = useRef(false); // true zodra de verkoper zelf een maat kiest
   const { toast } = useToast();
@@ -66,52 +64,36 @@ export default function SellPage() {
       const { data } = await supabase.from("children").select("maat").eq("user_id", user.id).order("created_at").limit(1).single();
       if (data?.maat && !maatHandmatigRef.current) {
         setSize(data.maat);
-        sizeRef.current = data.maat;
       }
     };
     laadKind();
   }, []);
 
-  // Verwerk een afbeelding: vervang gezicht met Noah/Emma als model geselecteerd
-  const processImage = useCallback(async (
-    dataUrl: string,
-    file: File,
-    index: number,
-    model: "none" | "noah" | "emma",
-  ) => {
-    if (model === "none") {
-      setImagePreviews(prev => { const n = [...prev]; n[index] = dataUrl; return n; });
-      setImageFiles(prev => { const n = [...prev]; n[index] = file; return n; });
+  // Privacycontrole per foto: foto's met een gezicht worden geweigerd. Bij
+  // elke twijfel of fout wordt de foto ook geweigerd.
+  // (Noah/Emma als AI-model is tijdelijk uitgezet — komt later terug.)
+  const controleer = useCallback(async (dataUrl: string, index: number) => {
+    const versie = ++laatsteVersie.current;
+    verwerkVersie.current[index] = versie;
+    const isActueel = () => verwerkVersie.current[index] === versie;
+    const zetStatus = (status: "bezig" | "ok" | "geweigerd", reden: string | null = null) =>
+      setFotoCheck(prev => { const n = [...prev]; n[index] = { status, reden }; return n; });
+
+    zetStatus("bezig");
+    const controle = await controleerFoto(dataUrl, "none");
+    if (!isActueel()) return;
+    if (!controle.ok) {
+      zetStatus("geweigerd", controle.reden);
+      toast({ variant: "destructive", title: "Foto niet toegestaan", description: controle.reden });
       return;
     }
-
-    setProcessingIndices(prev => new Set(prev).add(index));
-    try {
-      const { front, back, kledingGedetecteerd } = await compositeAllAngles(dataUrl, model, sizeRef.current);
-      const processedFile = dataUrlToFile(front, file.name);
-      setImagePreviews(prev => { const n = [...prev]; n[index] = front; return n; });
-      setImageFiles(prev => { const n = [...prev]; n[index] = processedFile; return n; });
-      setBackComposites(prev => { const n = [...prev]; n[index] = back; return n; });
-      toast({
-        title: `✨ ${model === 'noah' ? 'Noah' : 'Emma'} presenteert jouw item!`,
-        description: kledingGedetecteerd
-          ? `Gezicht vervangen door ${model === 'noah' ? 'Noah' : 'Emma'} — foto blijft verder intact ✓`
-          : "Draai om voor- én achterkant te zien.",
-      });
-    } catch {
-      // Fallback: gebruik origineel
-      setImagePreviews(prev => { const n = [...prev]; n[index] = dataUrl; return n; });
-      setImageFiles(prev => { const n = [...prev]; n[index] = file; return n; });
-    } finally {
-      setProcessingIndices(prev => { const n = new Set(prev); n.delete(index); return n; });
-    }
+    zetStatus("ok");
   }, [toast]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
     let fileList = Array.from(files);
-    const currentModel = aiModelRef.current;
 
     const ruimteOver = MAX_FOTOS - imageCountRef.current;
     if (fileList.length > ruimteOver) {
@@ -129,70 +111,26 @@ export default function SellPage() {
     imageCountRef.current += loaded.length;
 
     // Voeg toe aan state
-    setOriginalPreviews(prev => [...prev, ...loaded.map(i => i.dataUrl)]);
-    setOriginalFiles(prev => [...prev, ...loaded.map(i => i.file)]);
     setImagePreviews(prev => [...prev, ...loaded.map(i => i.dataUrl)]);
     setImageFiles(prev => [...prev, ...loaded.map(i => i.file)]);
+    setFotoCheck(prev => [...prev, ...loaded.map(() => ({ status: "bezig" as const, reden: null }))]);
 
-    // Verwerk elk bestand asynchroon (gezicht vervangen)
-    loaded.forEach(({ file, dataUrl }, i) => {
-      processImage(dataUrl, file, startIndex + i, currentModel);
+    // Controleer elke foto asynchroon op gezichten
+    loaded.forEach(({ dataUrl }, i) => {
+      controleer(dataUrl, startIndex + i);
     });
   };
 
   const removeImage = (index: number) => {
     setImagePreviews(prev => prev.filter((_, i) => i !== index));
     setImageFiles(prev => prev.filter((_, i) => i !== index));
-    setOriginalPreviews(prev => prev.filter((_, i) => i !== index));
-    setOriginalFiles(prev => prev.filter((_, i) => i !== index));
-    setBackComposites(prev => prev.filter((_, i) => i !== index));
+    setFotoCheck(prev => prev.filter((_, i) => i !== index));
+    verwerkVersie.current = verwerkVersie.current.filter((_, i) => i !== index);
     imageCountRef.current = Math.max(0, imageCountRef.current - 1);
     if (selectedImageIndex >= index && selectedImageIndex > 0) {
       setSelectedImageIndex(selectedImageIndex - 1);
     }
   };
-
-  // Maat gewijzigd: avatar groeit mee → herverwerk composities
-  useEffect(() => {
-    sizeRef.current = size;
-    if (aiModelRef.current === "none" || originalPreviews.length === 0) return;
-    for (let i = 0; i < originalPreviews.length; i++) {
-      processImage(originalPreviews[i], originalFiles[i], i, aiModelRef.current);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [size]);
-
-  // Wissel AI model: herverwerk alle bestaande afbeeldingen
-  const handleAiModelChange = async (newModel: "none" | "noah" | "emma") => {
-    setAiModel(newModel);
-    aiModelRef.current = newModel;
-
-    if (originalPreviews.length === 0) return;
-
-    if (newModel === "none") {
-      // Herstel originelen
-      setImagePreviews([...originalPreviews]);
-      setImageFiles([...originalFiles]);
-      setBackComposites(new Array(originalPreviews.length).fill(null));
-      return;
-    }
-
-    // Herverwerk alle afbeeldingen met het nieuwe model
-    for (let i = 0; i < originalPreviews.length; i++) {
-      processImage(originalPreviews[i], originalFiles[i], i, newModel);
-    }
-  };
-
-  // Virtual try-on op Noah/Emma is alleen zinvol voor kleding — bij het
-  // wisselen naar een andere hoofdcategorie een eventueel actief AI-model
-  // weer uitzetten, anders blijft een kinderwagen-foto per ongeluk
-  // "gepresenteerd door Noah" staan.
-  useEffect(() => {
-    if (!isKleding && aiModelRef.current !== "none") {
-      handleAiModelChange("none");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isKleding]);
 
   const handlePost = async () => {
     if (imagePreviews.length === 0) {
@@ -209,6 +147,14 @@ export default function SellPage() {
     }
     if (!mainCategory) {
       toast({ variant: "destructive", title: "Oeps!", description: "Kies een categorie, anders is je advertentie niet terug te vinden." });
+      return;
+    }
+    if (fotoCheck.some(f => f.status === "bezig")) {
+      toast({ variant: "destructive", title: "Even geduld", description: "Je foto's worden nog gecontroleerd." });
+      return;
+    }
+    if (fotoCheck.length !== imageFiles.length || fotoCheck.some(f => f.status !== "ok")) {
+      toast({ variant: "destructive", title: "Foto niet toegestaan", description: "Verwijder eerst de foto's die zijn afgekeurd." });
       return;
     }
 
@@ -253,7 +199,7 @@ export default function SellPage() {
         merk: merk || null,
         kleur: kleur || null,
         foto_urls: fotoUrls,
-        ai_model: aiModel === "none" ? null : aiModel,
+        ai_model: null,
         bieden_toegestaan: allowBidding,
         actief: true,
       }).select("id").single();
@@ -314,20 +260,7 @@ export default function SellPage() {
           <div className="relative aspect-[4/5] rounded-2xl overflow-hidden border-4 border-white dark:border-slate-800 bg-slate-50 dark:bg-slate-800 shadow-md">
             {imagePreviews.length > 0 ? (
               <>
-                {/* 3D viewer wanneer model actief, anders gewone foto */}
-                {aiModel !== 'none' ? (
-                  <AvatarViewer3D
-                    frontComposite={imagePreviews[selectedImageIndex] !== originalPreviews[selectedImageIndex]
-                      ? imagePreviews[selectedImageIndex]
-                      : null}
-                    backComposite={backComposites[selectedImageIndex] ?? null}
-                    isGenerating={processingIndices.has(selectedImageIndex)}
-                    avatarName={aiModel === 'noah' ? 'Noah' : 'Emma'}
-                    className="absolute inset-0"
-                  />
-                ) : (
-                  <Image src={imagePreviews[selectedImageIndex]} alt="Product" fill className="object-cover" />
-                )}
+                <Image src={imagePreviews[selectedImageIndex]} alt="Product" fill className="object-cover" />
 
                 {/* Verwijder-knop */}
                 <button
@@ -337,13 +270,20 @@ export default function SellPage() {
                   <X className="w-4 h-4" />
                 </button>
 
-                {/* Badge eigen foto modus */}
-                {aiModel === 'none' && (
-                  <div className="absolute top-4 left-4 bg-black/30 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5">
-                    <Camera className="w-3.5 h-3.5" />
-                    Eigen foto
+                {/* Privacycontrole: foto afgekeurd */}
+                {fotoCheck[selectedImageIndex]?.status === "geweigerd" && (
+                  <div className="absolute inset-0 z-[5] bg-slate-900/80 backdrop-blur-md flex flex-col items-center justify-center text-center px-8 gap-2">
+                    <ShieldAlert className="w-10 h-10 text-red-400" />
+                    <p className="text-sm font-bold text-white">Foto niet toegestaan</p>
+                    <p className="text-xs text-slate-200 leading-relaxed">{fotoCheck[selectedImageIndex]?.reden}</p>
                   </div>
                 )}
+
+                {/* Badge eigen foto modus */}
+                <div className="absolute top-4 left-4 bg-black/30 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                  <Camera className="w-3.5 h-3.5" />
+                  Eigen foto
+                </div>
               </>
             ) : (
               <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer">
@@ -365,6 +305,16 @@ export default function SellPage() {
                 )}
               >
                 <Image src={img} alt={`Thumb ${idx}`} fill className="object-cover" />
+                {fotoCheck[idx]?.status === "geweigerd" && (
+                  <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center">
+                    <ShieldAlert className="w-5 h-5 text-red-400" />
+                  </div>
+                )}
+                {fotoCheck[idx]?.status === "bezig" && (
+                  <div className="absolute inset-0 bg-white/60 dark:bg-slate-900/60 flex items-center justify-center">
+                    <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                  </div>
+                )}
               </div>
             ))}
             {imagePreviews.length < MAX_FOTOS && (
@@ -376,73 +326,6 @@ export default function SellPage() {
           </div>
         </section>
 
-        {/* Info: gezicht wordt automatisch vervangen */}
-        {aiModel !== 'none' && originalPreviews.length > 0 && (
-          <div className="bg-primary/8 border border-primary/20 rounded-2xl p-4 flex gap-3">
-            <Wand2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-bold text-primary">Gezicht automatisch vervangen</p>
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mt-0.5">
-                {aiModel === 'noah' ? 'Noah' : 'Emma'} presenteert jouw kledingstuk. Geen echte kinderfotos zichtbaar ✓
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* AI Model sectie — alleen zinvol voor kleding (virtual try-on) */}
-        {isKleding && (
-        <section className="bg-gradient-to-br from-[#fff0f3] to-white dark:from-slate-900 dark:to-slate-800 rounded-3xl p-5 border border-pink-100 dark:border-slate-700 space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-primary/20 flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h3 className="font-bold text-slate-800 dark:text-white">Toon op AI-model</h3>
-              <p className="text-xs text-slate-500">Laat Noah of Emma het kledingstuk modelleren</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-3">
-            <button
-              onClick={() => handleAiModelChange("none")}
-              className={cn(
-                "flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all text-center",
-                aiModel === "none" ? "border-slate-400 bg-slate-50 dark:bg-slate-800" : "border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-900"
-              )}
-            >
-              <div className="w-14 h-14 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
-                <Camera className="w-6 h-6 text-slate-400" />
-              </div>
-              <p className="text-xs font-bold text-slate-600 dark:text-slate-300">Eigen foto</p>
-            </button>
-
-            <NoahEmmaModel
-              naam="noah"
-              maat={size}
-              size="sm"
-              selected={aiModel === "noah"}
-              onClick={() => handleAiModelChange("noah")}
-            />
-
-            <NoahEmmaModel
-              naam="emma"
-              maat={size}
-              size="sm"
-              selected={aiModel === "emma"}
-              onClick={() => handleAiModelChange("emma")}
-            />
-          </div>
-
-          {aiModel !== "none" && (
-            <div className="bg-primary/10 rounded-xl p-3 flex items-center gap-2">
-              <Wand2 className="w-4 h-4 text-primary shrink-0" />
-              <p className="text-xs font-bold text-primary-dark">
-                {aiModel === "noah" ? "Noah" : "Emma"} presenteert jouw item · Maat {size}
-              </p>
-            </div>
-          )}
-        </section>
-        )}
 
         {/* Details sectie */}
         <section className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-pink-50 dark:border-slate-800 space-y-6">

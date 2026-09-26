@@ -28,7 +28,12 @@ async function laadModellen(): Promise<void> {
       const faceapi = await import('face-api.js');
       await faceapi.nets.tinyFaceDetector.loadFromUri(WEIGHTS_URL);
       modellenGeladen = true;
-    })();
+    })().catch((err) => {
+      // Mislukt laden niet onthouden — anders blijft elke volgende poging
+      // (en dus elke foto) falen tot de pagina herladen wordt.
+      modellenLadenPromise = null;
+      throw err;
+    });
   }
   return modellenLadenPromise;
 }
@@ -93,4 +98,22 @@ export async function bepaalKledingCrop(img: HTMLImageElement): Promise<KledingC
   const f = await detecteerGezicht(img);
   if (!f) return null;
   return kledingCropUitGezicht(f, img.width, img.height);
+}
+
+/**
+ * Telt alle gezichten op een foto — voor de privacycontrole vóór uploaden.
+ *
+ * Anders dan detecteerGezicht() slikt deze functie fouten níet in: lukt de
+ * detectie niet (bv. het model laadt niet), dan gooit hij een fout, zodat de
+ * aanroeper de foto kan weigeren in plaats van 'm ongecontroleerd door te
+ * laten ("bij twijfel weigeren").
+ */
+export async function telGezichten(img: HTMLImageElement): Promise<number> {
+  await laadModellen();
+  const faceapi = await import('face-api.js');
+  const detecties = await faceapi.detectAllFaces(
+    img,
+    new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.3 })
+  );
+  return detecties.length;
 }

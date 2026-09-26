@@ -69,11 +69,24 @@ export default function ModeratiePage() {
     setLaden(false);
   };
 
+  // Goed-/afkeuren loopt via de server: admins hebben in de database zelf
+  // geen update-recht op moderatie_status.
+  const modereer = async (listingId: string, actie: "goedkeuren" | "afkeuren", reden?: string) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return { error: { message: "Niet ingelogd" } };
+    const res = await fetch("/api/admin/modereren", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ listingId, actie, reden }),
+    });
+    if (res.ok) return { error: null };
+    const data = await res.json().catch(() => ({}));
+    return { error: { message: data.error || "Er ging iets mis" } };
+  };
+
   const keurGoed = async (item: WachtendeListing) => {
     setBezigMet(item.id);
-    const { error } = await supabase.from("listings")
-      .update({ moderatie_status: "goedgekeurd", moderatie_reden: null })
-      .eq("id", item.id);
+    const { error } = await modereer(item.id, "goedkeuren");
     if (error) {
       toast({ variant: "destructive", title: "Goedkeuren mislukt", description: error.message });
     } else {
@@ -86,9 +99,7 @@ export default function ModeratiePage() {
   const keurAf = async () => {
     if (!afkeurItem || !afkeurReden) return;
     setBezigMet(afkeurItem.id);
-    const { error } = await supabase.from("listings")
-      .update({ moderatie_status: "afgekeurd", moderatie_reden: afkeurReden, actief: false })
-      .eq("id", afkeurItem.id);
+    const { error } = await modereer(afkeurItem.id, "afkeuren", afkeurReden);
     if (error) {
       toast({ variant: "destructive", title: "Afkeuren mislukt", description: error.message });
     } else {

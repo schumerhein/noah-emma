@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Camera, ArrowRight, Loader2, Plus, Sparkles, ChevronRight, ChevronLeft, Check, Crown, Wand2, Zap, Star, Rocket } from "lucide-react";
+import { X, Camera, ArrowRight, Loader2, Plus, Sparkles, ChevronRight, ChevronLeft, Check, Crown, Wand2, Zap, Star, Rocket, ShieldAlert } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { cn, normaliseerPrijsInvoer } from "@/lib/utils";
@@ -20,6 +20,7 @@ import { AvatarViewer3D } from "@/components/avatar/AvatarViewer3D";
 import { BOOST_TIERS, type BoostTier } from "@/lib/prijzen";
 import { CATEGORY_HIERARCHY } from "@/lib/categorieen";
 import { verkleinAfbeelding } from "@/lib/afbeelding";
+import { controleerFoto } from "@/lib/fotoVeiligheid";
 
 const MAX_FOTOS = 8;
 const KLEDING_CATEGORIEEN = ["Meisjeskleding", "Jongenskleding"];
@@ -33,6 +34,15 @@ export default function SellPage() {
   const [originalPreviews, setOriginalPreviews] = useState<string[]>([]); // originele previews
   const [processingIndices, setProcessingIndices] = useState<Set<number>>(new Set());
   const [backComposites, setBackComposites] = useState<(string | null)[]>([]);
+  // Privacycontrole per foto: alleen foto's met status "ok" mogen geüpload worden.
+  const [fotoCheck, setFotoCheck] = useState<{ status: "bezig" | "ok" | "geweigerd"; reden: string | null }[]>([]);
+  // Per foto een versienummer, zodat een verouderde verwerking (bv. van vóór
+  // een modelwissel) het resultaat van een nieuwere niet overschrijft.
+  // Versies zijn uniek over alle foto's heen: schuiven de indexen na het
+  // verwijderen van een foto, dan wordt een lopende verwerking genegeerd in
+  // plaats van dat die op de verkeerde foto terechtkomt.
+  const verwerkVersie = useRef<number[]>([]);
+  const laatsteVersie = useRef(0);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -72,26 +82,47 @@ export default function SellPage() {
     laadKind();
   }, []);
 
-  // Verwerk een afbeelding: vervang gezicht met Noah/Emma als model geselecteerd
+  // Verwerk een afbeelding: eerst de privacycontrole (gezichten), daarna
+  // eventueel het gezicht vervangen door Noah/Emma. Bij elke twijfel of fout
+  // wordt de foto geweigerd — nooit terugvallen op het origineel.
   const processImage = useCallback(async (
     dataUrl: string,
     file: File,
     index: number,
     model: "none" | "noah" | "emma",
   ) => {
-    if (model === "none") {
-      setImagePreviews(prev => { const n = [...prev]; n[index] = dataUrl; return n; });
-      setImageFiles(prev => { const n = [...prev]; n[index] = file; return n; });
-      return;
-    }
+    const versie = ++laatsteVersie.current;
+    verwerkVersie.current[index] = versie;
+    const isActueel = () => verwerkVersie.current[index] === versie;
+    const zetStatus = (status: "bezig" | "ok" | "geweigerd", reden: string | null = null) =>
+      setFotoCheck(prev => { const n = [...prev]; n[index] = { status, reden }; return n; });
 
+    zetStatus("bezig");
     setProcessingIndices(prev => new Set(prev).add(index));
     try {
+      const controle = await controleerFoto(dataUrl, model);
+      if (!isActueel()) return;
+      if (!controle.ok) {
+        zetStatus("geweigerd", controle.reden);
+        toast({ variant: "destructive", title: "Foto niet toegestaan", description: controle.reden });
+        return;
+      }
+
+      if (model === "none") {
+        setImagePreviews(prev => { const n = [...prev]; n[index] = dataUrl; return n; });
+        setImageFiles(prev => { const n = [...prev]; n[index] = file; return n; });
+        setBackComposites(prev => { const n = [...prev]; n[index] = null; return n; });
+        zetStatus("ok");
+        return;
+      }
+
       const { front, back, kledingGedetecteerd } = await compositeAllAngles(dataUrl, model, sizeRef.current);
+      if (!isActueel()) return;
       const processedFile = dataUrlToFile(front, file.name);
       setImagePreviews(prev => { const n = [...prev]; n[index] = front; return n; });
       setImageFiles(prev => { const n = [...prev]; n[index] = processedFile; return n; });
       setBackComposites(prev => { const n = [...prev]; n[index] = back; return n; });
+      zetStatus("ok");
       toast({
         title: `✨ ${model === 'noah' ? 'Noah' : 'Emma'} presenteert jouw item!`,
         description: kledingGedetecteerd
@@ -99,11 +130,14 @@ export default function SellPage() {
           : "Draai om voor- én achterkant te zien.",
       });
     } catch {
-      // Fallback: gebruik origineel
-      setImagePreviews(prev => { const n = [...prev]; n[index] = dataUrl; return n; });
-      setImageFiles(prev => { const n = [...prev]; n[index] = file; return n; });
+      if (!isActueel()) return;
+      const reden = `Het plaatsen op ${model === 'noah' ? 'Noah' : 'Emma'} is niet gelukt. Verwijder deze foto en probeer een andere.`;
+      zetStatus("geweigerd", reden);
+      toast({ variant: "destructive", title: "Foto niet verwerkt", description: reden });
     } finally {
-      setProcessingIndices(prev => { const n = new Set(prev); n.delete(index); return n; });
+      if (isActueel()) {
+        setProcessingIndices(prev => { const n = new Set(prev); n.delete(index); return n; });
+      }
     }
   }, [toast]);
 
@@ -133,6 +167,7 @@ export default function SellPage() {
     setOriginalFiles(prev => [...prev, ...loaded.map(i => i.file)]);
     setImagePreviews(prev => [...prev, ...loaded.map(i => i.dataUrl)]);
     setImageFiles(prev => [...prev, ...loaded.map(i => i.file)]);
+    setFotoCheck(prev => [...prev, ...loaded.map(() => ({ status: "bezig" as const, reden: null }))]);
 
     // Verwerk elk bestand asynchroon (gezicht vervangen)
     loaded.forEach(({ file, dataUrl }, i) => {
@@ -146,6 +181,13 @@ export default function SellPage() {
     setOriginalPreviews(prev => prev.filter((_, i) => i !== index));
     setOriginalFiles(prev => prev.filter((_, i) => i !== index));
     setBackComposites(prev => prev.filter((_, i) => i !== index));
+    setFotoCheck(prev => prev.filter((_, i) => i !== index));
+    verwerkVersie.current = verwerkVersie.current.filter((_, i) => i !== index);
+    setProcessingIndices(prev => {
+      const n = new Set<number>();
+      prev.forEach(i => { if (i < index) n.add(i); else if (i > index) n.add(i - 1); });
+      return n;
+    });
     imageCountRef.current = Math.max(0, imageCountRef.current - 1);
     if (selectedImageIndex >= index && selectedImageIndex > 0) {
       setSelectedImageIndex(selectedImageIndex - 1);
@@ -169,15 +211,9 @@ export default function SellPage() {
 
     if (originalPreviews.length === 0) return;
 
-    if (newModel === "none") {
-      // Herstel originelen
-      setImagePreviews([...originalPreviews]);
-      setImageFiles([...originalFiles]);
-      setBackComposites(new Array(originalPreviews.length).fill(null));
-      return;
-    }
-
-    // Herverwerk alle afbeeldingen met het nieuwe model
+    // Herverwerk alle afbeeldingen met het nieuwe model. Ook bij terug naar
+    // "Eigen foto": het origineel komt pas terug nadat de privacycontrole
+    // het goedkeurt (anders zou een foto met gezicht alsnog online kunnen).
     for (let i = 0; i < originalPreviews.length; i++) {
       processImage(originalPreviews[i], originalFiles[i], i, newModel);
     }
@@ -209,6 +245,14 @@ export default function SellPage() {
     }
     if (!mainCategory) {
       toast({ variant: "destructive", title: "Oeps!", description: "Kies een categorie, anders is je advertentie niet terug te vinden." });
+      return;
+    }
+    if (fotoCheck.some(f => f.status === "bezig")) {
+      toast({ variant: "destructive", title: "Even geduld", description: "Je foto's worden nog gecontroleerd." });
+      return;
+    }
+    if (fotoCheck.length !== imageFiles.length || fotoCheck.some(f => f.status !== "ok")) {
+      toast({ variant: "destructive", title: "Foto niet toegestaan", description: "Verwijder eerst de foto's die zijn afgekeurd." });
       return;
     }
 
@@ -337,6 +381,15 @@ export default function SellPage() {
                   <X className="w-4 h-4" />
                 </button>
 
+                {/* Privacycontrole: foto afgekeurd */}
+                {fotoCheck[selectedImageIndex]?.status === "geweigerd" && (
+                  <div className="absolute inset-0 z-[5] bg-slate-900/80 backdrop-blur-md flex flex-col items-center justify-center text-center px-8 gap-2">
+                    <ShieldAlert className="w-10 h-10 text-red-400" />
+                    <p className="text-sm font-bold text-white">Foto niet toegestaan</p>
+                    <p className="text-xs text-slate-200 leading-relaxed">{fotoCheck[selectedImageIndex]?.reden}</p>
+                  </div>
+                )}
+
                 {/* Badge eigen foto modus */}
                 {aiModel === 'none' && (
                   <div className="absolute top-4 left-4 bg-black/30 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5">
@@ -365,6 +418,16 @@ export default function SellPage() {
                 )}
               >
                 <Image src={img} alt={`Thumb ${idx}`} fill className="object-cover" />
+                {fotoCheck[idx]?.status === "geweigerd" && (
+                  <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center">
+                    <ShieldAlert className="w-5 h-5 text-red-400" />
+                  </div>
+                )}
+                {fotoCheck[idx]?.status === "bezig" && (
+                  <div className="absolute inset-0 bg-white/60 dark:bg-slate-900/60 flex items-center justify-center">
+                    <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                  </div>
+                )}
               </div>
             ))}
             {imagePreviews.length < MAX_FOTOS && (

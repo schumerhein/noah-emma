@@ -48,7 +48,7 @@ export async function controleerFoto(
   if (model === 'none' && aantal > 0) {
     return {
       ok: false,
-      reden: "Er staat een gezicht op deze foto. Kies Noah of Emma als model, of maak een foto zonder gezicht in beeld (bv. platgelegd).",
+      reden: "Er staat een gezicht op deze foto. Om kinderen te beschermen plaatsen we geen foto's met gezichten. Maak een foto zonder gezicht in beeld, bijvoorbeeld platgelegd of op een hanger.",
     };
   }
   if (model !== 'none' && aantal > 1) {

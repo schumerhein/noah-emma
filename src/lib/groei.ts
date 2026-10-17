@@ -2,8 +2,9 @@
  * Groeifunctie — de maat van een kindprofiel groeit mee met de leeftijd.
  *
  * Gebaseerd op de gemiddelde Nederlandse groeicurve: kledingmaat ≈ lichaamslengte.
- * De app vergelijkt de verwachte maat (uit de geboortedatum) met de ingestelde
- * maat en stelt een update voor zodra het kind eruit gegroeid is.
+ * Elke nacht zet de database de maat automatisch omhoog zodra een kind eruit
+ * gegroeid is (zie kindmaat-meegroeien.sql — die maattabel moet gelijk
+ * blijven aan schatMaatOpLeeftijd hieronder).
  */
 
 export const GROEI_MAATLIJST = ["50", "56", "62", "68", "74", "80", "86", "92", "98", "104", "110", "116", "122", "128", "134", "140", "146", "152", "158/164"];
@@ -66,4 +67,17 @@ export function groeiCheck(geboortedatum: string | null, huidigeMaat: string | n
   const verwachteIdx = GROEI_MAATLIJST.indexOf(verwacht);
   if (huidigeIdx < 0 || verwachteIdx < 0) return null;
   return verwachteIdx > huidigeIdx ? verwacht : null;
+}
+
+/**
+ * Wijkt de gekozen maat duidelijk af van de leeftijd (2 maten of meer)?
+ * Retourneert dan de verwachte maat, zodat we de ouder kunnen waarschuwen —
+ * bv. maat 86 voor een pasgeborene is vrijwel zeker een vergissing.
+ */
+export function maatWijktAf(geboortedatum: string | null, maat: string | null): string | null {
+  if (!geboortedatum || !maat) return null;
+  const verwacht = schatMaatOpLeeftijd(leeftijdInMaanden(geboortedatum));
+  const verschil = GROEI_MAATLIJST.indexOf(maat) - GROEI_MAATLIJST.indexOf(verwacht);
+  if (GROEI_MAATLIJST.indexOf(maat) < 0) return null;
+  return Math.abs(verschil) >= 2 ? verwacht : null;
 }

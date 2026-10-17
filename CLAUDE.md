@@ -73,7 +73,9 @@ src/lib/              → Supabase client, avatar-compositie, groeicurve, utils
 ## Status & lopende zaken
 
 - Moderatiewachtrij, meld/blokkeer-systeem, reviews, verkoopcyclus, groeifunctie
-  (verwachte maat uit geboortedatum) zijn gebouwd en werkend.
+  (verwachte maat uit geboortedatum) zijn gebouwd en werkend. De kindmaat groeit
+  automatisch mee: een nachtelijke pg_cron-job (`kindmaat-meegroeien.sql`) zet de maat
+  omhoog; de maattabel daar moet gelijk blijven aan `schatMaatOpLeeftijd` in `src/lib/groei.ts`.
 - `TESTPLAN.md` bevat een handmatig testscript voor de volledige cyclus (registratie →
   advertentie → moderatie → chat/bod → deal → review → melden/blokkeren).
 - Fase: Next.js web-prototype (fase 1 uit de productvisie). React Native/Expo-versie en

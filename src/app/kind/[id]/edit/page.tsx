@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { slaActiefKindOp, leesActiefKind } from "@/components/ThemeProvider";
-import { GROEI_MAATLIJST as MAATLIJST, schatMaatOpLeeftijd, leeftijdInMaanden, lengteBijMaat } from "@/lib/groei";
+import { GROEI_MAATLIJST as MAATLIJST, schatMaatOpLeeftijd, leeftijdInMaanden, lengteBijMaat, maatWijktAf } from "@/lib/groei";
 
 type Geslacht = "meisje" | "jongen";
 
@@ -218,6 +218,11 @@ export default function KindBewerkenPage({ params }: { params: Promise<{ id: str
           <div className="bg-primary/10 rounded-xl p-3 text-center">
             <p className="text-sm font-bold text-primary">Geselecteerd: Maat {maat}</p>
           </div>
+          {!kindTeOud && maatWijktAf(geboortedatum, maat) && (
+            <p className="text-xs font-bold text-amber-600 dark:text-amber-400">
+              Let op: bij deze leeftijd past meestal maat {maatWijktAf(geboortedatum, maat)}. Klopt maat {maat} echt?
+            </p>
+          )}
         </div>
 
         {/* Verwijderen */}

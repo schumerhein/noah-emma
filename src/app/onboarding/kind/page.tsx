@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { Baby, ChevronRight, Calendar, ArrowLeft, Sparkles, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 // Eén bron voor de groeicurve: dezelfde logica als de groeifunctie op het profiel
-import { GROEI_MAATLIJST as MAATLIJST, schatMaatOpLeeftijd, leeftijdInMaanden as berekenLeeftijdInMaanden } from "@/lib/groei";
+import { GROEI_MAATLIJST as MAATLIJST, schatMaatOpLeeftijd, leeftijdInMaanden as berekenLeeftijdInMaanden, maatWijktAf } from "@/lib/groei";
 
 function formatLeeftijd(maanden: number): string {
   if (maanden < 0) return "Nog niet geboren";
@@ -315,6 +315,12 @@ export default function KindOnboardingPage() {
                 </button>
               ))}
             </div>
+
+            {maatWijktAf(geboortedatum || null, activeMaat) && (
+              <p className="text-sm font-bold text-amber-600">
+                Let op: bij deze leeftijd past meestal maat {maatWijktAf(geboortedatum || null, activeMaat)}. Klopt maat {activeMaat} echt?
+              </p>
+            )}
 
             <div className="bg-primary/10 rounded-2xl p-4 text-center">
               <p className="text-sm font-bold text-primary-dark">

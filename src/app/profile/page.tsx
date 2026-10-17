@@ -8,7 +8,7 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   Heart, ChevronRight, Baby, Edit2, LogOut, Bell, Package, Star, Plus, X, Settings, Umbrella,
-  HelpCircle, Headphones, Sliders, FileText, Cookie, CheckCircle2, Crown
+  HelpCircle, Headphones, Sliders, FileText, Cookie, CheckCircle2, Rocket
 } from "lucide-react";
 import { slaActiefKindOp, leesActiefKind } from "@/components/ThemeProvider";
 import { groeiCheck, lengteBijMaat } from "@/lib/groei";
@@ -344,7 +344,7 @@ export default function ProfilePage() {
                 <h1 className="font-black text-xl text-slate-900 dark:text-white">{profile.naam || "Gebruiker"}</h1>
                 {isPremium && (
                   <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 shrink-0">
-                    <Crown className="w-3 h-3 text-amber-500" />
+                    <Rocket className="w-3 h-3 text-amber-500" />
                     <span className="text-[11px] font-bold text-amber-700">Premium</span>
                   </span>
                 )}
@@ -608,7 +608,7 @@ export default function ProfilePage() {
                           onClick={(e) => { e.preventDefault(); router.push(`/promote/${item.id}`); }}
                           className="absolute bottom-2 left-2 flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full bg-amber-400 text-white shadow-sm"
                         >
-                          <Crown className="w-3 h-3" />
+                          <Rocket className="w-3 h-3" />
                           {Math.max(1, Math.round((new Date(item.promotie_verloopdatum).getTime() - Date.now()) / 86400000))}d
                         </button>
                       ) : (
@@ -616,7 +616,7 @@ export default function ProfilePage() {
                           onClick={(e) => { e.preventDefault(); router.push(`/promote/${item.id}`); }}
                           className="absolute bottom-2 left-2 flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full bg-white/90 dark:bg-slate-900/80 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-sm active:scale-95 transition-transform"
                         >
-                          <Crown className="w-3 h-3" />
+                          <Rocket className="w-3 h-3" />
                           Boost
                         </button>
                       )}

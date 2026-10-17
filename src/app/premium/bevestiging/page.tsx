@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Crown, Loader2, XCircle } from "lucide-react";
+import { Rocket, Loader2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 
@@ -29,7 +29,7 @@ export default function PremiumBevestigingPage() {
       {status === "paid" && (
         <>
           <div className="p-4 rounded-full bg-primary/10 mb-4">
-            <Crown className="w-10 h-10 text-primary fill-primary" />
+            <Rocket className="w-10 h-10 text-primary" />
           </div>
           <h1 className="text-2xl font-extrabold mb-2">Welkom bij Premium!</h1>
           <p className="text-slate-500 dark:text-slate-400 mb-6">Je account is bijgewerkt. Veel plezier met alle extra's.</p>

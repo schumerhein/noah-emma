@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Crown, Check, Search, BellRing, Sparkles, MessageCircleQuestion } from "lucide-react";
+import { X, Rocket, Check, Search, BellRing, Sparkles, MessageCircleQuestion } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
@@ -102,7 +102,7 @@ export function PremiumModal({ open, onClose }: { open: boolean; onClose: () => 
             {actiefMetAbonnement || actiefZonderAbonnement ? (
               <Check className="w-7 h-7 text-white" />
             ) : (
-              <Crown className="w-7 h-7 text-white" />
+              <Rocket className="w-7 h-7 text-white" />
             )}
           </div>
           <h1 className="text-2xl font-black text-white">Premium</h1>
@@ -156,7 +156,7 @@ export function PremiumModal({ open, onClose }: { open: boolean; onClose: () => 
                 disabled={bezig}
                 className="w-full h-13 py-3.5 rounded-2xl bg-accent text-white font-black text-base shadow-lg shadow-accent/30 active:scale-[0.98] transition-all disabled:opacity-60 flex items-center justify-center gap-2"
               >
-                {bezig ? "Even geduld…" : (<><Crown className="w-5 h-5" /> Premium activeren</>)}
+                {bezig ? "Even geduld…" : (<><Rocket className="w-5 h-5" /> Premium activeren</>)}
               </button>
             </>
           )}

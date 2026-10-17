@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Camera, X, Loader2, Trash2, Check, Crown, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, Camera, X, Loader2, Trash2, Check, Rocket, CheckCircle2 } from "lucide-react";
 
 import { cn, normaliseerPrijsInvoer } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
@@ -433,7 +433,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
             "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
             gepromoot ? "bg-amber-400" : "bg-slate-100 dark:bg-slate-800"
           )}>
-            <Crown className={cn("w-5 h-5", gepromoot ? "text-white" : "text-slate-400")} />
+            <Rocket className={cn("w-5 h-5", gepromoot ? "text-white" : "text-slate-400")} />
           </div>
           <div className="flex-1">
             <p className="font-bold text-sm text-slate-900 dark:text-white">Advertentieruimte inkopen</p>

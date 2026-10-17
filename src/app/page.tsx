@@ -9,7 +9,7 @@ import { haalGeblokkeerdeIds, filterZichtbaar } from "@/lib/zichtbaarheid";
 import { leesActiefKind, slaActiefKindOp, zetViewportHoogte, type ActiefKind } from "@/components/ThemeProvider";
 import { useToast } from "@/hooks/use-toast";
 import { PremiumModal } from "@/components/PremiumModal";
-import { X, Zap, Crown } from "lucide-react";
+import { X, Zap, Rocket } from "lucide-react";
 import { LEGE_FEED_VOORKEUREN, scoreVoorkeurMatch, type FeedVoorkeuren } from "@/lib/feedVoorkeuren";
 import { leesRecentBekekenIds } from "@/lib/recentBekeken";
 import { OpenBeoordelingen } from "@/components/OpenBeoordelingen";
@@ -662,7 +662,7 @@ export default function Home() {
                   {/* Gepromoot badge — alleen tonen zolang de boost echt nog loopt */}
                   {current.gepromoot && current.promotie_verloopdatum && new Date(current.promotie_verloopdatum) > new Date() && (
                     <div className="absolute top-3 left-3 z-20 flex items-center gap-1 bg-amber-500 px-2.5 py-1 rounded-full shadow-md">
-                      <Crown className="w-3 h-3 text-white" />
+                      <Rocket className="w-3 h-3 text-white" />
                       <span className="text-[10px] font-black text-white uppercase tracking-wide">Gepromoot</span>
                     </div>
                   )}

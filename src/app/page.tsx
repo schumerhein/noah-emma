@@ -43,6 +43,9 @@ export default function Home() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [kind, setKind] = useState<ActiefKind | null>(null);
+  // "Annabel is gegroeid!" — de database zet de maat 's nachts automatisch
+  // omhoog (kindmaat-meegroeien.sql); toon dat één keer per nieuwe maat.
+  const [groeiMelding, setGroeiMelding] = useState<{ id: string; naam: string | null; maat: string } | null>(null);
   // Onthoud de filterkeuze van de gebruiker tussen sessies
   const [filterOpKind, setFilterOpKindState] = useState(true);
   const setFilterOpKind = (updater: boolean | ((prev: boolean) => boolean)) => {
@@ -120,6 +123,7 @@ export default function Home() {
     const onWissel = (e: Event) => {
       const nieuwKind = (e as CustomEvent<ActiefKind>).detail;
       setKind(nieuwKind);
+      setGroeiMelding(null);
     };
     window.addEventListener("kind-gewisseld", onWissel);
     return () => {
@@ -189,15 +193,20 @@ export default function Home() {
     if (!user) return;
     let query = supabase
       .from("children")
-      .select("id, naam, maat, geslacht")
+      .select("id, naam, maat, geslacht, maat_gegroeid_op")
       .eq("user_id", user.id);
     query = kindId
       ? query.eq("id", kindId)
       : query.order("created_at", { ascending: true }).limit(1);
     const { data } = await query.maybeSingle();
     if (data) {
-      setKind(data as ActiefKind);
-      slaActiefKindOp(data as ActiefKind);
+      const { maat_gegroeid_op, ...actiefKind } = data;
+      setKind(actiefKind as ActiefKind);
+      slaActiefKindOp(actiefKind as ActiefKind);
+      const recentGegroeid = maat_gegroeid_op && Date.now() - new Date(maat_gegroeid_op).getTime() < 14 * 24 * 60 * 60 * 1000;
+      let alGezien = false;
+      try { alGezien = localStorage.getItem(`groei_gezien_${data.id}`) === data.maat; } catch {}
+      setGroeiMelding(recentGegroeid && !alGezien ? { id: data.id, naam: data.naam, maat: data.maat } : null);
     } else if (kindId) {
       // Het gecachte kind bestaat niet meer (verwijderd) — val terug op het eerste kind.
       laadKindFallback();
@@ -503,7 +512,26 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Recent bekeken */}
+      {groeiMelding && (
+        <div className="shrink-0 mx-6 mb-2 flex items-center gap-3 rounded-2xl bg-primary/10 dark:bg-primary/20 px-4 py-3">
+          <span className="text-xl leading-none">🎉</span>
+          <p className="flex-1 text-sm font-bold text-slate-700 dark:text-slate-200">
+            {groeiMelding.naam || "Je kind"} is gegroeid! We laten nu maat {groeiMelding.maat} zien.
+          </p>
+          <button
+            onClick={() => {
+              try { localStorage.setItem(`groei_gezien_${groeiMelding.id}`, groeiMelding.maat); } catch {}
+              setGroeiMelding(null);
+            }}
+            aria-label="Melding sluiten"
+            className="w-7 h-7 rounded-full flex items-center justify-center text-slate-400"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+            {/* Recent bekeken */}
       {recentBekekenItems.length > 0 && (
         <div className="shrink-0 pb-2">
           <p className="px-6 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Onlangs bekeken</p>

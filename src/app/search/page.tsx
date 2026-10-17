@@ -334,6 +334,43 @@ export default function SearchPage() {
   const minPct = (filters.sizeMinIdx / (SIZES.length - 1)) * 100;
   const maxPct = (filters.sizeMaxIdx / (SIZES.length - 1)) * 100;
 
+  // Zoeken & filteren is een Premium-functie (admins zijn altijd Premium,
+  // zie admin-altijd-premium.sql). Niet-Premium leden houden Ontdekken.
+  if (isPremium === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <span className="material-icons-round text-primary text-4xl animate-spin">progress_activity</span>
+      </div>
+    );
+  }
+
+  if (!isPremium) {
+    return (
+      <div className="flex flex-col min-h-screen bg-background pb-32 items-center justify-center px-8 text-center gap-5">
+        <div className="w-20 h-20 rounded-full bg-primary/15 flex items-center justify-center">
+          <SearchIcon className="w-9 h-9 text-primary" />
+        </div>
+        <div className="space-y-2">
+          <h1 className="text-2xl font-extrabold font-display text-slate-900 dark:text-white">Zoeken is Premium</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+            Met Premium zoek en filter je op merk, maat, kleur en prijs, vraag je Noah of Emma om hulp en stel je zoekwaarschuwingen in.
+          </p>
+        </div>
+        <Button
+          onClick={() => setToonPremiumModal(true)}
+          className="w-full max-w-xs h-12 rounded-2xl font-bold"
+        >
+          <Sparkles className="w-4 h-4 mr-2" />
+          Bekijk Premium
+        </Button>
+        <Link href="/" className="text-sm font-bold text-slate-400">
+          Verder met Ontdekken
+        </Link>
+        <PremiumModal open={toonPremiumModal} onClose={() => setToonPremiumModal(false)} />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-background pb-32 relative">
       <style>{`

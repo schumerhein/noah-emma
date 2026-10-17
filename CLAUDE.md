@@ -39,6 +39,10 @@ Dit is een eigen, lokale implementatie — geen Fashn.ai (dat is een toekomstige
      laag bovenop bovenstaande pipeline)
    - `product-description-generation-flow.ts` — genereert productomschrijvingen
    - `assistant-flow.ts` — AI-chat/support assistent
+6. **AI-moderatie** (`src/lib/aiModeratie.ts`, `src/app/api/webhooks/ai-moderatie/`) — elke
+   advertentie die op 'wachtend' komt, wordt via een Supabase-webhook door Gemini beoordeeld:
+   goedkeuren → live, afkeuren → verkoper ziet reden, twijfel → handmatige wachtrij
+   (`/admin/moderatie`). Zie `ai-moderatie.sql`.
 
 ## Database (Supabase)
 

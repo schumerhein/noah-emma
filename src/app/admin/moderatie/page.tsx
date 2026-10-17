@@ -19,6 +19,8 @@ type WachtendeListing = {
   foto_urls: string[];
   created_at: string;
   user_id: string;
+  ai_oordeel: "goedkeuren" | "afkeuren" | "twijfel" | "fout" | null;
+  ai_toelichting: string | null;
   profiles: { naam: string | null; stad: string | null } | null;
 };
 
@@ -61,7 +63,7 @@ export default function ModeratiePage() {
 
     const { data } = await supabase
       .from("listings")
-      .select("id, titel, beschrijving, prijs, maat, categorie, conditie, foto_urls, created_at, user_id, profiles(naam, stad)")
+      .select("id, titel, beschrijving, prijs, maat, categorie, conditie, foto_urls, created_at, user_id, ai_oordeel, ai_toelichting, profiles(naam, stad)")
       .eq("moderatie_status", "wachtend")
       .order("created_at", { ascending: true });
 
@@ -206,6 +208,16 @@ export default function ModeratiePage() {
                   Door <strong>{item.profiles?.naam || "Onbekend"}</strong>
                   {item.profiles?.stad ? ` · ${item.profiles.stad}` : ""} · {new Date(item.created_at).toLocaleDateString("nl-NL", { day: "numeric", month: "short" })}
                 </p>
+
+                {/* Wat de AI-moderatie ervan vond (alleen twijfel of fout belandt hier) */}
+                <div className="flex items-start gap-2 rounded-xl bg-amber-50 dark:bg-amber-900/20 px-3 py-2 text-xs text-amber-800 dark:text-amber-200">
+                  <span className="material-icons-round text-base leading-none">smart_toy</span>
+                  <span>
+                    {item.ai_oordeel
+                      ? <><strong>AI {item.ai_oordeel === "fout" ? "kon niet beoordelen" : item.ai_oordeel === "twijfel" ? "twijfelt" : `zou ${item.ai_oordeel}`}:</strong> {item.ai_toelichting}</>
+                      : "AI-controle loopt nog…"}
+                  </span>
+                </div>
 
                 {/* Acties */}
                 <div className="flex gap-3 pt-2">

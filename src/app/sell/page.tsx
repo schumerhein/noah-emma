@@ -530,14 +530,14 @@ export default function SellPage() {
           </div>
         </section>
 
-        {/* Advertentieruimte */}
+        {/* Artikel boosten */}
         <div className="rounded-2xl border-2 border-slate-100 dark:border-slate-800 p-4 space-y-3">
           <div className="flex items-center gap-3">
             <div className={cn("w-10 h-10 rounded-full flex items-center justify-center shrink-0", boostTier ? "bg-amber-400" : "bg-slate-100 dark:bg-slate-800")}>
               <Rocket className={cn("w-5 h-5", boostTier ? "text-white" : "text-slate-400")} />
             </div>
             <div>
-              <p className="font-bold text-sm text-slate-900 dark:text-white">Advertentieruimte inkopen</p>
+              <p className="font-bold text-sm text-slate-900 dark:text-white">Artikel boosten</p>
               <p className="text-xs text-slate-400">Optioneel — verschijn meteen vaker in Ontdekken</p>
             </div>
           </div>

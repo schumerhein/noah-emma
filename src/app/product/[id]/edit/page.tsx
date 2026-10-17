@@ -436,7 +436,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
             <Rocket className={cn("w-5 h-5", gepromoot ? "text-white" : "text-slate-400")} />
           </div>
           <div className="flex-1">
-            <p className="font-bold text-sm text-slate-900 dark:text-white">Advertentieruimte inkopen</p>
+            <p className="font-bold text-sm text-slate-900 dark:text-white">Artikel boosten</p>
             <p className="text-xs text-slate-400 mt-0.5">
               {gepromoot ? "Boost actief · Tik om te verlengen" : "Verschijn als eerste in Ontdekken"}
             </p>

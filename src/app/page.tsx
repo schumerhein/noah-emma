@@ -12,6 +12,7 @@ import { PremiumModal } from "@/components/PremiumModal";
 import { X, Zap, Crown } from "lucide-react";
 import { LEGE_FEED_VOORKEUREN, scoreVoorkeurMatch, type FeedVoorkeuren } from "@/lib/feedVoorkeuren";
 import { leesRecentBekekenIds } from "@/lib/recentBekeken";
+import { OpenBeoordelingen } from "@/components/OpenBeoordelingen";
 
 type Listing = {
   id: string;
@@ -511,6 +512,8 @@ export default function Home() {
           )}
         </div>
       </header>
+
+      <OpenBeoordelingen compact className="shrink-0 mx-6 mb-2" />
 
       {groeiMelding && (
         <div className="shrink-0 mx-6 mb-2 flex items-center gap-3 rounded-2xl bg-primary/10 dark:bg-primary/20 px-4 py-3">

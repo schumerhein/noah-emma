@@ -27,6 +27,7 @@ type Conversation = {
   afgerond: boolean;
   afgerond_at: string | null;
   afgerond_door: string | null;
+  koper_bevestigd_op?: string | null;
   listing?: {
     id: string;
     titel: string;
@@ -36,7 +37,7 @@ type Conversation = {
     verkocht?: boolean;
     user_id: string;
   } | null;
-  other_user?: { naam: string | null; avatar_url: string | null; gemiddelde_beoordeling?: number };
+  other_user?: { naam: string | null; avatar_url: string | null; gemiddelde_beoordeling?: number; totaal_beoordelingen?: number | null };
 };
 
 export default function ChatDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -97,7 +98,7 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("naam, avatar_url, gemiddelde_beoordeling")
+      .select("naam, avatar_url, gemiddelde_beoordeling, totaal_beoordelingen")
       .eq("id", other)
       .single();
 
@@ -246,6 +247,29 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
     await laadBerichten();
   };
 
+  // De koper kan zelf aangeven dat de koop rond is; de verkoper bevestigt
+  // daarna (en krijgt daarvoor een mail via /api/webhooks/reviews). Pas na
+  // die bevestiging kunnen beiden een review geven.
+  const meldGekocht = async () => {
+    if (!conversation || !currentUserId) return;
+    setDealBezig(true);
+    const nu = new Date().toISOString();
+    const { error } = await supabase.from("conversations").update({ koper_bevestigd_op: nu }).eq("id", id);
+    if (error) {
+      toast({ variant: "destructive", title: "Dat lukte niet", description: "Probeer het zo nog eens." });
+      setDealBezig(false);
+      return;
+    }
+    await supabase.from("messages").insert({
+      conversation_id: id,
+      sender_id: currentUserId,
+      tekst: "🛍️ Ik heb dit gekocht! Wil je de deal bevestigen? Dan kunnen we elkaar een beoordeling geven.",
+    });
+    setConversation(prev => prev ? { ...prev, koper_bevestigd_op: nu } : prev);
+    setDealBezig(false);
+    await laadBerichten();
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -301,10 +325,13 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
             {conversation?.other_user?.gemiddelde_beoordeling ? (
               <div className="flex items-center gap-1">
                 <span className="text-yellow-400 text-xs">★</span>
-                <span className="text-[11px] font-bold text-slate-500">{Number(conversation.other_user.gemiddelde_beoordeling).toFixed(1)}</span>
+                <span className="text-[11px] font-bold text-slate-500">
+                  {Number(conversation.other_user.gemiddelde_beoordeling).toFixed(1).replace(".", ",")}
+                  {conversation.other_user.totaal_beoordelingen ? ` · ${conversation.other_user.totaal_beoordelingen} ${conversation.other_user.totaal_beoordelingen === 1 ? "beoordeling" : "beoordelingen"}` : ""}
+                </span>
               </div>
             ) : (
-              <span className="text-[11px] text-slate-400">Actief op Noah & Emma</span>
+              <span className="text-[11px] text-slate-400">Nog geen beoordelingen</span>
             )}
           </div>
         </div>
@@ -346,6 +373,43 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
             </span>
           </div>
         </Link>
+      )}
+
+      {/* Nog geen deal: koper meldt "gekocht", verkoper bevestigt */}
+      {!dealAfgerond && conversation?.listing && !conversation.listing.verkocht && otherUserId && (
+        isVerkoper ? (
+          conversation.koper_bevestigd_op && (
+            <div className="shrink-0 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-100 dark:border-amber-800/30 px-4 py-3 space-y-2">
+              <p className="text-xs font-bold text-amber-800 dark:text-amber-300">
+                {naam} geeft aan dit gekocht te hebben. Klopt dat? Bevestig de deal, dan kunnen jullie elkaar beoordelen.
+              </p>
+              <button
+                onClick={() => setToonDealModal(true)}
+                className="w-full flex items-center justify-center gap-2 bg-emerald-500 text-white font-bold text-sm py-2.5 rounded-xl active:scale-[0.98] transition-transform"
+              >
+                <CheckCircle className="w-4 h-4" />
+                Bevestig de deal
+              </button>
+            </div>
+          )
+        ) : conversation.koper_bevestigd_op ? (
+          <div className="shrink-0 bg-slate-50 dark:bg-zinc-900 border-b border-slate-100 dark:border-zinc-800 px-4 py-3">
+            <p className="text-xs font-bold text-slate-500 dark:text-slate-400">
+              Je hebt aangegeven dit gekocht te hebben. Zodra {naam} de deal bevestigt, kun je een beoordeling geven.
+            </p>
+          </div>
+        ) : (
+          <div className="shrink-0 px-4 py-2 bg-white dark:bg-zinc-900 border-b border-slate-100 dark:border-zinc-800">
+            <button
+              onClick={meldGekocht}
+              disabled={dealBezig}
+              className="w-full flex items-center justify-center gap-2 border-2 border-emerald-200 text-emerald-600 dark:text-emerald-400 font-bold text-sm py-2 rounded-xl active:scale-[0.98] transition-transform disabled:opacity-50"
+            >
+              <CheckCircle className="w-4 h-4" />
+              Ik heb dit gekocht
+            </button>
+          </div>
+        )
       )}
 
       {/* Deal afgerond banner + review knop */}

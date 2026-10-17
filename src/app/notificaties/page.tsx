@@ -12,6 +12,7 @@ type NotificatieKeys = {
   nieuw_bericht: boolean;
   nieuw_bod: boolean;
   deal_gesloten: boolean;
+  beoordelingen: boolean;
   nieuwe_feedback: boolean;
   afgeprijsde_artikelen: boolean;
   favoriet_artikel: boolean;
@@ -26,6 +27,7 @@ const DEFAULTS: NotificatieKeys = {
   nieuw_bericht: true,
   nieuw_bod: true,
   deal_gesloten: true,
+  beoordelingen: true,
   nieuwe_feedback: false,
   afgeprijsde_artikelen: false,
   favoriet_artikel: false,
@@ -45,6 +47,7 @@ const SECTIES = [
       { key: "nieuw_bericht" as keyof NotificatieKeys, label: "Nieuwe berichten" },
       { key: "nieuw_bod" as keyof NotificatieKeys, label: "Nieuwe biedingen" },
       { key: "deal_gesloten" as keyof NotificatieKeys, label: "Verkocht / deal gesloten" },
+      { key: "beoordelingen" as keyof NotificatieKeys, label: "Beoordelingen (verzoeken en nieuwe reviews)" },
       { key: "nieuwe_feedback" as keyof NotificatieKeys, label: "Nieuwe feedback" },
       { key: "afgeprijsde_artikelen" as keyof NotificatieKeys, label: "Afgeprijsde artikelen" },
     ],

@@ -456,9 +456,20 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               </div>
             )}
 
-            {/* Prijs — hero */}
-            <div className="flex items-baseline gap-1">
+            {/* Prijs — hero, met de beoordeling van de verkoper ernaast */}
+            <div className="flex items-end justify-between gap-3">
               <span className={cn("text-5xl font-black leading-none", listing.actief === false ? "text-slate-300 line-through" : "text-primary")}>€{listing.prijs.toFixed(2).replace(".", ",")}</span>
+              <Link href={`/seller/${listing.user_id}`} className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/20 px-2.5 py-1 rounded-full shrink-0">
+                <span className="text-amber-400 text-sm">★</span>
+                {listing.profiles?.gemiddelde_beoordeling ? (
+                  <span className="text-xs font-black text-amber-700 dark:text-amber-400">
+                    {Number(listing.profiles.gemiddelde_beoordeling).toFixed(1).replace(".", ",")}
+                    <span className="font-bold text-amber-600/70"> · {listing.profiles.totaal_beoordelingen ?? 0} {listing.profiles.totaal_beoordelingen === 1 ? "beoordeling" : "beoordelingen"}</span>
+                  </span>
+                ) : (
+                  <span className="text-xs font-bold text-amber-700/70 dark:text-amber-400/70">Nog geen beoordelingen</span>
+                )}
+              </Link>
             </div>
 
             {/* Titel */}

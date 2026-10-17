@@ -44,6 +44,16 @@ Dit is een eigen, lokale implementatie — geen Fashn.ai (dat is een toekomstige
    goedkeuren → live, afkeuren → verkoper ziet reden, twijfel → handmatige wachtrij
    (`/admin/moderatie`). Zie `ai-moderatie.sql`.
 
+## Reviews (kernfunctie)
+
+- Review alleen na een afgeronde deal (`conversations.afgerond`), afgedwongen in RLS via
+  `mag_review_geven()`. De verkoper rondt af; de koper kan "Ik heb dit gekocht" melden
+  (`koper_bevestigd_op`), waarna de verkoper bevestigt. Zie `reviews-verplicht-na-deal.sql`.
+- Alle review-mails lopen via `src/app/api/webhooks/reviews/route.ts`: review-verzoek aan
+  beide partijen bij afronden, bevestigverzoek aan de verkoper, mail bij een nieuwe review,
+  en een dagelijkse herinnering (pg_cron → `stuur_review_herinneringen()`, geheim in Vault).
+- `OpenBeoordelingen` (beginscherm + profiel) toont deals die je nog moet beoordelen.
+
 ## Database (Supabase)
 
 Types staan in `src/lib/supabase.ts` (`Database` type): `profiles`, `listings`, `children`,

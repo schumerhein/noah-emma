@@ -7,6 +7,15 @@ import { NoahEmmaLogo } from "@/components/Header";
 import { MailCheck } from "lucide-react";
 import { leesbareDeviceLabel } from "@/lib/deviceLabel";
 
+// Na inloggen terug naar de pagina waar je vandaan kwam (bv. een review-link
+// uit een e-mail: /login?next=/reviews/schrijf?...). Alleen paden binnen de
+// eigen site, nooit een extern adres.
+function volgendePagina(): string | null {
+  if (typeof window === "undefined") return null;
+  const next = new URLSearchParams(window.location.search).get("next");
+  return next && next.startsWith("/") && !next.startsWith("//") ? next : null;
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -92,7 +101,7 @@ export default function LoginPage() {
     if (!profiel?.naam) {
       router.push("/onboarding/kind");
     } else {
-      router.push("/");
+      router.push(volgendePagina() ?? "/");
     }
     setLoading(false);
   };

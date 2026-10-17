@@ -43,3 +43,8 @@ export function emailSjabloon(opts: { titel: string; tekst: string; knopTekst: s
     </div>
   `;
 }
+
+// Voor tekst van gebruikers (namen, producttitels) in de HTML van een mail.
+export function escapeHtml(tekst: string) {
+  return tekst.replace(/[&<>"']/g, t => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[t]!);
+}

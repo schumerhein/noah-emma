@@ -448,8 +448,9 @@ export default function Home() {
   const rotation = dragX / 15;
   const current = listings[0];
 
+  // Zonder beoordeling: vijf lege sterren (reviews staan altijd in beeld).
   const renderStars = (rating: number | null) => {
-    if (!rating) return null;
+    rating = rating || 0;
     const vol = Math.floor(rating);
     const half = rating % 1 >= 0.5;
     return (
@@ -703,19 +704,23 @@ export default function Home() {
                         {(current.profiles?.naam || "?").charAt(0).toUpperCase()}
                       </div>
                     )}
-                    <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">
-                      {current.profiles?.naam || "Gebruiker"}
-                    </span>
-                    {current.profiles?.gemiddelde_beoordeling ? (
-                      <div className="flex items-center gap-0.5 shrink-0">
-                        {renderStars(current.profiles.gemiddelde_beoordeling)}
-                        {current.profiles.totaal_beoordelingen != null && (
-                          <span className="text-[10px] text-slate-400 ml-0.5">({current.profiles.totaal_beoordelingen})</span>
+                    {/* Verkoper + beoordeling — altijd zichtbaar, ook zonder reviews */}
+                    <div className="min-w-0">
+                      <span className="block text-sm font-bold text-slate-700 dark:text-slate-200 truncate">
+                        {current.profiles?.naam || "Gebruiker"}
+                      </span>
+                      <div className="flex items-center gap-1">
+                        {renderStars(current.profiles?.gemiddelde_beoordeling ?? 0)}
+                        {current.profiles?.gemiddelde_beoordeling ? (
+                          <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                            {Number(current.profiles.gemiddelde_beoordeling).toFixed(1).replace(".", ",")}
+                            <span className="font-medium text-slate-400"> ({current.profiles.totaal_beoordelingen ?? 0})</span>
+                          </span>
+                        ) : (
+                          <span className="text-[11px] font-medium text-slate-400">Nog geen beoordelingen</span>
                         )}
                       </div>
-                    ) : (
-                      <span className="text-[10px] font-medium text-slate-400 bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded-md shrink-0">Nieuw</span>
-                    )}
+                    </div>
                     {current.profiles?.stad && !current.profiles.privacy_instellingen?.verberg_locatie && (
                       <span className="text-xs font-medium text-slate-500 dark:text-slate-400 truncate ml-auto shrink-0">
                         📍 {current.profiles.stad}

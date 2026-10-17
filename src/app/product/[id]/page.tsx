@@ -3,7 +3,7 @@
 import { useState, useEffect, use, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { ChevronLeft, Heart, ShieldCheck, Check, Flag, X, ChevronRight, TrendingDown, UserPlus, UserCheck, Pencil, Crown, Share2 } from "lucide-react";
+import { ChevronLeft, Heart, ShieldCheck, Check, Flag, X, ChevronRight, TrendingDown, UserPlus, UserCheck, Pencil, Rocket, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { cn, normaliseerPrijsInvoer } from "@/lib/utils";
@@ -402,7 +402,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           {/* Gepromoot badge — alleen tonen zolang de boost echt nog loopt */}
           {listing.gepromoot && listing.promotie_verloopdatum && new Date(listing.promotie_verloopdatum) > new Date() && (
             <div className="absolute top-16 left-4 z-10 flex items-center gap-1.5 bg-amber-500 px-3 py-1.5 rounded-full shadow-md">
-              <Crown className="w-3.5 h-3.5 text-white" />
+              <Rocket className="w-3.5 h-3.5 text-white" />
               <span className="text-xs font-black text-white uppercase tracking-wide">Gepromoot</span>
             </div>
           )}
@@ -456,9 +456,20 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               </div>
             )}
 
-            {/* Prijs — hero */}
-            <div className="flex items-baseline gap-1">
+            {/* Prijs — hero, met de beoordeling van de verkoper ernaast */}
+            <div className="flex items-end justify-between gap-3">
               <span className={cn("text-5xl font-black leading-none", listing.actief === false ? "text-slate-300 line-through" : "text-primary")}>€{listing.prijs.toFixed(2).replace(".", ",")}</span>
+              <Link href={`/seller/${listing.user_id}`} className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/20 px-2.5 py-1 rounded-full shrink-0">
+                <span className="text-amber-400 text-sm">★</span>
+                {listing.profiles?.gemiddelde_beoordeling ? (
+                  <span className="text-xs font-black text-amber-700 dark:text-amber-400">
+                    {Number(listing.profiles.gemiddelde_beoordeling).toFixed(1).replace(".", ",")}
+                    <span className="font-bold text-amber-600/70"> · {listing.profiles.totaal_beoordelingen ?? 0} {listing.profiles.totaal_beoordelingen === 1 ? "beoordeling" : "beoordelingen"}</span>
+                  </span>
+                ) : (
+                  <span className="text-xs font-bold text-amber-700/70 dark:text-amber-400/70">Nog geen beoordelingen</span>
+                )}
+              </Link>
             </div>
 
             {/* Titel */}

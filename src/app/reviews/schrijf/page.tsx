@@ -39,7 +39,11 @@ function ReviewForm() {
     }
 
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      // Bv. via de review-link in een e-mail zonder ingelogd te zijn
+      router.replace(`/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+      return;
+    }
 
     // Check of de deal daadwerkelijk afgerond is
     if (conversationId) {

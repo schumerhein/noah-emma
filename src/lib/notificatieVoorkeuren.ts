@@ -1,6 +1,6 @@
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
-export type MeldingType = "nieuw_bericht" | "nieuw_bod" | "deal_gesloten";
+export type MeldingType = "nieuw_bericht" | "nieuw_bod" | "deal_gesloten" | "beoordelingen";
 
 // Bepaalt of gebruiker `userId` een e-mail mag krijgen voor meldingtype
 // `type`. Standaard AAN: een ontbrekende instelling (nooit aangeraakt in de

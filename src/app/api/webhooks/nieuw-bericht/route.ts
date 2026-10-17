@@ -23,6 +23,11 @@ export async function POST(request: Request) {
   if (typeof bericht.tekst === "string" && bericht.tekst.startsWith("💸 Ik doe een bod van")) {
     return NextResponse.json({ ok: true });
   }
+  // Deal gesloten en "ik heb dit gekocht" krijgen een eigen mail (met
+  // review- of bevestigknop) via /api/webhooks/reviews — niet dubbel mailen.
+  if (typeof bericht.tekst === "string" && (bericht.tekst.startsWith("🎉 Deal gesloten") || bericht.tekst.startsWith("🛍️ Ik heb dit gekocht"))) {
+    return NextResponse.json({ ok: true });
+  }
 
   const { data: conversation } = await supabaseAdmin
     .from("conversations")

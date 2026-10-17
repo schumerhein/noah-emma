@@ -8,10 +8,11 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   Heart, ChevronRight, Baby, Edit2, LogOut, Bell, Package, Star, Plus, X, Settings, Umbrella,
-  HelpCircle, Headphones, Sliders, FileText, Cookie, CheckCircle2, Crown
+  HelpCircle, Headphones, Sliders, FileText, Cookie, CheckCircle2, Rocket
 } from "lucide-react";
 import { slaActiefKindOp, leesActiefKind } from "@/components/ThemeProvider";
 import { groeiCheck, lengteBijMaat } from "@/lib/groei";
+import { OpenBeoordelingen } from "@/components/OpenBeoordelingen";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
@@ -343,7 +344,7 @@ export default function ProfilePage() {
                 <h1 className="font-black text-xl text-slate-900 dark:text-white">{profile.naam || "Gebruiker"}</h1>
                 {isPremium && (
                   <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 shrink-0">
-                    <Crown className="w-3 h-3 text-amber-500" />
+                    <Rocket className="w-3 h-3 text-amber-500" />
                     <span className="text-[11px] font-bold text-amber-700">Premium</span>
                   </span>
                 )}
@@ -352,7 +353,8 @@ export default function ProfilePage() {
                 {profile.gemiddelde_beoordeling && profile.gemiddelde_beoordeling > 0 ? (
                   <div className="flex items-center gap-1">
                     <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
-                    <span className="text-sm font-bold text-slate-600 dark:text-slate-300">{profile.gemiddelde_beoordeling.toFixed(1)}</span>
+                    <span className="text-sm font-bold text-slate-600 dark:text-slate-300">{profile.gemiddelde_beoordeling.toFixed(1).replace(".", ",")}</span>
+                    <span className="text-xs text-slate-400">({reviews.length})</span>
                   </div>
                 ) : null}
                 <span className="text-xs text-slate-400">Lid sinds {lidSinds}</span>
@@ -497,6 +499,8 @@ export default function ProfilePage() {
 
         {/* Mijn items / Favorieten / Reviews tabs */}
         <section className="space-y-4">
+          <OpenBeoordelingen className="mb-4" />
+
           <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl">
             <button onClick={() => setActieveTab("favorieten")}
               className={cn("flex-1 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5",
@@ -604,7 +608,7 @@ export default function ProfilePage() {
                           onClick={(e) => { e.preventDefault(); router.push(`/promote/${item.id}`); }}
                           className="absolute bottom-2 left-2 flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full bg-amber-400 text-white shadow-sm"
                         >
-                          <Crown className="w-3 h-3" />
+                          <Rocket className="w-3 h-3" />
                           {Math.max(1, Math.round((new Date(item.promotie_verloopdatum).getTime() - Date.now()) / 86400000))}d
                         </button>
                       ) : (
@@ -612,7 +616,7 @@ export default function ProfilePage() {
                           onClick={(e) => { e.preventDefault(); router.push(`/promote/${item.id}`); }}
                           className="absolute bottom-2 left-2 flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full bg-white/90 dark:bg-slate-900/80 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-sm active:scale-95 transition-transform"
                         >
-                          <Crown className="w-3 h-3" />
+                          <Rocket className="w-3 h-3" />
                           Boost
                         </button>
                       )}

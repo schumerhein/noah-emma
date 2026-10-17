@@ -25,7 +25,7 @@ Project → **Settings → Environment Variables**. Zet elke variabele uit
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✓ | ✓ | idem (anon / publishable key) |
 | `SUPABASE_SERVICE_ROLE_KEY` | ✓ | ✓ | idem (service_role) — geheim |
 | `SUPABASE_WEBHOOK_SECRET` | ✓ | ✓ | zelf verzinnen, zie stap 5 |
-| `NEXT_PUBLIC_SITE_URL` | `https://noah-emma.nl` | leeg laten | |
+| `NEXT_PUBLIC_SITE_URL` | `https://www.noah-emma.nl` | leeg laten | |
 | `GEMINI_API_KEY` | ✓ | ✓ | Google AI Studio |
 | `SENDGRID_API_KEY` | ✓ | optioneel | |
 | `MOLLIE_API_KEY` | `live_…` | `test_…` | |
@@ -41,7 +41,8 @@ Na het wijzigen van variabelen: **Deployments → … → Redeploy**
 ## 3. Domein noah-emma.nl
 
 1. Vercel → Project → **Settings → Domains** → voeg `noah-emma.nl` én
-   `www.noah-emma.nl` toe (kies één als primair, de ander redirect).
+   `www.noah-emma.nl` toe. `www.noah-emma.nl` is primair; `noah-emma.nl` doet een
+   301-redirect daarheen.
 2. Zet bij je domeinregistrar de DNS-records die Vercel toont, normaal:
    - `A` record `@` → `76.76.21.21`
    - `CNAME` record `www` → `cname.vercel-dns.com`
@@ -56,7 +57,7 @@ Laat die staan; pas alleen de `@`- en `www`-records aan.
 
 Supabase → **Authentication → URL Configuration**:
 
-- **Site URL:** `https://noah-emma.nl`
+- **Site URL:** `https://www.noah-emma.nl`
 - **Redirect URLs** (de login gebruikt `window.location.origin`):
   - `https://noah-emma.nl/**`
   - `https://www.noah-emma.nl/**`
@@ -72,8 +73,11 @@ Supabase → **Database → Webhooks** → *Create a new hook*, twee keer:
 
 | Naam | Tabel | Event | URL |
 |---|---|---|---|
-| nieuw-bericht | `messages` | Insert | `https://noah-emma.nl/api/webhooks/nieuw-bericht` |
-| nieuw-bod | `biedingen` | Insert | `https://noah-emma.nl/api/webhooks/nieuw-bod` |
+| nieuw-bericht | `messages` | Insert | `https://www.noah-emma.nl/api/webhooks/nieuw-bericht` |
+| nieuw-bod | `biedingen` | Insert | `https://www.noah-emma.nl/api/webhooks/nieuw-bod` |
+
+Gebruik altijd het `www`-adres: `noah-emma.nl` redirect (301) en daarbij gaat de
+POST verloren → Vercel antwoordt 405 en er gaat geen e-mail uit.
 
 Type: HTTP Request, methode POST, en voeg een HTTP header toe:
 `x-webhook-secret` = dezelfde waarde als `SUPABASE_WEBHOOK_SECRET` in Vercel.
@@ -82,7 +86,7 @@ Type: HTTP Request, methode POST, en voeg een HTTP header toe:
 
 De webhook-URL wordt automatisch meegestuurd (`https://<domein>/api/betalen/webhook`),
 dus in Mollie hoeft niets ingesteld te worden behalve het **website-profiel**
-op `https://noah-emma.nl` en de live API-key in Vercel.
+op `https://www.noah-emma.nl` en de live API-key in Vercel.
 
 ## 7. Controle
 

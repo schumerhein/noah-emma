@@ -10,7 +10,7 @@
 --   - bij een nieuwe advertentie (trigger ai_moderatie_nieuw)
 --   - als een advertentie terug naar 'wachtend' gaat, bv. door nieuwe foto's
 --     (zie herbeoordeling-bij-nieuwe-fotos.sql) of door aanpassen na
---     afkeuring (zie onderaan) (trigger ai_moderatie_herbeoordeling)
+--     afkeuring of tekstwijziging (zie onderaan) (trigger ai_moderatie_herbeoordeling)
 --
 -- LET OP: vervang <SUPABASE_WEBHOOK_SECRET> door dezelfde waarde als in
 -- Vercel (en in de webhooks nieuw-bod / nieuw-bericht). Gebruik het
@@ -89,5 +89,40 @@ revoke execute on function public.herbeoordeel_na_afkeuring() from public, anon,
 create or replace trigger herbeoordeel_na_afkeuring
   before update on public.listings
   for each row execute function public.herbeoordeel_na_afkeuring();
+
+-- 4. Tekst aanpassen bij een goedgekeurde advertentie = opnieuw beoordelen.
+--    Nieuwe foto's gingen al terug naar de wachtrij (herbeoordeling-bij-
+--    nieuwe-fotos.sql); nu ook gewijzigde tekst. Prijs telt niet mee:
+--    afprijzen is normaal en hoeft de advertentie niet even te verbergen.
+create or replace function public.herbeoordeel_bij_tekstwijziging()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if old.moderatie_status = 'goedgekeurd'
+     and new.moderatie_status = 'goedgekeurd'
+     and auth.uid() is not null
+     and (new.titel, new.beschrijving, new.categorie, new.subcategorie, new.maat,
+          new.conditie, new.merk, new.kleur)
+         is distinct from
+         (old.titel, old.beschrijving, old.categorie, old.subcategorie, old.maat,
+          old.conditie, old.merk, old.kleur)
+     and not exists (
+       select 1 from public.profiles p where p.id = auth.uid() and p.is_admin = true
+     )
+  then
+    new.moderatie_status := 'wachtend';
+  end if;
+  return new;
+end;
+$$;
+
+revoke execute on function public.herbeoordeel_bij_tekstwijziging() from public, anon, authenticated;
+
+create or replace trigger herbeoordeel_bij_tekstwijziging
+  before update on public.listings
+  for each row execute function public.herbeoordeel_bij_tekstwijziging();
 
 notify pgrst, 'reload schema';

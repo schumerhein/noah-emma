@@ -17,7 +17,8 @@ type OpenBeoordeling = {
 
 // Afgeronde deals waarvoor jij de ander nog niet beoordeelde.
 async function haalOpenBeoordelingen(): Promise<OpenBeoordeling[]> {
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
   if (!user) return [];
 
   const { data: deals } = await supabase
@@ -112,7 +113,7 @@ export function OpenBeoordelingen({ compact = false, className }: { compact?: bo
           >
             <div className="relative w-11 h-11 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-700 shrink-0">
               {o.foto ? (
-                <Image src={o.foto} alt={o.titel} fill className="object-cover" />
+                <Image src={o.foto} alt={o.titel} fill sizes="44px" className="object-cover" />
               ) : (
                 <span className="material-icons-round text-slate-300 absolute inset-0 flex items-center justify-center">image</span>
               )}

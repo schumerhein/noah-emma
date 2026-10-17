@@ -3,7 +3,7 @@
 import { useState, useEffect, use, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { ChevronLeft, Heart, ShieldCheck, Check, Flag, X, ChevronRight, TrendingDown, UserPlus, UserCheck, Pencil, Rocket, Share2 } from "lucide-react";
+import { ChevronLeft, Heart, Check, Flag, X, ChevronRight, TrendingDown, UserPlus, UserCheck, Pencil, Rocket, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { cn, normaliseerPrijsInvoer } from "@/lib/utils";
@@ -658,33 +658,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               Geliefd bij {isLiked ? listing.likes + 1 : listing.likes} ouders
             </p>
           </div>
-
-          {/* Hoe werkt het */}
-          <section className="bg-blue-50 dark:bg-blue-900/20 rounded-3xl border border-blue-100 dark:border-blue-800/50 overflow-hidden">
-            <div className="px-5 pt-5 pb-3 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-800/40 flex items-center justify-center shrink-0">
-                <ShieldCheck className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div>
-                <h3 className="font-bold text-blue-900 dark:text-blue-100">Hoe werkt kopen?</h3>
-                <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">Eenvoudig en veilig ophalen</p>
-              </div>
-            </div>
-            <div className="px-5 pb-5 space-y-3">
-              {[
-                { nr: "1", tekst: "Stuur de verkoper een bericht via de chatknop" },
-                { nr: "2", tekst: "Spreek samen een tijd en locatie af" },
-                { nr: "3", tekst: "Betaal bij ophalen — cash of tikkie" },
-              ].map(stap => (
-                <div key={stap.nr} className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-blue-600 dark:bg-blue-500 flex items-center justify-center shrink-0 mt-0.5">
-                    <span className="text-[11px] font-black text-white">{stap.nr}</span>
-                  </div>
-                  <p className="text-sm text-blue-800 dark:text-blue-200 font-medium leading-snug">{stap.tekst}</p>
-                </div>
-              ))}
-            </div>
-          </section>
 
           {/* Tabs: Meer van verkoper + Vergelijkbare artikelen */}
           <section className="space-y-4">

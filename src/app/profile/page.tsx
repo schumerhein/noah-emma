@@ -113,7 +113,8 @@ export default function ProfilePage() {
   }, []);
 
   const laadFavorieten = async (kindId: string | null) => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
     if (!user) return;
     let query = supabase
       .from("favorites")
@@ -126,22 +127,44 @@ export default function ProfilePage() {
   };
 
   const laadProfiel = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    // getSession leest de sessie lokaal (geen extra rondje naar de
+    // inlogserver zoals getUser); de database controleert via RLS toch
+    // zelf wie je bent.
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
     if (!user) { router.push("/login"); return; }
+
+    // Vorige keer geladen gegevens meteen tonen; de verse versie volgt.
+    const cacheSleutel = `profiel_cache_${user.id}`;
+    try {
+      const cache = sessionStorage.getItem(cacheSleutel);
+      if (cache) {
+        const c = JSON.parse(cache);
+        setProfile(c.profile);
+        setVakantiestand(c.profile?.vakantiestand === true);
+        setKinderen(c.kinderen || []);
+        setMijneItems(c.items || []);
+        setFavorieten(c.favorieten || []);
+        setReviews(c.reviews || []);
+        setWachtendCount(c.wachtendCount || 0);
+        setLoading(false);
+      }
+    } catch {}
 
     // Bepaal actief kind voor favorieten filter
     const actief = leesActiefKind();
     const actiefId = actief?.id ?? null;
 
-    const [profileRes, kinderenRes, itemsRes, favorietenRes, reviewsRes] = await Promise.all([
+    const LISTING_VELDEN = "id, titel, prijs, foto_urls, conditie, actief, likes, moderatie_status, verkocht, gepromoot, promotie_verloopdatum";
+    const [profileRes, kinderenRes, itemsRes, favorietenRes, reviewsRes, wachtendRes] = await Promise.all([
       supabase.from("profiles").select("id, naam, stad, bio, avatar_url, lid_sinds, gemiddelde_beoordeling, totaal_verkopen, vakantiestand, is_premium, premium_verloopdatum, is_admin").eq("id", user.id).single(),
       supabase.from("children").select("id, naam, geboortedatum, lengte, maat, geslacht").eq("user_id", user.id).order("created_at"),
-      supabase.from("listings").select("*")
+      supabase.from("listings").select(LISTING_VELDEN)
         .eq("user_id", user.id).order("created_at", { ascending: false }),
       (() => {
         let q = supabase
           .from("favorites")
-          .select("id, listing_id, listings(*)")
+          .select(`id, listing_id, listings(${LISTING_VELDEN})`)
           .eq("user_id", user.id)
           .order("created_at", { ascending: false });
         if (actiefId) q = q.eq("kind_id", actiefId);
@@ -151,18 +174,15 @@ export default function ProfilePage() {
         .select("id, reviewer_id, beoordeling, tekst, created_at, reviewer:profiles!reviews_reviewer_id_fkey(naam), listings(titel)")
         .eq("reviewed_id", user.id)
         .order("created_at", { ascending: false }),
+      // Wachtrij-teller voor admins — tegelijk ophalen i.p.v. erna
+      supabase.from("listings").select("id", { count: "exact", head: true }).eq("moderatie_status", "wachtend"),
     ]);
 
+    const wachtend = profileRes.data?.is_admin ? (wachtendRes.count || 0) : 0;
     if (profileRes.data) {
       setProfile(profileRes.data);
       setVakantiestand(profileRes.data.vakantiestand === true);
-      if (profileRes.data.is_admin) {
-        const { count } = await supabase
-          .from("listings")
-          .select("id", { count: "exact", head: true })
-          .eq("moderatie_status", "wachtend");
-        setWachtendCount(count || 0);
-      }
+      setWachtendCount(wachtend);
     }
     if (kinderenRes.data) {
       setKinderen(kinderenRes.data);
@@ -180,6 +200,17 @@ export default function ProfilePage() {
     if (favorietenRes.data) setFavorieten(favorietenRes.data as unknown as Favoriet[]);
     if (reviewsRes.data) setReviews(reviewsRes.data as unknown as Review[]);
     setLoading(false);
+
+    try {
+      sessionStorage.setItem(cacheSleutel, JSON.stringify({
+        profile: profileRes.data,
+        kinderen: kinderenRes.data,
+        items: itemsRes.data,
+        favorieten: favorietenRes.data,
+        reviews: reviewsRes.data,
+        wachtendCount: wachtend,
+      }));
+    } catch {}
   };
 
   const verwijderFavoriet = async (favorietId: string) => {
@@ -205,6 +236,7 @@ export default function ProfilePage() {
   };
 
   const uitloggen = async () => {
+    try { if (profile) sessionStorage.removeItem(`profiel_cache_${profile.id}`); } catch {}
     await supabase.auth.signOut();
     router.push("/login");
   };
@@ -315,7 +347,7 @@ export default function ProfilePage() {
             >
               <Avatar className="w-20 h-20 border-4 border-primary/20 shadow-md">
                 {profile.avatar_url ? (
-                  <Image src={profile.avatar_url} alt={profile.naam || ""} fill className="object-cover rounded-full" />
+                  <Image src={profile.avatar_url} alt={profile.naam || ""} fill sizes="96px" priority className="object-cover rounded-full" />
                 ) : (
                   <AvatarFallback className="bg-primary/10 text-primary text-3xl font-black">{initialen}</AvatarFallback>
                 )}
@@ -562,7 +594,7 @@ export default function ProfilePage() {
                       <Link href={`/product/${item.id}/edit`}>
                         <div className="relative aspect-square bg-slate-100">
                           {item.foto_urls?.[0] ? (
-                            <Image src={item.foto_urls[0]} alt={item.titel} fill className="object-cover" />
+                            <Image src={item.foto_urls[0]} alt={item.titel} fill sizes="(max-width: 768px) 50vw, 240px" className="object-cover" />
                           ) : (
                             <div className="absolute inset-0 flex items-center justify-center">
                               <span className="material-icons-round text-slate-300 text-3xl">image</span>
@@ -722,7 +754,7 @@ export default function ProfilePage() {
                           <div className="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-700 shadow-sm">
                             <div className="relative aspect-square bg-slate-100">
                               {item.foto_urls?.[0] ? (
-                                <Image src={item.foto_urls[0]} alt={item.titel} fill className="object-cover" />
+                                <Image src={item.foto_urls[0]} alt={item.titel} fill sizes="(max-width: 768px) 50vw, 240px" className="object-cover" />
                               ) : (
                                 <div className="absolute inset-0 flex items-center justify-center">
                                   <span className="material-icons-round text-slate-300 text-3xl">image</span>

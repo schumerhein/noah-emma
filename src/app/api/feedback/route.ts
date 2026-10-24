@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { createHash } from "crypto";
 import { haalGebruikerOp, supabaseAdmin } from "@/lib/mollie";
 import { stuurEmail, emailSjabloon } from "@/lib/email";
@@ -62,23 +62,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Versturen is niet gelukt. Probeer het zo nog eens." }, { status: 500 });
   }
 
-  // Melding naar de beheerders — mag het versturen nooit laten mislukken.
-  try {
-    const { data: admins } = await supabaseAdmin.from("profiles").select("id").eq("is_admin", true);
-    const wie = rij.contact_email || user?.email || "gast";
-    const html = emailSjabloon({
-      titel: `Nieuwe feedback: ${TYPE_LABEL[type]}`,
-      tekst: `${escapeHtml(bericht).replace(/\n/g, "<br>")}<br><br><small>Van: ${escapeHtml(wie)}<br>Pagina: ${escapeHtml(rij.pagina || "-")}<br>Apparaat: ${escapeHtml(rij.apparaat || "-")}</small>`,
-      knopTekst: "Alle feedback bekijken",
-      knopUrl: "https://noah-emma.nl/admin/feedback",
-    });
-    for (const a of admins || []) {
-      const { data } = await supabaseAdmin.auth.admin.getUserById(a.id);
-      if (data.user?.email) await stuurEmail({ naar: data.user.email, onderwerp: `Feedback: ${TYPE_LABEL[type]}`, html });
+  // Melding naar de beheerders gebeurt ná het antwoord, zodat de gebruiker niet
+  // op de e-mail hoeft te wachten (en een mislukte mail het versturen nooit breekt).
+  after(async () => {
+    try {
+      const { data: admins } = await supabaseAdmin.from("profiles").select("id").eq("is_admin", true);
+      const wie = rij.contact_email || "gast";
+      const html = emailSjabloon({
+        titel: `Nieuwe feedback: ${TYPE_LABEL[type]}`,
+        tekst: `${escapeHtml(bericht).replace(/\n/g, "<br>")}<br><br><small>Van: ${escapeHtml(wie)}<br>Pagina: ${escapeHtml(rij.pagina || "-")}<br>Apparaat: ${escapeHtml(rij.apparaat || "-")}</small>`,
+        knopTekst: "Alle feedback bekijken",
+        knopUrl: "https://www.noah-emma.nl/admin/feedback",
+      });
+      for (const a of admins || []) {
+        const { data } = await supabaseAdmin.auth.admin.getUserById(a.id);
+        if (data.user?.email) await stuurEmail({ naar: data.user.email, onderwerp: `Feedback: ${TYPE_LABEL[type]}`, html });
+      }
+    } catch (err) {
+      console.error("Feedbackmelding naar admin mislukt:", err);
     }
-  } catch (err) {
-    console.error("Feedbackmelding naar admin mislukt:", err);
-  }
+  });
 
   return NextResponse.json({ ok: true });
 }

@@ -23,7 +23,7 @@ const SECTIES = [
 • _ga (cookie van Google, 2 jaar): onderscheidt bezoekers.
 • _ga_N04N5JQH0R (cookie van Google, 2 jaar): onthoudt je bezoek.
 
-We meten daarbij ook een paar acties, zonder te zien wie je bent: dat je een account hebt aangemaakt, en dat je klikt op een e-mailadres, een telefoonnummer of een knop om een account aan te maken of in te loggen. Wat je in een e-mail of formulier invult, sturen we nooit naar Google.
+We meten daarbij ook een paar acties, zonder te zien wie je bent: dat je een account hebt aangemaakt en dat je op een e-mailadres klikt. Wat je in een e-mail of formulier invult, sturen we nooit naar Google.
 
 Zo hebben we Google Analytics ingesteld:
 • Google Signals en advertentiepersonalisatie staan uit. Je gegevens worden niet gebruikt voor advertenties.

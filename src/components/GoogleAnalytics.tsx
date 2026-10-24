@@ -11,7 +11,7 @@ const MEET_ID = "G-N04N5JQH0R";
  * Google Analytics (GA4). Wordt pas geladen nadat de bezoeker analytische
  * cookies heeft toegestaan, zoals ons cookiebeleid belooft. Trekt iemand de
  * toestemming later in, dan zet de consent-update het meten direct uit.
- * Met toestemming meten we ook klikken op e-mail-, aanmeld- en inloglinks
+ * Met toestemming meten we ook klikken op e-maillinks (mailto:)
  * (zie src/lib/analytics.ts).
  */
 export function GoogleAnalytics() {

@@ -19,7 +19,7 @@ Schrijft per kanaal het resultaat (id, link, status) terug in meta.json.
 Mislukt één kanaal, dan gaat het andere gewoon door.
 Exitcode 2 = geen META_ACCESS_TOKEN, niets geplaatst. Exitcode 1 = een kanaal mislukt.
 """
-import glob, json, os, re, sys, time, urllib.parse, urllib.request
+import glob, json, os, re, subprocess, sys, tempfile, time, urllib.parse, urllib.request
 
 VERSION = os.environ.get("META_GRAPH_VERSION", "v23.0")
 GRAPH = f"https://graph.facebook.com/{VERSION}"
@@ -170,6 +170,24 @@ def fb_reel(page, video, caption):
     return {"id": vid, "link": f"https://www.facebook.com/reel/{vid}", "video_status": status.get("video_status")}
 
 
+def meta_video(video):
+    """Maak een hoge-bitrate kopie voor Instagram/Facebook.
+
+    Onze animaties zijn vlak en comprimeren tot ~1-2 Mbit/s. TikTok houdt dat netjes, maar
+    Meta comprimeert een upload met zo'n lage bitrate nog een keer zwaar (blokjes en strepen
+    in de kleurvlakken). Met ~12 Mbit/s, 48 kHz-audio en H.264 High 4.1 (Meta's specs) krijgt
+    de video de betere kwaliteitsladder.
+    """
+    uit = os.path.join(tempfile.mkdtemp(), "meta.mp4")
+    subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", video,
+                    "-c:v", "libx264", "-profile:v", "high", "-level", "4.1", "-pix_fmt", "yuv420p",
+                    "-preset", "slow", "-tune", "animation", "-r", "30", "-g", "60",
+                    "-b:v", "12M", "-minrate", "12M", "-maxrate", "12M", "-bufsize", "24M",
+                    "-x264-params", "nal-hrd=cbr", "-c:a", "aac", "-b:a", "256k", "-ar", "48000",
+                    "-movflags", "+faststart", uit], check=True)
+    return uit
+
+
 def main(folder):
     token = os.environ.get("META_ACCESS_TOKEN")
     if not token:
@@ -177,7 +195,7 @@ def main(folder):
         sys.exit(2)
     meta_path = os.path.join(folder, "meta.json")
     meta = json.load(open(meta_path))
-    video = os.path.join(folder, "video.mp4")
+    video = meta_video(os.path.join(folder, "video.mp4"))
     carrousel = meta.get("vorm") == "carrousel"
     nu = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     fout = False

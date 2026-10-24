@@ -4,7 +4,7 @@ import { SITE_URL } from "@/components/marketing/links";
 // De pagina zelf is een clientcomponent; titel en canonical staan daarom hier.
 export const metadata: Metadata = {
   title: "Privacyverklaring | Noah & Emma",
-  description: "Hoe Noah & Emma omgaat met je persoonsgegevens en die van je kinderen, volgens de AVG.",
+  description: "Hoe Noah & Emma omgaat met je persoonsgegevens en die van je kinderen, volgens de AVG: welke gegevens, waarom, hoe lang en wat jouw rechten zijn.",
   alternates: { canonical: `${SITE_URL}/privacy` },
 };
 

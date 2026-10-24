@@ -38,7 +38,11 @@ export const FOOTER_EXTRA: MenuItem[] = [
   { label: "Privacy", href: "/privacy" },
   { label: "Voorwaarden", href: "/voorwaarden" },
   { label: "Cookies", href: "/cookies" },
+  { label: "Communityrichtlijnen", href: "/community" },
+  { label: "Wettelijke informatie", href: "/wettelijk" },
 ];
 
 // Paden die als volwaardige website worden getoond (zonder telefoonframe).
-export const MARKETING_PATHS = ["/landing", "/2e-hands-kinderkleding", ...MENU_PAGINAS.map((m) => m.href)];
+export const JURIDISCHE_PADEN = ["/privacy", "/voorwaarden", "/cookies", "/community", "/wettelijk"];
+
+export const MARKETING_PATHS = ["/landing", "/2e-hands-kinderkleding", ...MENU_PAGINAS.map((m) => m.href), ...JURIDISCHE_PADEN];

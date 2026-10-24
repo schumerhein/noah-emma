@@ -1,6 +1,7 @@
 # TikTok-video's Noah & Emma: werkwijze en regels
 
-Elke twee dagen maakt een geplande taak hier één nieuwe video en plaatst die op TikTok.
+Elke twee dagen maakt een geplande taak hier één nieuwe post (meestal een video, soms een
+carrousel) en plaatst die op TikTok.
 Dit bestand is de vaste instructie voor die taak.
 
 ## Stappen per video
@@ -29,6 +30,38 @@ Dit bestand is de vaste instructie voor die taak.
    Exitcode 2 betekent dat de inloggegevens nog ontbreken: niet als fout behandelen,
    de video staat dan klaar om handmatig te posten.
 7. Zet het onderwerp op `"status": "gemaakt"`, voeg het toe aan `gemaakt`, commit en push.
+
+## Afwisseling: video of carrousel
+
+Ongeveer één op de vier posts is een carrousel met banners in plaats van een animatievideo.
+Kijk in `posts/` naar de laatste drie posts (`meta.json`, veld `vorm`; ontbreekt het, dan was
+het een video). Waren die alle drie een video, maak dan nu een carrousel. Kies dan het eerste
+onderwerp met `"vorm": "carrousel"`. Staat er een met `"status": "klaar"`, dan is die al
+gemaakt: sla stap 2 tot 5 over en upload meteen de map uit `"map"`. Anders kies je voor een
+video het eerste open onderwerp zonder `"vorm": "carrousel"`.
+
+### Stappen voor een carrousel
+
+1. Maak `posts/<JJJJ-MM-DD>-carrousel-<slug>/carrousel.html` naar het voorbeeld
+   `bron/voorbeelden/carrousel-stappenplan.html`: `window.N` slides en `window.render(i)` die
+   slide `i` toont. 4 tot 7 slides, 1080×1920.
+   - Slide 1 = cover met een grote kop (zoekwoord + belofte), de Noah- en Emma-gezichten en
+     "Swipe →".
+   - Middenslides: één idee per slide, korte kop, hooguit twee regels tekst, één beeld.
+   - Laatste slide = eindkaart op donker: gezichten, logo, `noah-emma.nl` in de knop en
+     "Gratis account · gratis kopen en verkopen".
+   - Ideeën: stappenplannen, tips, checklists, weetjes, mythe of feit, voor/na.
+2. Render vanuit `marketing/tiktok`: `node bron/carrousel.js posts/<map>/carrousel.html posts/<map>`.
+   Dit maakt `slide-1.jpg` … `slide-N.jpg` en `video.mp4` (swipe-video met geluid).
+3. Bekijk alle slides. Controleer: tekst niet afgesneden, niets rechts boven x=940 of onder
+   y=1500 behalve de eindkaart, geen overlap. Herstel en render opnieuw tot het klopt.
+4. `meta.json` zoals bij een video, plus `"vorm": "carrousel"` en `"cover_ms": 1000`
+   (de cover). Upload met `upload_tiktok.py` zoals een video.
+
+De JPG's blijven bewaard. Een echte TikTok-fotocarrousel (swipen door losse foto's) kan
+alleen met afbeeldingen op een openbare URL van het geverifieerde domein noah-emma.nl; dat
+vraagt eenmalig een aanpassing aan de website en daar moet Hein eerst akkoord op geven. Tot
+die tijd gaat een carrousel als swipe-video online.
 
 ## Caption (titel + omschrijving)
 

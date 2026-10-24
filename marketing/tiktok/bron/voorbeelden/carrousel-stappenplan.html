@@ -1,0 +1,40 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../base.css"><script src="../assets.js"></script><script src="../lib.js"></script></head>
+<body><div id="stage"></div>
+<style>
+.blob2{position:absolute;border-radius:50%}
+.num{width:150px;height:150px;border-radius:50%;background:var(--pink);color:#fff;font:800 86px Manrope;display:flex;align-items:center;justify-content:center;margin:0 auto}
+.st{font:800 104px Manrope;letter-spacing:-.035em;line-height:1.02;text-align:center;margin-top:40px}
+.sx{font:500 48px Inter;color:var(--muted);text-align:center;line-height:1.35;margin-top:34px;padding:0 70px}
+.pg{position:absolute;left:0;right:0;top:250px;text-align:center;font:700 38px Inter;color:var(--muted)}
+.vis{position:absolute;left:240px;top:1070px;width:600px;height:380px;display:flex;align-items:center;justify-content:center}
+</style>
+<script>
+// Carrousel: elke slide is een losse banner (1080x1920). render(i) toont slide i.
+const N = 6;
+const cardIco = (inner, bg) => `<div class="card" style="width:600px;height:380px;border-radius:48px;display:flex;align-items:center;justify-content:center;gap:40px;background:${bg}">${inner}</div>`;
+const S2 = [
+  () => `<div class="blob2" style="left:-200px;top:-150px;width:700px;height:700px;background:var(--pt)"></div><div class="blob2" style="left:620px;top:1250px;width:720px;height:720px;background:var(--bt)"></div>
+    <div style="position:absolute;left:0;right:0;top:330px;display:flex;justify-content:center;gap:0"><div style="width:240px;height:240px;border-radius:50%;overflow:hidden;border:10px solid #fff;transform:rotate(-6deg)">${SVG.noahHead}</div><div style="width:240px;height:240px;border-radius:50%;overflow:hidden;border:10px solid #fff;margin-left:-30px;transform:rotate(6deg)">${SVG.emmaHead}</div></div>
+    <div class="h a" style="top:660px;font-size:118px;padding:0 70px">Kinderkleding verkopen in <span class="pk">4 stappen</span></div>
+    <div class="sub a" style="top:1060px;padding:0 120px">Ook kinderwagens, autostoeltjes en speelgoed</div>
+    <div class="a" style="left:0;right:0;top:1280px;text-align:center;font:800 46px Manrope;color:var(--blue)">Swipe →</div>`,
+  () => step(1, 'Maak een <span class="pk">gratis</span> account', 'Klaar in een minuut. Geen kosten, ook niet als je verkoopt.', cardIco(`<div style="font:800 150px Manrope;color:var(--pink)">€ 0</div>`, '#fff')),
+  () => step(2, 'Foto van <span class="pk">de kleding</span>', 'Onze slimme AI weigert elke foto met een kindergezicht. Alleen de kleding is genoeg.', cardIco(`<div style="width:230px;height:230px">${shirtSVG('#5AB8DE', '#176A8C', star(100,110,24,'#fff'))}</div><div style="width:130px;height:130px;border-radius:50%;background:#2E9E6A;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="80" height="80"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`, '#E4F4FB')),
+  () => step(3, 'Prijs en <span class="bl">maat</span> erbij', 'Jij bepaalt de prijs. Ouders zien jouw advertentie als het in de maat van hun kind past.', cardIco(`<div style="font:800 110px Manrope">€ 12</div><div style="background:var(--ink);color:#fff;border-radius:999px;padding:16px 30px;font:700 40px Inter">maat 98</div>`, '#FFF4D6')),
+  () => step(4, 'Chatten en <span class="pk">afspreken</span>', 'Spreek af om op te halen of regel de deal samen. Na afloop geef je elkaar een review.', cardIco(`<div style="display:flex;flex-direction:column;gap:18px"><div style="background:#fff;border-radius:30px 30px 30px 8px;padding:18px 28px;font:500 36px Inter;box-shadow:0 6px 18px rgba(36,26,46,.08)">Zaterdag ophalen?</div><div style="background:var(--pink);color:#fff;border-radius:30px 30px 8px 30px;padding:18px 28px;font:600 36px Inter;align-self:flex-end">Top, tot dan! 👍</div></div>`, '#E3F5EC')),
+  () => `<div class="a" style="inset:0;background:var(--ink)"></div>
+    <div style="position:absolute;left:0;right:0;top:470px;display:flex;justify-content:center"><div style="width:280px;height:280px;border-radius:50%;overflow:hidden;border:10px solid #fff;transform:rotate(-6deg)">${SVG.noahHead2}</div><div style="width:280px;height:280px;border-radius:50%;overflow:hidden;border:10px solid #fff;margin-left:-30px;transform:rotate(6deg)">${SVG.emmaHead2}</div></div>
+    <div class="logo a" style="top:830px;color:#fff;font-size:120px">Noah <span>&amp;</span> Emma</div>
+    <div class="h a" style="top:990px;color:#fff;font-size:60px;font-weight:700;padding:0 110px;line-height:1.15">Tweedehands kinderkleding en kindergoed. Zonder kindergezichten.</div>
+    <div class="a" style="left:0;right:0;top:1210px;text-align:center"><span class="pill" style="background:var(--pink);font-size:60px">noah-emma.nl</span></div>
+    <div class="a" style="left:0;right:0;top:1380px;text-align:center;font:600 42px Inter;color:#E9DDF0">Gratis account · gratis kopen en verkopen</div>`,
+];
+function step(n, title, text, visual) {
+  return `<div class="blob2" style="left:${n % 2 ? 600 : -240}px;top:-180px;width:700px;height:700px;background:${n % 2 ? 'var(--bt)' : 'var(--pt)'}"></div>
+    <div class="pg">Stap ${n} van 4</div>
+    <div style="position:absolute;left:0;right:0;top:340px"><div class="num">${n}</div><div class="st">${title}</div><div class="sx">${text}</div></div>
+    <div class="vis">${visual}</div>`;
+}
+window.N = N;
+window.render = i => { $('stage').innerHTML = S2[i](); };
+</script></body></html>

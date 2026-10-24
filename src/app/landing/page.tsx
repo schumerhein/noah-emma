@@ -3,6 +3,8 @@ import { Camera, Sparkles, Search, MessageCircle, ArrowRight } from "lucide-reac
 import { NoahFace, EmmaFace } from "@/components/ai-models/NoahEmmaFaces";
 import { Reveal } from "@/components/Reveal";
 import { VoordelenExplorer } from "@/components/VoordelenExplorer";
+import { MarketingHeader } from "@/components/marketing/MarketingHeader";
+import { MarketingFooter } from "@/components/marketing/Blokken";
 
 // De app draait op hetzelfde domein — alleen "/" wordt door de middleware
 // naar deze marketingpagina omgeleid, elk ander pad (zoals /login) is de
@@ -144,31 +146,7 @@ function StepVisual({ index }: { index: number }) {
 export default function LandingPage() {
   return (
     <div className="font-body bg-[#FFF9FA] text-[#241A2E] min-h-screen antialiased">
-      {/* Nav */}
-      <header className="sticky top-0 z-50 bg-[#FFF9FA]/90 backdrop-blur-md border-b border-[#241A2E]/[0.08]">
-        <div className="max-w-[1180px] mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-            <div className="flex items-center shrink-0">
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border-2 border-white shadow-md"><NoahFace size={36} /></div>
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border-2 border-white shadow-md -ml-2"><EmmaFace size={36} /></div>
-            </div>
-            <span className="font-headline font-extrabold text-base sm:text-lg tracking-tight truncate">
-              <span style={{ color: "#1C7FA8" }}>Noah</span> &amp; <span style={{ color: "#D63D74" }}>Emma</span>
-            </span>
-          </div>
-          <nav className="hidden md:flex items-center gap-8">
-            <a href="#hoe-het-werkt" className="text-sm font-semibold text-[#5B4F63] hover:text-[#241A2E] transition-colors">Hoe het werkt</a>
-            <a href="#voordelen" className="text-sm font-semibold text-[#5B4F63] hover:text-[#241A2E] transition-colors">Voordelen</a>
-            <a href="#reviews" className="text-sm font-semibold text-[#5B4F63] hover:text-[#241A2E] transition-colors">Reviews</a>
-          </nav>
-          <Link
-            href={SIGNUP_URL}
-            className="inline-flex items-center gap-1 sm:gap-1.5 shrink-0 bg-[#241A2E] hover:-translate-y-0.5 text-white text-xs sm:text-sm font-bold px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-full shadow-[0_12px_30px_-14px_rgba(36,26,46,0.5)] transition-transform whitespace-nowrap"
-          >
-            <span className="hidden sm:inline">Naar de app</span><span className="sm:hidden">App</span> <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          </Link>
-        </div>
-      </header>
+      <MarketingHeader />
 
       {/* Hero */}
       <header className="relative overflow-hidden pt-4">
@@ -349,23 +327,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-10 px-5 sm:px-8">
-        <div className="max-w-[1180px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-5 pt-8 border-t border-[#241A2E]/10">
-          <div className="flex items-center gap-2.5">
-            <div className="flex items-center">
-              <div className="w-7 h-7 rounded-full overflow-hidden border-2 border-white shadow-sm"><NoahFace size={28} /></div>
-              <div className="w-7 h-7 rounded-full overflow-hidden border-2 border-white shadow-sm -ml-2"><EmmaFace size={28} /></div>
-            </div>
-            <span className="font-headline font-bold text-sm">
-              <span style={{ color: "#1C7FA8" }}>Noah</span> &amp; <span style={{ color: "#D63D74" }}>Emma</span>
-            </span>
-          </div>
-          <p className="text-xs text-[#8A7E90]">
-            © {new Date().getFullYear()} Noah &amp; Emma — De makkelijkste manier om kinderkleding en accessoires te kopen en verkopen.
-          </p>
-        </div>
-      </footer>
+      <MarketingFooter />
     </div>
   );
 }

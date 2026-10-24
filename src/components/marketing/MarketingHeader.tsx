@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { NoahFace, EmmaFace } from "@/components/ai-models/NoahEmmaFaces";
 import { HOOFDMENU, LOGIN_URL, SIGNUP_URL, type MenuItem } from "@/components/marketing/links";
 
 export function MarketingHeader({ menu = HOOFDMENU }: { menu?: MenuItem[] }) {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
 
   return (
     <header className="sticky top-0 z-50 bg-[#FFF9FA]/95 backdrop-blur-md border-b border-[#241A2E]/[0.08]">
@@ -27,7 +29,8 @@ export function MarketingHeader({ menu = HOOFDMENU }: { menu?: MenuItem[] }) {
             <Link
               key={item.label}
               href={item.href}
-              className="px-3.5 py-2.5 rounded-full text-[15px] font-semibold text-[#241A2E] hover:bg-[#241A2E]/5 transition-colors"
+              aria-current={pathname === item.href ? "page" : undefined}
+              className="px-3.5 py-2.5 rounded-full text-[15px] font-semibold text-[#241A2E] hover:bg-[#241A2E]/5 transition-colors aria-[current=page]:bg-[#FFEAF1] aria-[current=page]:text-[#D63D74] aria-[current=page]:font-bold"
             >
               {item.label}
             </Link>
@@ -65,7 +68,8 @@ export function MarketingHeader({ menu = HOOFDMENU }: { menu?: MenuItem[] }) {
               key={item.label}
               href={item.href}
               onClick={() => setOpen(false)}
-              className="flex items-center min-h-[52px] border-b border-[#241A2E]/[0.06] text-base font-semibold text-[#241A2E]"
+              aria-current={pathname === item.href ? "page" : undefined}
+              className="aria-[current=page]:text-[#D63D74] flex items-center min-h-[52px] border-b border-[#241A2E]/[0.06] text-base font-semibold text-[#241A2E]"
             >
               {item.label}
             </Link>

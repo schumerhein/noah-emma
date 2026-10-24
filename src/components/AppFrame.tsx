@@ -5,14 +5,14 @@ import { Header } from "@/components/Header";
 import { Navigation } from "@/components/Navigation";
 import { useInboxMeldingen } from "@/hooks/use-inbox-meldingen";
 import { FeedbackProvider } from "@/components/FeedbackProvider";
+import { MARKETING_PATHS } from "@/components/marketing/links";
 
 /**
  * De app zelf is ontworpen als mobiele swipe-app en wordt daarom altijd
  * in een "telefoonframe" (max-w-md, rand, schaduw) getoond, ook op desktop.
- * De marketingpagina's (/landing en de SEO-landingspagina's) zijn volwaardige
- * websites en moeten dat frame — en de app-header/onderbalk — niet erven.
+ * De marketingpagina's (zie MARKETING_PATHS) zijn volwaardige websites en
+ * moeten dat frame — en de app-header/onderbalk — niet erven.
  */
-const MARKETING_PATHS = ["/landing", "/2e-hands-kinderkleding"];
 
 export function AppFrame({ children, forceMarketing = false }: { children: React.ReactNode; forceMarketing?: boolean }) {
   const pathname = usePathname();

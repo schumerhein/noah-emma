@@ -129,7 +129,7 @@ export default function OverOnsPage() {
             </div>
             <div>
               <h2 className="font-headline font-extrabold text-[17px]">Hulp nodig?</h2>
-              <Link href="/helpcentrum" className="mt-1.5 inline-block font-semibold text-[#1C7FA8] underline underline-offset-2">Naar het helpcentrum</Link>
+              <Link href="/helpcentrum" className="mt-1.5 inline-block font-semibold text-[#1C7FA8] underline underline-offset-2">Naar de veelgestelde vragen</Link>
             </div>
           </div>
         </Sectie>

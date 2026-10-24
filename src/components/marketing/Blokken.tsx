@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Check, Heart, X } from "lucide-react";
 import { NoahFace, EmmaFace } from "@/components/ai-models/NoahEmmaFaces";
-import { FOOTER_EXTRA, HOOFDMENU, LOGIN_URL, SIGNUP_URL, SITE_URL } from "@/components/marketing/links";
+import { FOOTER_EXTRA, LOGIN_URL, MENU_PAGINAS, SIGNUP_URL, SITE_URL } from "@/components/marketing/links";
 
 // Gedeelde bouwblokken voor de marketingpagina's, zodat elke pagina dezelfde
 // huisstijl, hetzelfde afsluitende aanmeldblok en dezelfde footer heeft.
@@ -314,7 +314,7 @@ export function MarketingFooter() {
         <nav aria-label="Footer: pagina's">
           <h2 className="font-headline font-extrabold text-sm">Noah &amp; Emma</h2>
           <ul className="mt-3 flex flex-col gap-2 text-sm text-[#5B4F63]">
-            {HOOFDMENU.map((m) => (
+            {MENU_PAGINAS.map((m) => (
               <li key={m.href}><Link href={m.href} className="hover:text-[#241A2E]">{m.label}</Link></li>
             ))}
           </ul>

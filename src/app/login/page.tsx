@@ -122,9 +122,21 @@ export default function LoginPage() {
         emailRedirectTo: `${window.location.origin}/onboarding/kind`,
       },
     });
-    // Bestaat het e-mailadres al, dan geeft Supabase (met e-mailbevestiging aan)
-    // een gebruiker zonder identities terug: dat is geen nieuw account.
-    if (!error && data.user && (data.user.identities?.length ?? 0) > 0) {
+    // Bestaat het e-mailadres al, dan geeft Supabase met e-mailbevestiging aan
+    // een gebruiker zonder identities terug, en zonder bevestiging de fout
+    // "User already registered". Dan geen nieuw account: we zetten het
+    // formulier op inloggen, met het e-mailadres al ingevuld.
+    const bestaatAl = error
+      ? error.code === "user_already_exists" || error.message.toLowerCase().includes("already registered")
+      : !!data.user && (data.user.identities?.length ?? 0) === 0;
+    if (bestaatAl) {
+      setMode("login");
+      setPassword("");
+      setError("Er bestaat al een account met dit e-mailadres. Log hieronder in, of klik op \"Vergeten?\" als je je wachtwoord niet meer weet.");
+      setLoading(false);
+      return;
+    }
+    if (!error && data.user) {
       meetGebeurtenis("sign_up", { method: "email" });
     }
     if (error) {

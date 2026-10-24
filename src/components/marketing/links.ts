@@ -1,6 +1,7 @@
 export const SIGNUP_URL = "/login?mode=register";
 export const LOGIN_URL = "/login";
-export const SITE_URL = "https://noah-emma.nl";
+// Het hoofddomein: noah-emma.nl stuurt bij Vercel met een 301 door naar www.
+export const SITE_URL = "https://www.noah-emma.nl";
 
 export interface MenuItem {
   label: string;

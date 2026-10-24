@@ -5,8 +5,10 @@ import './globals.css';
 import {Toaster} from '@/components/ui/toaster';
 import {ThemeProvider} from '@/components/ThemeProvider';
 import {AppFrame} from '@/components/AppFrame';
+import {SITE_URL} from '@/components/marketing/links';
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: 'Noah & Emma | Kinderkleding & Accessoires Kopen en Verkopen',
   description: 'De makkelijkste en veiligste manier om kinderkleding en accessoires te kopen en verkopen voor kids van 0 tot 12 jaar.',
   appleWebApp: {

@@ -73,6 +73,18 @@ export default function LandingPage() {
   return (
     <div className="font-body bg-[#FFF9FA] text-[#241A2E] min-h-screen antialiased">
       <MarketingPaginaMarker />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@graph": [
+              { "@type": "Organization", "@id": `${SITE_URL}/#organisatie`, name: "Noah & Emma", url: `${SITE_URL}/`, logo: `${SITE_URL}/icon.svg`, email: "info@noah-emma.nl" },
+              { "@type": "WebSite", "@id": `${SITE_URL}/#website`, name: "Noah & Emma", url: `${SITE_URL}/`, inLanguage: "nl-NL", publisher: { "@id": `${SITE_URL}/#organisatie` } },
+            ],
+          }),
+        }}
+      />
       <MarketingHeader />
       <main>
         <section className="bg-gradient-to-r from-[#E4F4FB] via-[#FFF9FA] to-[#FFEAF1]">

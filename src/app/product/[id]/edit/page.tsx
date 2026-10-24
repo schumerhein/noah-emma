@@ -146,6 +146,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
       return;
     }
     setOpslaan(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setOpslaan(false); router.push("/login"); return; }
 
     // Upload nieuwe foto's
     const bestaandeFotos: string[] = [];
@@ -155,7 +157,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
         bestaandeFotos.push(imagePreviews[i]);
       } else if (imageFiles[i] instanceof File) {
         const file = imageFiles[i] as File;
-        const pad = `listings/${id}/${Date.now()}_${i}.${file.name.split(".").pop()}`;
+        // In de map van de eigenaar: alleen daar mag die foto's ook weer verwijderen.
+        const pad = `${user.id}/${id}_${Date.now()}_${i}.${file.name.split(".").pop()}`;
         const { data: uploaded } = await supabase.storage.from("listings").upload(pad, file, { upsert: true });
         if (uploaded) {
           const { data: pub } = supabase.storage.from("listings").getPublicUrl(uploaded.path);
@@ -196,12 +199,29 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   const verwijderArtikel = async () => {
     if (!bevestigVerwijder) { setBevestigVerwijder(true); return; }
     setVerwijderen(true);
-    const { error } = await supabase.from("listings").update({ actief: false }).eq("id", id);
-    setVerwijderen(false);
-    if (error) {
+
+    // Echt verwijderen in plaats van verbergen. Favorieten, biedingen en
+    // meldingen gaan via ON DELETE CASCADE mee; gesprekken en beoordelingen
+    // blijven bestaan met listing_id = null, zodat de andere partij die
+    // geschiedenis niet kwijtraakt. .select() erachter, omdat een delete die
+    // door RLS wordt tegengehouden geen fout geeft maar gewoon 0 rijen raakt.
+    const { data: verwijderd, error } = await supabase
+      .from("listings").delete().eq("id", id).select("foto_urls");
+    if (error || !verwijderd?.length) {
+      setVerwijderen(false);
       toast({ variant: "destructive", title: "Verwijderen mislukt", description: "Probeer het zo nog eens." });
       return;
     }
+
+    // Daarna de foto's uit storage. Pas ná het verwijderen van de rij, zodat
+    // een mislukte delete nooit een advertentie zonder foto's achterlaat.
+    const fotoPaden = (verwijderd[0].foto_urls || [])
+      .map((url: string) => url.split("/object/public/listings/")[1])
+      .filter(Boolean)
+      .map((pad: string) => decodeURIComponent(pad.split("?")[0]));
+    if (fotoPaden.length) await supabase.storage.from("listings").remove(fotoPaden);
+
+    setVerwijderen(false);
     toast({ title: "Artikel verwijderd." });
     router.push("/profile");
   };

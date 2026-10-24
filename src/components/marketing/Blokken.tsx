@@ -124,26 +124,38 @@ export function Hero({
   );
 }
 
-/** Telefoonkaartje met het vestje, inclusief de swipeknoppen uit de app. */
-export function SwipeKaart({ kind = "Voor Lotte, 2 jaar" }: { kind?: string }) {
+export interface Product {
+  afbeelding: string;
+  alt: string;
+  titel: string;
+  maat: string;
+  staat: string;
+  kind: string;
+}
+
+// Productfoto's (gemaakt in Canva, zonder kinderen). Elke pagina krijgt een
+// eigen kledingstuk, zodat dezelfde foto niet op meerdere pagina's staat.
+export const PRODUCTEN = {
+  vestje: { afbeelding: "/images/vestje-beige.png", alt: "Beige gebreid kindervestje aan een houten hanger", titel: "Gebreid vestje, beige", maat: "92", staat: "Zo goed als nieuw", kind: "Voor Lotte, 2 jaar" },
+  regenjas: { afbeelding: "/images/regenjas-geel.png", alt: "Gele kinderregenjas aan een houten hanger", titel: "Regenjas, geel", maat: "104", staat: "Zo goed als nieuw", kind: "Voor Daan, 4 jaar" },
+  jurkje: { afbeelding: "/images/jurkje-gestreept.png", alt: "Gestreept kinderjurkje met roze kraag aan een houten hanger", titel: "Gestreept jurkje", maat: "110", staat: "Nieuw met label", kind: "Voor Mila, 5 jaar" },
+  tuinbroek: { afbeelding: "/images/tuinbroek-denim.png", alt: "Spijkertuinbroekje aan een houten hanger", titel: "Spijkertuinbroek", maat: "86", staat: "Goed", kind: "Voor Sam, 1 jaar" },
+} satisfies Record<string, Product>;
+
+/** Telefoonkaartje met een product, inclusief de swipeknoppen uit de app. */
+export function SwipeKaart({ product = PRODUCTEN.vestje }: { product?: Product }) {
   return (
     <div className="w-full max-w-[300px] bg-white rounded-[36px] p-3.5 shadow-[0_30px_60px_-24px_rgba(36,26,46,0.45)] -rotate-3">
       <div className="flex items-center justify-between px-2 pt-1.5 pb-3">
-        <span className="text-[13px] font-bold">{kind}</span>
-        <span className="text-xs font-bold text-[#1C7FA8] bg-[#E4F4FB] px-2.5 py-1 rounded-full">Maat 92</span>
+        <span className="text-[13px] font-bold">{product.kind}</span>
+        <span className="text-xs font-bold text-[#1C7FA8] bg-[#E4F4FB] px-2.5 py-1 rounded-full">Maat {product.maat}</span>
       </div>
       <div className="rounded-[26px] overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/images/vestje-beige.png"
-          alt="Beige gebreid kindervestje aan een houten hanger"
-          width={1136}
-          height={1408}
-          className="block w-full h-[300px] object-cover"
-        />
+        <img src={product.afbeelding} alt={product.alt} width={1136} height={1408} className="block w-full h-[300px] object-cover" />
         <div className="px-4 pt-3.5 pb-4 bg-white">
-          <div className="font-headline font-extrabold text-[17px]">Gebreid vestje, beige</div>
-          <div className="text-[13px] text-[#5B4F63] mt-1">Maat 92 · Zo goed als nieuw</div>
+          <div className="font-headline font-extrabold text-[17px]">{product.titel}</div>
+          <div className="text-[13px] text-[#5B4F63] mt-1">Maat {product.maat} · {product.staat}</div>
           {/* Puur ter illustratie van het swipen in de app, geen echte knoppen. */}
           <div className="flex justify-center gap-5 mt-4" aria-hidden="true">
             <span className="w-12 h-12 rounded-full border border-[#241A2E]/15 bg-white flex items-center justify-center shadow-sm">

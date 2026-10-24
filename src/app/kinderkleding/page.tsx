@@ -4,7 +4,7 @@ import { MarketingHeader } from "@/components/marketing/MarketingHeader";
 import { StickyCta } from "@/components/marketing/StickyCta";
 import { SIGNUP_URL, SITE_URL } from "@/components/marketing/links";
 import {
-  AfsluitendeCta, Faq, Groeimodel, Hero, MarketingFooter, SCHADUW, Sectie, SectieKop, StructuredData, SwipeKaart, Tegels, type Vraag,
+  AfsluitendeCta, Faq, Groeimodel, Hero, MarketingFooter, PRODUCTEN, SCHADUW, Sectie, SectieKop, StructuredData, SwipeKaart, Tegels, type Vraag,
 } from "@/components/marketing/Blokken";
 
 const PAD = "/kinderkleding";
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     siteName: "Noah & Emma",
     locale: "nl_NL",
     type: "website",
-    images: [{ url: "/images/vestje-beige.png", alt: "Beige gebreid kindervestje aan een houten hanger" }],
+    images: [{ url: PRODUCTEN.jurkje.afbeelding, alt: PRODUCTEN.jurkje.alt }],
   },
 };
 
@@ -69,7 +69,7 @@ export default function KinderkledingPage() {
           eyebrow="Maat 50 tot 158/164"
           titel={<>Tweedehands kinderkleding, <span className="text-[#D63D74]">altijd in de maat die nu past</span></>}
           usps={USPS}
-          beeld={<SwipeKaart />}
+          beeld={<SwipeKaart product={PRODUCTEN.jurkje} />}
         />
 
         <Sectie>

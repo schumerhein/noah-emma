@@ -3,9 +3,10 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { MarketingHeader } from "@/components/marketing/MarketingHeader";
 import { StickyCta } from "@/components/marketing/StickyCta";
+import { MarketingPaginaMarker } from "@/components/marketing/MarketingModus";
 import { SITE_URL } from "@/components/marketing/links";
 import {
-  AfsluitendeCta, Eyebrow, Faq, Groeimodel, HeroKnoppen, Kaarten, MarketingFooter, SCHADUW, Sectie, SectieKop, SwipeKaart, UspLijst, type Vraag,
+  AfsluitendeCta, Eyebrow, Faq, Groeimodel, HeroKnoppen, Kaarten, MarketingFooter, PRODUCTEN, SCHADUW, Sectie, SectieKop, SwipeKaart, UspLijst, type Vraag,
 } from "@/components/marketing/Blokken";
 
 // De homepage van noah-emma.nl: de middleware herschrijft "/" voor bezoekers
@@ -24,7 +25,7 @@ export const metadata: Metadata = {
     siteName: "Noah & Emma",
     locale: "nl_NL",
     type: "website",
-    images: [{ url: "/images/vestje-beige.png", alt: "Beige gebreid kindervestje aan een houten hanger" }],
+    images: [{ url: PRODUCTEN.regenjas.afbeelding, alt: PRODUCTEN.regenjas.alt }],
   },
 };
 
@@ -71,6 +72,7 @@ const FAQ: Vraag[] = [
 export default function LandingPage() {
   return (
     <div className="font-body bg-[#FFF9FA] text-[#241A2E] min-h-screen antialiased">
+      <MarketingPaginaMarker />
       <MarketingHeader />
       <main>
         <section className="bg-gradient-to-r from-[#E4F4FB] via-[#FFF9FA] to-[#FFEAF1]">
@@ -84,7 +86,7 @@ export default function LandingPage() {
               <HeroKnoppen tweede={{ label: "Bekijk hoe het werkt", href: "/hoe-het-werkt" }} />
             </div>
             <div className="flex-1 min-w-0 w-full flex justify-center">
-              <SwipeKaart />
+              <SwipeKaart product={PRODUCTEN.regenjas} />
             </div>
           </div>
           <div className="max-w-[1180px] mx-auto px-4 sm:px-6 pb-10 sm:pb-14">

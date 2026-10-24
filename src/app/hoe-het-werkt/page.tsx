@@ -5,7 +5,7 @@ import { MarketingHeader } from "@/components/marketing/MarketingHeader";
 import { StickyCta } from "@/components/marketing/StickyCta";
 import { SIGNUP_URL, SITE_URL } from "@/components/marketing/links";
 import {
-  AfsluitendeCta, Faq, Groeimodel, Hero, Kaarten, MarketingFooter, SCHADUW, Sectie, SectieKop, StructuredData, type Vraag,
+  AfsluitendeCta, Faq, Groeimodel, Hero, Kaarten, MarketingFooter, PRODUCTEN, SCHADUW, Sectie, SectieKop, StructuredData, type Vraag,
 } from "@/components/marketing/Blokken";
 
 const PAD = "/hoe-het-werkt";
@@ -77,7 +77,7 @@ function FotoControle() {
       </div>
       <div className={`bg-white rounded-3xl p-4 flex gap-3.5 items-center ${SCHADUW}`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/images/vestje-beige.png" alt="Beige vestje, zonder kind op de foto" width={76} height={76} className="shrink-0 w-[76px] h-[76px] rounded-2xl object-cover" />
+        <img src={PRODUCTEN.tuinbroek.afbeelding} alt="Spijkertuinbroekje, zonder kind op de foto" width={76} height={76} className="shrink-0 w-[76px] h-[76px] rounded-2xl object-cover" />
         <span>
           <strong className="block text-[15px]">Foto van alleen het product</strong>
           <span className="inline-flex mt-2 text-[13px] font-bold text-white bg-[#1C7FA8] px-3 py-1 rounded-full">✓ Goedgekeurd</span>

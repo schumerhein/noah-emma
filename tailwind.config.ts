@@ -16,6 +16,42 @@ export default {
         code: ['monospace'],
       },
       colors: {
+        // Warme aubergine-grijzen uit de website (tekst #241A2E, subtekst
+        // #5B4F63) in plaats van Tailwinds koele blauwgrijze "slate". Zo
+        // krijgen alle bestaande slate-klassen in de app vanzelf de huisstijl.
+        slate: {
+          50: '#FAF7F9',
+          100: '#F4EEF2',
+          200: '#E8E0E7',
+          300: '#D3C8D3',
+          400: '#A99DAC',
+          500: '#7D7083',
+          600: '#5B4F63',
+          700: '#463B4F',
+          800: '#33293C',
+          900: '#241A2E',
+          950: '#170F1F',
+        },
+        // Merkkleuren van de website: Emma-roze en Noah-blauw.
+        roze: {
+          50: '#FFF4F8',
+          100: '#FFEAF1',
+          400: '#FF8FB3',
+          500: '#FF6F9C',
+          600: '#D63D74',
+          700: '#B42F60',
+        },
+        blauw: {
+          50: '#F2FAFD',
+          100: '#E4F4FB',
+          400: '#3FA9DB',
+          600: '#1C7FA8',
+          700: '#16698B',
+        },
+        inkt: '#241A2E',
+        'background-light': 'hsl(var(--background))',
+        'background-dark': 'hsl(var(--background))',
+        'primary-dark': 'hsl(var(--primary-dark))',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {
@@ -66,6 +102,11 @@ export default {
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))',
         },
+      },
+      boxShadow: {
+        // De zachte schaduwen van de website (kaarten en knoppen).
+        zacht: '0 12px 30px -14px rgba(36, 26, 46, 0.28)',
+        kaart: '0 30px 60px -28px rgba(36, 26, 46, 0.5)',
       },
       borderRadius: {
         lg: 'var(--radius)',

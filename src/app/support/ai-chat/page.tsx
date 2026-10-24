@@ -53,7 +53,7 @@ export default function AIChatPage() {
   }
 
   return (
-    <div className="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-100 min-h-screen flex flex-col h-screen overflow-hidden">
+    <div className="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 min-h-screen flex flex-col h-screen overflow-hidden">
       <header className="sticky top-0 z-10 px-6 pt-12 pb-4 flex items-center justify-between border-b border-primary/10 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md shrink-0">
         <div className="flex items-center gap-4">
           <div className="relative">

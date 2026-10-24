@@ -16,7 +16,7 @@ export default function ErrorPagina({ error, reset }: { error: Error & { digest?
       <div className="flex flex-col gap-3 w-full max-w-xs">
         <button
           onClick={reset}
-          className="h-12 bg-primary text-white rounded-2xl font-bold shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
+          className="h-12 bg-primary text-white rounded-full font-bold shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
         >
           Opnieuw proberen
         </button>

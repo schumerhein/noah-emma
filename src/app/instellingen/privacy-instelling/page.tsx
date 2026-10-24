@@ -11,14 +11,12 @@ type PrivacyKeys = {
   verberg_locatie: boolean;
   favoriet_notificatie_verkoper: boolean;
   gepersonaliseerde_inhoud: boolean;
-  recent_bekeken_tonen: boolean;
 };
 
 const DEFAULTS: PrivacyKeys = {
   verberg_locatie: false,
   favoriet_notificatie_verkoper: true,
   gepersonaliseerde_inhoud: true,
-  recent_bekeken_tonen: true,
 };
 
 const ITEMS: { key: keyof PrivacyKeys; label: string; sub: string }[] = [
@@ -36,11 +34,6 @@ const ITEMS: { key: keyof PrivacyKeys; label: string; sub: string }[] = [
     key: "gepersonaliseerde_inhoud",
     label: "Gepersonaliseerde inhoud",
     sub: "Noah & Emma toestaan om mijn feed en zoekresultaten te personaliseren op basis van mijn voorkeuren, instellingen en eerdere aankopen.",
-  },
-  {
-    key: "recent_bekeken_tonen",
-    label: "Laat mijn onlangs bekeken artikelen op de Homepagina weergeven",
-    sub: "Als je deze optie uitzet maar wel toestemming hebt gegeven voor gepersonaliseerde inhoud, worden deze artikelen nog wel gebruikt om je feed te personaliseren.",
   },
 ];
 

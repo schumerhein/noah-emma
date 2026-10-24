@@ -35,7 +35,7 @@ export default function BoostBevestigingPage() {
           </div>
           <h1 className="text-2xl font-extrabold mb-2">Advertentie geboost!</h1>
           <p className="text-slate-500 dark:text-slate-400 mb-6">Je advertentie verschijnt nu vaker in de swipe-flow en zoekresultaten.</p>
-          <Button onClick={() => router.push(`/product/${listingId}`)} className="bg-primary hover:bg-primary-dark text-white font-bold rounded-xl h-12 px-8 border-none">
+          <Button onClick={() => router.push(`/product/${listingId}`)} className="bg-primary hover:bg-primary-dark text-white font-bold rounded-full h-12 px-8 border-none">
             Bekijk advertentie
           </Button>
         </>
@@ -45,7 +45,7 @@ export default function BoostBevestigingPage() {
           <XCircle className="w-12 h-12 text-slate-400 mb-4" />
           <h1 className="text-2xl font-extrabold mb-2">Betaling niet voltooid</h1>
           <p className="text-slate-500 dark:text-slate-400 mb-6">Er is geen betaling ontvangen. Probeer het gerust nog eens.</p>
-          <Button onClick={() => router.push(`/promote/${listingId}`)} className="bg-primary hover:bg-primary-dark text-white font-bold rounded-xl h-12 px-8 border-none">
+          <Button onClick={() => router.push(`/promote/${listingId}`)} className="bg-primary hover:bg-primary-dark text-white font-bold rounded-full h-12 px-8 border-none">
             Terug naar Boost
           </Button>
         </>

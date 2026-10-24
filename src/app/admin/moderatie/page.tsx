@@ -133,7 +133,7 @@ export default function ModeratiePage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 font-display pb-32">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 pb-32">
       <header className="pt-14 pb-4 px-6 flex items-center gap-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 sticky top-0 z-20">
         <button onClick={() => router.back()} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
           <ChevronLeft className="w-5 h-5 text-slate-600 dark:text-slate-300" />
@@ -246,7 +246,7 @@ export default function ModeratiePage() {
 
       {/* Afkeur modal */}
       {afkeurItem && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm px-4 pb-8">
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/40 backdrop-blur-sm px-4 pb-[calc(2rem+env(safe-area-inset-bottom))]">
           <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl">
             <div className="flex items-start justify-between">
               <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">Advertentie afkeuren</h2>

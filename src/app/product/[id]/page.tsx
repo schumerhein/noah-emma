@@ -9,7 +9,6 @@ import { useToast } from "@/hooks/use-toast";
 import { cn, normaliseerPrijsInvoer } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { AIModelDisplay } from "@/components/ai-models/NoahEmmaModel";
-import { voegRecentBekekenToe } from "@/lib/recentBekeken";
 import Link from "next/link";
 
 type Review = {
@@ -174,7 +173,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
       setListing(l);
       laadTabData(l);
-      if (user) voegRecentBekekenToe(user.id, l.id);
     }
     setLoading(false);
   };
@@ -336,7 +334,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     setBodBezig(false);
     setBodVerstuurd(true);
     setToonBodModal(false);
-    toast({ title: `Bod van €${bedrag.toFixed(2).replace(".", ",")} verstuurd!`, description: "De verkoper ontvangt je bod via de chat." });
+    toast({ title: `Bod van €${bedrag.toFixed(2).replace(".", ",")} verstuurd!`, description: "De verkoper kan je bod accepteren of afwijzen. Het antwoord zie je in de chat." });
     if (convId) router.push(`/messages/${convId}`);
   };
 
@@ -355,7 +353,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 min-h-screen pb-48">
+    <div className="bg-background dark:bg-slate-900 min-h-screen pb-36">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 max-w-md mx-auto z-40 px-4 h-16 flex justify-between items-center pointer-events-none pt-safe-top">
         <button
@@ -408,7 +406,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           )}
 
           {listing.foto_urls.length > 1 && (
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 bg-black/20 px-3 py-1.5 rounded-full backdrop-blur-sm">
+            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 bg-black/20 px-3 py-1.5 rounded-full backdrop-blur-sm">
               {listing.foto_urls.map((_, idx) => (
                 <button key={idx} onClick={() => setCurrentImageIndex(idx)} className={cn("w-2 h-2 rounded-full transition-all", currentImageIndex === idx ? "bg-white w-4" : "bg-white/40")} />
               ))}
@@ -417,13 +415,13 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
           <button
             onClick={toggleLike}
-            className="absolute bottom-4 right-4 w-14 h-14 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-transform z-10"
+            className="absolute bottom-10 right-4 w-14 h-14 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-zacht active:scale-95 transition-transform z-10"
           >
-            <Heart className={cn("w-7 h-7 transition-colors", isLiked ? "fill-primary text-primary" : "text-slate-300")} />
+            <Heart className={cn("w-7 h-7 transition-colors", isLiked ? "fill-primary text-primary" : "text-slate-400")} />
           </button>
         </div>
 
-        <div className="px-5 pt-6 space-y-6">
+        <div className="relative -mt-6 rounded-t-[32px] bg-background dark:bg-slate-900 px-5 pt-6 space-y-6">
           {/* Titel, prijs, maat, conditie */}
           <section className="space-y-4">
             {/* Populair badge */}
@@ -458,7 +456,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
             {/* Prijs — hero, met de beoordeling van de verkoper ernaast */}
             <div className="flex items-end justify-between gap-3">
-              <span className={cn("text-5xl font-black leading-none", listing.actief === false ? "text-slate-300 line-through" : "text-primary")}>€{listing.prijs.toFixed(2).replace(".", ",")}</span>
+              <span className={cn("font-headline text-[44px] font-extrabold tracking-tight leading-none", listing.actief === false ? "text-slate-300 line-through" : "text-slate-900 dark:text-white")}>€{listing.prijs.toFixed(2).replace(".", ",")}</span>
               <Link href={`/seller/${listing.user_id}`} className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/20 px-2.5 py-1 rounded-full shrink-0">
                 <span className="text-amber-400 text-sm">★</span>
                 {listing.profiles?.gemiddelde_beoordeling ? (
@@ -473,27 +471,27 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             </div>
 
             {/* Titel */}
-            <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white leading-snug">{listing.titel}</h1>
+            <h1 className="text-[26px] font-extrabold text-slate-900 dark:text-white leading-tight">{listing.titel}</h1>
 
             {/* Maat + Conditie + Merk — prominente kaartjes */}
             <div className="flex gap-2">
               <Link href={`/search?maat=${listing.maat}`} className="flex-1">
-                <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl px-4 py-3 border border-slate-100 dark:border-slate-700 active:bg-slate-100 transition-colors">
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Maat</p>
-                  <p className="text-lg font-extrabold text-slate-900 dark:text-white mt-0.5">{listing.maat}</p>
+                <div className="h-full bg-blauw-100 dark:bg-slate-800 rounded-[18px] px-4 py-3 active:opacity-80 transition-opacity">
+                  <p className="text-[13px] font-semibold text-slate-600 dark:text-slate-300">Maat</p>
+                  <p className="font-headline text-2xl font-extrabold text-blauw-600 mt-0.5">{listing.maat}</p>
                 </div>
               </Link>
               <Link href={`/search?conditie=${encodeURIComponent(listing.conditie)}`} className="flex-1">
-                <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl px-4 py-3 border border-slate-100 dark:border-slate-700 active:bg-slate-100 transition-colors">
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Staat</p>
-                  <p className="text-lg font-extrabold text-slate-900 dark:text-white mt-0.5 leading-tight">{listing.conditie}</p>
+                <div className="h-full bg-roze-100 dark:bg-slate-800 rounded-[18px] px-4 py-3 active:opacity-80 transition-opacity">
+                  <p className="text-[13px] font-semibold text-slate-600 dark:text-slate-300">Staat</p>
+                  <p className="font-headline text-[15px] font-extrabold text-roze-600 mt-1 leading-tight">{listing.conditie}</p>
                 </div>
               </Link>
               {listing.merk && (
                 <Link href={`/search?merk=${encodeURIComponent(listing.merk)}`} className="flex-1">
-                  <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl px-4 py-3 border border-slate-100 dark:border-slate-700 active:bg-slate-100 transition-colors">
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Merk</p>
-                    <p className="text-lg font-extrabold text-slate-900 dark:text-white mt-0.5 leading-tight">{listing.merk}</p>
+                  <div className="h-full bg-blauw-100 dark:bg-slate-800 rounded-[18px] px-4 py-3 active:opacity-80 transition-opacity">
+                    <p className="text-[13px] font-semibold text-slate-600 dark:text-slate-300">Merk</p>
+                    <p className="font-headline text-[15px] font-extrabold text-blauw-600 mt-1 leading-tight break-words">{listing.merk}</p>
                   </div>
                 </Link>
               )}
@@ -516,7 +514,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           </section>
 
           {/* Verkoper + Reviews */}
-          <section className="bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden shadow-sm">
+          <section className="bg-white dark:bg-slate-800/50 rounded-3xl overflow-hidden shadow-zacht">
 
             {/* Verkoper header */}
             <div className="p-4 space-y-3">
@@ -755,18 +753,20 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       </main>
 
       {/* Actieknoppen */}
-      <div className="fixed bottom-20 left-0 right-0 max-w-md mx-auto px-5 py-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-100 dark:border-slate-800 z-40">
+      {/* Onderaan het scherm: de navigatiebalk is op de productpagina verborgen,
+          dus deze balk hoeft daar niet boven te zweven. */}
+      <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] bg-background/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-900/[0.08] dark:border-slate-800 z-40">
         {eigenProduct ? (
           <div className="flex gap-3">
             <Link href={`/product/${listing.id}/edit`} className="flex-1">
-              <button className="w-full h-14 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold flex items-center justify-center gap-2 shadow-sm active:scale-[0.98] transition-all">
+              <button className="w-full h-14 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold flex items-center justify-center gap-2 shadow-zacht active:scale-[0.98] transition-all">
                 <Pencil className="w-4 h-4" />
                 Artikel aanpassen
               </button>
             </Link>
           </div>
         ) : listing.actief === false ? (
-          <div className="h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center gap-2 text-slate-400 font-bold">
+          <div className="h-14 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center gap-2 text-slate-400 font-bold">
             <Check className="w-4 h-4" />
             Verkocht
           </div>
@@ -782,7 +782,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                   }
                   setToonBodModal(true);
                 }}
-                className="flex items-center justify-center gap-2 h-14 px-4 rounded-2xl border-2 border-primary/30 text-primary font-bold text-sm bg-primary/5 active:scale-95 transition-transform shrink-0"
+                className="flex items-center justify-center gap-2 h-14 px-5 rounded-full border border-slate-900/20 text-slate-900 dark:text-white font-bold text-sm bg-white dark:bg-slate-800 active:scale-95 transition-transform shrink-0"
               >
                 <TrendingDown className="w-4 h-4" />
                 Bod
@@ -790,7 +790,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             )}
             <Button
               onClick={handleContact}
-              className="flex-1 h-14 rounded-2xl bg-primary text-white font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+              className="flex-1 h-14 rounded-full bg-primary text-white text-base font-bold shadow-[0_14px_28px_-14px_hsl(var(--primary)/0.9)] hover:bg-primary/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
             >
               <span className="material-icons-round">chat</span>
               <span>Stuur bericht</span>
@@ -846,7 +846,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               <button
                 onClick={verstuurBod}
                 disabled={!bodBedrag || bodBezig}
-                className="flex-1 h-13 py-3.5 rounded-2xl bg-primary text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-40 active:scale-[0.98] transition-all"
+                className="flex-1 h-13 py-3.5 rounded-full bg-primary text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-40 active:scale-[0.98] transition-all"
               >
                 {bodBezig ? <span className="material-icons-round animate-spin text-sm">progress_activity</span> : "Bod versturen"}
               </button>

@@ -35,7 +35,7 @@ export function AppFrame({ children, forceMarketing = false }: { children: React
         {isMarketing ? (
           children
         ) : (
-          <div className="max-w-md mx-auto relative border-x border-border/50 shadow-2xl min-h-screen flex flex-col overflow-x-hidden">
+          <div className="app-frame max-w-md mx-auto relative bg-background border-x border-border/60 shadow-2xl min-h-screen flex flex-col overflow-x-hidden">
             <Header />
             <main className="flex-1 overflow-y-auto pb-safe-bottom pt-safe-top">
               {children}

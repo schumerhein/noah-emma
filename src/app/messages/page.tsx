@@ -31,6 +31,8 @@ type Notificatie = {
   titel?: string;
   foto_url?: string;
   bedrag?: number;
+  bod_status?: string;
+  bieder_id?: string;
   listing_id?: string;
   zoekterm?: string;
 };
@@ -181,7 +183,7 @@ function MessagesContent() {
 
     // 3. Biedingen op mijn listings
     const bidsPromise = myIds.length > 0
-      ? supabase.from("biedingen").select("id, created_at, listing_id, bedrag, bieder_id, listings(titel, foto_urls)")
+      ? supabase.from("biedingen").select("id, created_at, listing_id, bedrag, status, bieder_id, listings(titel, foto_urls)")
           .in("listing_id", myIds).neq("bieder_id", userId).order("created_at", { ascending: false }).limit(20)
       : Promise.resolve({ data: null });
 
@@ -246,6 +248,8 @@ function MessagesContent() {
         titel: listing?.titel,
         foto_url: listing?.foto_urls?.[0],
         bedrag: bid.bedrag,
+        bod_status: bid.status,
+        bieder_id: bid.bieder_id,
         listing_id: bid.listing_id,
       });
     }
@@ -359,9 +363,23 @@ function MessagesContent() {
     zoekwaarschuwing: "bg-violet-100 text-violet-600",
   };
 
+  // Een bod open je in het gesprek met de bieder: daar kun je het accepteren
+  // of afwijzen. Overige meldingen gaan naar het product.
+  const openNotificatie = async (n: Notificatie) => {
+    if (n.type === "bod" && n.bieder_id && currentUserId) {
+      const { data: gesprek } = await supabase.from("conversations").select("id")
+        .eq("listing_id", n.listing_id!).eq("buyer_id", n.bieder_id).eq("seller_id", currentUserId).maybeSingle();
+      if (gesprek) { router.push(`/messages/${gesprek.id}`); return; }
+    }
+    router.push(`/product/${n.listing_id}`);
+  };
+
   const notifTekst = (n: Notificatie) => {
     if (n.type === "favoriet") return `heeft "${n.titel}" aan favorieten toegevoegd`;
-    if (n.type === "bod") return `heeft een bod van €${n.bedrag?.toFixed(2).replace(".", ",")} gedaan op "${n.titel}"`;
+    if (n.type === "bod") {
+      const status = n.bod_status === "geaccepteerd" ? " · geaccepteerd" : n.bod_status === "afgewezen" ? " · afgewezen" : " · wacht op jouw antwoord";
+      return `heeft een bod van €${n.bedrag?.toFixed(2).replace(".", ",")} gedaan op "${n.titel}"${status}`;
+    }
     if (n.type === "nieuwe_listing") return `heeft een nieuw artikel geplaatst: "${n.titel}"`;
     if (n.type === "zoekwaarschuwing") return `nieuw artikel voor "${n.zoekterm}": "${n.titel}"`;
     return "volgt je nu";
@@ -435,12 +453,12 @@ function MessagesContent() {
 
           {!loadingConvs && gefilterd.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
-              <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                <MessageCircle className="w-10 h-10 text-slate-300" />
+              <div className="w-20 h-20 rounded-[22px] bg-secondary dark:bg-slate-800 flex items-center justify-center">
+                <MessageCircle className="w-10 h-10 text-primary" />
               </div>
               <h2 className="text-xl font-bold text-slate-700 dark:text-slate-200">Geen berichten</h2>
               <p className="text-slate-400 text-sm max-w-xs">Contacteer een verkoper via een productpagina om een gesprek te starten.</p>
-              <Link href="/" className="mt-2 bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm">
+              <Link href="/" className="mt-2 bg-primary text-white px-6 py-3 rounded-full font-bold text-sm">
                 Producten ontdekken
               </Link>
             </div>
@@ -511,8 +529,8 @@ function MessagesContent() {
 
           {!loadingNotifs && notificaties.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20 gap-4 text-center px-6">
-              <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                <Bell className="w-10 h-10 text-slate-300" />
+              <div className="w-20 h-20 rounded-[22px] bg-secondary dark:bg-slate-800 flex items-center justify-center">
+                <Bell className="w-10 h-10 text-primary" />
               </div>
               <h2 className="text-xl font-bold text-slate-700 dark:text-slate-200">Geen notificaties</h2>
               <p className="text-slate-400 text-sm max-w-xs">
@@ -524,7 +542,7 @@ function MessagesContent() {
           {!loadingNotifs && notificaties.map(notif => (
             <div
               key={notif.id}
-              onClick={() => notif.listing_id ? router.push(`/product/${notif.listing_id}`) : undefined}
+              onClick={() => notif.listing_id ? openNotificatie(notif) : undefined}
               className={cn(
                 "flex items-center gap-4 px-6 py-4 border-b border-slate-100 dark:border-slate-800 active:bg-slate-50 dark:active:bg-slate-800/50 transition-colors",
                 notif.listing_id ? "cursor-pointer" : ""

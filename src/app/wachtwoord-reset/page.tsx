@@ -58,7 +58,7 @@ export default function WachtwoordResetPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
+    <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased">
       <div className="flex flex-col items-center pt-16 pb-10">
         <div className="mb-4">
           <NoahEmmaLogo size={56} />

@@ -214,7 +214,7 @@ export default function SellerPage({ params }: { params: Promise<{ id: string }>
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 font-display pb-32">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 pb-32">
 
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 pt-14 pb-4 px-5 flex items-center justify-between">
@@ -298,17 +298,17 @@ export default function SellerPage({ params }: { params: Promise<{ id: string }>
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3 mb-4">
-          <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-3 text-center">
-            <p className="text-xl font-black text-slate-900 dark:text-white">{listings.length}</p>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Actief</p>
+          <div className="bg-blauw-100 dark:bg-slate-800 rounded-[18px] p-3 text-center">
+            <p className="font-headline text-xl font-extrabold text-blauw-600">{listings.length}</p>
+            <p className="text-[12px] font-semibold text-slate-600 dark:text-slate-300">Actief</p>
           </div>
-          <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-3 text-center">
-            <p className="text-xl font-black text-slate-900 dark:text-white">{seller.totaal_verkopen || 0}</p>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Verkopen</p>
+          <div className="bg-roze-100 dark:bg-slate-800 rounded-[18px] p-3 text-center">
+            <p className="font-headline text-xl font-extrabold text-roze-600">{seller.totaal_verkopen || 0}</p>
+            <p className="text-[12px] font-semibold text-slate-600 dark:text-slate-300">Verkopen</p>
           </div>
-          <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-3 text-center">
-            <p className="text-xl font-black text-slate-900 dark:text-white">{seller.aantalvolgers || 0}</p>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Volgers</p>
+          <div className="bg-blauw-100 dark:bg-slate-800 rounded-[18px] p-3 text-center">
+            <p className="font-headline text-xl font-extrabold text-blauw-600">{seller.aantalvolgers || 0}</p>
+            <p className="text-[12px] font-semibold text-slate-600 dark:text-slate-300">Volgers</p>
           </div>
         </div>
 
@@ -456,7 +456,7 @@ export default function SellerPage({ params }: { params: Promise<{ id: string }>
 
       {/* Actiemenu (melden / blokkeren) */}
       {toonActieMenu && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm px-4 pb-8" onClick={() => setToonActieMenu(false)}>
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/40 backdrop-blur-sm px-4 pb-[calc(2rem+env(safe-area-inset-bottom))]" onClick={() => setToonActieMenu(false)}>
           <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md p-4 space-y-2 shadow-2xl" onClick={e => e.stopPropagation()}>
             <button
               onClick={() => { setToonActieMenu(false); setToonMeldModal(true); }}
@@ -485,7 +485,7 @@ export default function SellerPage({ params }: { params: Promise<{ id: string }>
 
       {/* Meld Modal */}
       {toonMeldModal && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm px-4 pb-8">
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/40 backdrop-blur-sm px-4 pb-[calc(2rem+env(safe-area-inset-bottom))]">
           <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl">
             <div className="flex items-start justify-between">
               <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">Gebruiker melden</h2>

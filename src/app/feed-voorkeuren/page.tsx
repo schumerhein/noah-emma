@@ -177,7 +177,7 @@ export default function FeedVoorkeurenPage() {
         <button
           onClick={slaOp}
           disabled={opslaan}
-          className="w-full h-14 rounded-2xl bg-primary text-white font-bold text-base shadow-lg shadow-primary/20 active:scale-[0.98] transition-all disabled:opacity-60"
+          className="w-full h-14 rounded-full bg-primary text-white font-bold text-base shadow-lg shadow-primary/20 active:scale-[0.98] transition-all disabled:opacity-60"
         >
           {opslaan ? "Opslaan..." : "Voorkeuren opslaan"}
         </button>

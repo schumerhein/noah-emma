@@ -252,7 +252,7 @@ export default function KindBewerkenPage({ params }: { params: Promise<{ id: str
         <button
           onClick={slaOp}
           disabled={opslaan}
-          className="w-full h-14 rounded-2xl bg-primary text-white font-bold text-base flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
+          className="w-full h-14 rounded-full bg-primary text-white font-bold text-base flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
         >
           {opslaan ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
           {opslaan ? "Opslaan..." : "Wijzigingen opslaan"}

@@ -17,7 +17,7 @@ export default function NotFound() {
       </p>
       <Link
         href="/"
-        className="mt-2 h-12 px-8 bg-primary text-white rounded-2xl font-bold flex items-center justify-center shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
+        className="mt-2 h-12 px-8 bg-primary text-white rounded-full font-bold flex items-center justify-center shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
       >
         Terug naar Ontdekken
       </Link>

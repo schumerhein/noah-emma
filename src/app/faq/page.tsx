@@ -85,7 +85,7 @@ export default function FAQPage() {
           <p className="text-sm text-slate-400">Staat jouw vraag er niet bij?</p>
           <button
             onClick={() => router.push("/helpdesk")}
-            className="bg-primary text-white font-bold px-6 py-3 rounded-xl text-sm"
+            className="bg-primary text-white font-bold px-6 py-3 rounded-full text-sm"
           >
             Neem contact op met de Helpdesk
           </button>

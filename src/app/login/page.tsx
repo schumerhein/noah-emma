@@ -16,6 +16,17 @@ function volgendePagina(): string | null {
   return next && next.startsWith("/") && !next.startsWith("//") ? next : null;
 }
 
+// Supabase geeft Engelse foutmeldingen terug; vertaal de gebruikelijke.
+function registratieFout(bericht: string): string {
+  const m = bericht.toLowerCase();
+  if (m.includes("already registered") || m.includes("already been registered")) return "Er bestaat al een account met dit e-mailadres. Log in, of kies 'Vergeten?' als je je wachtwoord niet meer weet.";
+  if (m.includes("password") && (m.includes("at least") || m.includes("short"))) return "Kies een wachtwoord van minimaal 6 tekens.";
+  if (m.includes("weak") || m.includes("pwned") || m.includes("leaked")) return "Dit wachtwoord is te makkelijk te raden. Kies een sterker wachtwoord.";
+  if (m.includes("invalid") && m.includes("email")) return "Dit e-mailadres lijkt niet te kloppen. Controleer het even.";
+  if (m.includes("rate limit") || m.includes("too many") || m.includes("security purposes")) return "Even te veel pogingen achter elkaar. Probeer het over een minuutje opnieuw.";
+  return "Account aanmaken lukte niet. Probeer het opnieuw.";
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -122,7 +133,7 @@ export default function LoginPage() {
       },
     });
     if (error) {
-      setError(error.message);
+      setError(registratieFout(error.message));
     } else if (data.session) {
       // E-mailbevestiging staat uit (of het account was al bevestigd) — meteen door.
       window.scrollTo(0, 0);
@@ -135,26 +146,28 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
-      <div className="flex flex-col items-center pt-16 pb-10">
+    <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden verloop-merk dark:bg-none dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased">
+      {/* Zelfde logo als in de websiteheader: Noah blauw, Emma roze. */}
+      <div className="flex flex-col items-center pt-14 pb-8 px-6 text-center">
         <div className="mb-4">
-          <NoahEmmaLogo size={56} />
+          <NoahEmmaLogo size={60} />
         </div>
-        <h2 className="text-2xl font-bold tracking-[0.2em] uppercase">
-          <span style={{ color: "#1C7FA8" }}>NOAH</span>{" "}
+        <h2 className="font-headline text-[30px] font-extrabold tracking-tight">
+          <span className="text-blauw-600">Noah</span>{" "}
           <span className="text-slate-900 dark:text-white">&amp;</span>{" "}
-          <span style={{ color: "#D63D74" }}>EMMA</span>
+          <span className="text-roze-600">Emma</span>
         </h2>
-        <p className="text-slate-500 dark:text-slate-400 text-sm mt-2 font-medium">De marketplace voor kinderkleding &amp; accessoires</p>
+        <p className="text-slate-600 dark:text-slate-400 text-[15px] mt-1.5 font-medium">Tweedehands voor je kind, altijd in de juiste maat</p>
       </div>
 
-      <div className="flex-1 px-6 max-w-[480px] mx-auto w-full pb-10">
+      <div className="flex-1 px-4 max-w-[480px] mx-auto w-full pb-10">
+        <div className="rounded-[32px] bg-white dark:bg-slate-800 shadow-zacht px-5 py-7">
         {awaitingConfirmation ? (
           <div className="flex flex-col items-center text-center gap-4 pt-8">
             <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
               <MailCheck className="w-8 h-8 text-green-600" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Check je e-mail</h1>
+            <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">Check je e-mail</h1>
             <p className="text-slate-500 dark:text-slate-400">
               We hebben een bevestigingslink gestuurd naar{" "}
               <span className="font-semibold text-slate-700 dark:text-slate-200">{email}</span>.
@@ -163,29 +176,29 @@ export default function LoginPage() {
             <p className="text-slate-400 dark:text-slate-500 text-sm">Niets ontvangen? Check ook je spamfolder.</p>
             <button
               onClick={() => { setAwaitingConfirmation(false); setMode("login"); setError(null); }}
-              className="mt-2 text-accent font-bold hover:underline text-sm"
+              className="mt-2 text-primary font-bold underline underline-offset-2 text-sm"
             >
               Terug naar inloggen
             </button>
           </div>
         ) : (
         <>
-        <div className="mb-8">
-          <h1 className="text-slate-900 dark:text-slate-100 text-3xl font-bold leading-tight">
+        <div className="mb-6">
+          <h1 className="text-slate-900 dark:text-slate-100 text-[28px] font-extrabold leading-tight">
             {mode === "login" ? "Welkom terug" : "Account aanmaken"}
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">
-            {mode === "login" ? "Log in om verder te gaan." : "Maak een gratis account aan."}
+          <p className="text-slate-600 dark:text-slate-400 mt-1">
+            {mode === "login" ? "Log in om verder te gaan." : "Gratis account, gratis kopen en gratis verkopen."}
           </p>
         </div>
 
         {error && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm font-medium">
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-2xl text-red-600 text-sm font-medium">
             {error}
           </div>
         )}
         {success && (
-          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm font-medium">
+          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-2xl text-green-700 text-sm font-medium">
             {success}
           </div>
         )}
@@ -195,7 +208,7 @@ export default function LoginPage() {
             <div>
               <label className="block text-slate-700 dark:text-slate-300 text-sm font-semibold mb-2">Naam</label>
               <input
-                className="w-full h-14 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all outline-none"
+                className="w-full h-14 px-4 rounded-2xl border border-slate-900/15 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-4 focus:ring-primary/15 focus:border-primary transition-all outline-none"
                 placeholder="Jouw voornaam"
                 type="text"
                 value={naam}
@@ -208,7 +221,7 @@ export default function LoginPage() {
           <div>
             <label className="block text-slate-700 dark:text-slate-300 text-sm font-semibold mb-2">E-mailadres</label>
             <input
-              className="w-full h-14 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all outline-none"
+              className="w-full h-14 px-4 rounded-2xl border border-slate-900/15 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-4 focus:ring-primary/15 focus:border-primary transition-all outline-none"
               placeholder="naam@voorbeeld.nl"
               type="email"
               value={email}
@@ -225,7 +238,7 @@ export default function LoginPage() {
                   type="button"
                   onClick={handleWachtwoordVergeten}
                   disabled={resetBezig}
-                  className="text-accent text-sm font-semibold hover:underline disabled:opacity-50"
+                  className="text-primary text-sm font-semibold hover:underline disabled:opacity-50"
                 >
                   {resetBezig ? "Bezig..." : "Vergeten?"}
                 </button>
@@ -233,7 +246,7 @@ export default function LoginPage() {
             </div>
             <div className="relative">
               <input
-                className="w-full h-14 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all outline-none"
+                className="w-full h-14 px-4 rounded-2xl border border-slate-900/15 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-4 focus:ring-primary/15 focus:border-primary transition-all outline-none"
                 placeholder="••••••••"
                 type={showPassword ? "text" : "password"}
                 value={password}
@@ -254,7 +267,7 @@ export default function LoginPage() {
           </div>
 
           <button
-            className="w-full h-14 bg-accent text-white rounded-xl font-bold text-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-4 disabled:opacity-60"
+            className="w-full min-h-[56px] bg-slate-900 text-white rounded-full font-bold text-base shadow-[0_12px_30px_-14px_rgba(36,26,46,0.5)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-2 disabled:opacity-60"
             type="submit"
             disabled={loading}
           >
@@ -273,14 +286,14 @@ export default function LoginPage() {
           {mode === "login" ? (
             <p className="text-slate-500 dark:text-slate-400 text-sm">
               Nog geen account?{" "}
-              <button onClick={() => { setMode("register"); setError(null); }} className="text-accent font-bold hover:underline">
+              <button onClick={() => { setMode("register"); setError(null); }} className="text-primary font-bold underline underline-offset-2">
                 Registreer hier
               </button>
             </p>
           ) : (
             <p className="text-slate-500 dark:text-slate-400 text-sm">
               Al een account?{" "}
-              <button onClick={() => { setMode("login"); setError(null); }} className="text-accent font-bold hover:underline">
+              <button onClick={() => { setMode("login"); setError(null); }} className="text-primary font-bold underline underline-offset-2">
                 Log in
               </button>
             </p>
@@ -288,10 +301,13 @@ export default function LoginPage() {
         </div>
         </>
         )}
+        </div>
+        <ul className="mt-6 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm font-semibold text-slate-600">
+          <li>✓ Gratis</li>
+          <li>✓ Groeit mee met je kind</li>
+          <li>✓ Nooit kindergezichten</li>
+        </ul>
       </div>
-
-      <div className="fixed top-[-100px] right-[-50px] w-[300px] h-[300px] bg-primary/20 rounded-full blur-3xl -z-10"></div>
-      <div className="fixed bottom-[-50px] left-[-50px] w-[250px] h-[250px] bg-accent/10 rounded-full blur-3xl -z-10"></div>
     </div>
   );
 }

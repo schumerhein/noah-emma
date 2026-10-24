@@ -332,7 +332,7 @@ export default function ProfilePage() {
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-8 text-center bg-white dark:bg-slate-900">
         <span className="text-5xl">👤</span>
         <h2 className="text-xl font-bold">Niet ingelogd</h2>
-        <Link href="/login" className="bg-primary text-white px-6 py-3 rounded-xl font-bold">Inloggen</Link>
+        <Link href="/login" className="bg-primary text-white px-6 py-3 rounded-full font-bold">Inloggen</Link>
       </div>
     );
   }
@@ -420,17 +420,17 @@ export default function ProfilePage() {
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3 mt-5">
-          <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-3 text-center">
-            <p className="text-2xl font-black text-slate-900 dark:text-white">{actieveItems.length}</p>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Actief</p>
+          <div className="bg-blauw-100 dark:bg-slate-800 rounded-[18px] p-3 text-center">
+            <p className="font-headline text-2xl font-extrabold text-blauw-600">{actieveItems.length}</p>
+            <p className="text-[12px] font-semibold text-slate-600 dark:text-slate-300">Actief</p>
           </div>
-          <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-3 text-center">
-            <p className="text-2xl font-black text-slate-900 dark:text-white">{profile.totaal_verkopen || 0}</p>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Verkopen</p>
+          <div className="bg-roze-100 dark:bg-slate-800 rounded-[18px] p-3 text-center">
+            <p className="font-headline text-2xl font-extrabold text-roze-600">{profile.totaal_verkopen || 0}</p>
+            <p className="text-[12px] font-semibold text-slate-600 dark:text-slate-300">Verkopen</p>
           </div>
-          <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-3 text-center">
-            <p className="text-2xl font-black text-slate-900 dark:text-white">{favorieten.length}</p>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Opgeslagen</p>
+          <div className="bg-blauw-100 dark:bg-slate-800 rounded-[18px] p-3 text-center">
+            <p className="font-headline text-2xl font-extrabold text-blauw-600">{favorieten.length}</p>
+            <p className="text-[12px] font-semibold text-slate-600 dark:text-slate-300">Opgeslagen</p>
           </div>
         </div>
       </header>
@@ -439,7 +439,7 @@ export default function ProfilePage() {
         {/* Kinderen */}
         <section className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">Mijn kinderen</h2>
+            <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-primary">Mijn kinderen</h2>
             <Link href="/onboarding/kind" className="flex items-center gap-1 text-xs font-bold text-primary">
               <Plus className="w-3.5 h-3.5" /> Kind toevoegen
             </Link>
@@ -582,7 +582,7 @@ export default function ProfilePage() {
           {actieveTab === "items" && (
             <div>
               <div className="flex justify-between items-center mb-3">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{actieveItems.length} actief</p>
+                <p className="text-xs font-bold text-primary uppercase tracking-[0.14em]">{actieveItems.length} actief</p>
                 <Link href="/sell" className="text-xs font-bold text-primary flex items-center gap-1">
                   <Plus className="w-3.5 h-3.5" /> Nieuw item
                 </Link>
@@ -592,7 +592,7 @@ export default function ProfilePage() {
                 <div className="text-center py-12 space-y-3">
                   <span className="text-5xl">📦</span>
                   <p className="font-bold text-slate-600 dark:text-slate-300">Nog geen items geplaatst</p>
-                  <Link href="/sell" className="inline-block bg-primary text-white px-5 py-2.5 rounded-xl font-bold text-sm">
+                  <Link href="/sell" className="inline-block bg-primary text-white px-5 py-2.5 rounded-full font-bold text-sm">
                     Eerste item plaatsen
                   </Link>
                 </div>
@@ -749,7 +749,7 @@ export default function ProfilePage() {
                     <p>💛 Swipe rechts op de homepage om producten op te slaan</p>
                     <p>🤍 Of tik op het hartje op een productpagina</p>
                   </div>
-                  <Link href="/" className="inline-block bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm mt-2">
+                  <Link href="/" className="inline-block bg-primary text-white px-6 py-3 rounded-full font-bold text-sm mt-2">
                     Producten ontdekken
                   </Link>
                 </div>
@@ -801,7 +801,7 @@ export default function ProfilePage() {
         {/* Account menu */}
         <section className="space-y-2 pb-4">
           {/* Primaire acties */}
-          <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 pb-1">Mijn account</h2>
+          <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-primary pb-1">Mijn account</h2>
           {[
             { icon: <Bell className="w-5 h-5" />, label: "Notificaties", href: "/notificaties" },
             { icon: <Package className="w-5 h-5" />, label: "Bestellingen", href: "/orders" },
@@ -830,7 +830,7 @@ export default function ProfilePage() {
           ))}
 
           {/* Ontdekken & personaliseren */}
-          <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 pt-4 pb-1">Ontdekken</h2>
+          <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-primary pt-4 pb-1">Ontdekken</h2>
           {[
             { icon: <Sliders className="w-5 h-5" />, label: "Personaliseer je feed", href: "/feed-voorkeuren", sub: "Categorieën, merken en leden" },
           ].map(({ icon, label, href, sub }) => (
@@ -849,7 +849,7 @@ export default function ProfilePage() {
           ))}
 
           {/* Help */}
-          <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 pt-4 pb-1">Hulp</h2>
+          <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-primary pt-4 pb-1">Hulp</h2>
           {[
             { icon: <HelpCircle className="w-5 h-5" />, label: "Veelgestelde vragen", href: "/faq", sub: "Antwoorden op je vragen" },
             { icon: <Headphones className="w-5 h-5" />, label: "Helpdesk", href: "/helpdesk", sub: "Neem contact op met ons" },
@@ -881,7 +881,7 @@ export default function ProfilePage() {
           </button>
 
           {/* Juridisch & info */}
-          <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 pt-4 pb-1">Info</h2>
+          <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-primary pt-4 pb-1">Info</h2>
           {[
             { icon: <FileText className="w-5 h-5" />, label: "Wettelijke gegevens", href: "/wettelijk", sub: "Voorwaarden en privacy" },
             { icon: <Cookie className="w-5 h-5" />, label: "Mijn voorkeuren", href: "/voorkeuren", sub: "Cookievoorkeuren beheren" },

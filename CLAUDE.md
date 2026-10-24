@@ -13,7 +13,12 @@ Dit bestand beschrijft de daadwerkelijke stand van de code.
 - **Dev server:** `npm run dev` → draait op poort **9002** (niet 3000), met Turbopack
 - **Backend:** Supabase (Postgres + Auth + Storage), client in `src/lib/supabase.ts`
 - **AI-flows:** Genkit (`genkit`, `@genkit-ai/google-genai`) — flows in `src/ai/flows/`
-- **Styling:** Tailwind CSS, fonts Manrope (headings) + Inter (body), Material Icons Round
+- **Styling:** Tailwind CSS, fonts Manrope (headings) + Inter (body), Material Icons Round /
+  lucide-react. De app volgt de huisstijl van de marketingwebsite: `slate` is in
+  `tailwind.config.ts` omgezet naar warme aubergine-tinten (900 = #241A2E), merkkleuren
+  `roze-*` / `blauw-*` / `inkt`, schaduwen `shadow-zacht` / `shadow-kaart`, verloop
+  `.verloop-merk`. Koppen (h1–h4) binnen `.app-frame` krijgen automatisch Manrope
+  (`globals.css`). `primary` is Emma-roze #D63D74, bij een jongen Noah-blauw #1C7FA8.
 - **Legacy:** project is ooit gescaffold vanuit Firebase Studio/IDX (`apphosting.yaml`,
   `.idx/`, `metadata.json`, `firebase` dependency). **Niet actief gebruikt** — auth,
   database en storage lopen via Supabase, niet Firebase. Kan opgeruimd worden maar is
@@ -65,6 +70,10 @@ projectroot (geen migratietool, handmatig in Supabase SQL editor uitvoeren):
 - `reviews-table.sql`, `verkocht-kolom.sql`, `add-geslacht-column.sql`,
   `profiel-geboortedatum.sql` — feature-specifieke schema-uitbreidingen
 
+Rechten op `profiles` werken met kolom-whitelists (laatste stand: `profielrechten-herstellen.sql`):
+`email` en `mollie_*` zijn niet leesbaar voor de app, `is_admin`/`is_premium` niet schrijfbaar.
+Gebruikt de app een nieuwe profielkolom, zet die dan ook in de `grant select`/`grant update`-lijst.
+
 Bij nieuwe tabellen/kolommen: voeg een nieuw `.sql`-bestand toe met een beschrijvende naam
 i.p.v. bestaande bestanden te wijzigen, zodat de historie van wijzigingen leesbaar blijft.
 
@@ -86,6 +95,9 @@ src/lib/              → Supabase client, avatar-compositie, groeicurve, utils
   (verwachte maat uit geboortedatum) zijn gebouwd en werkend. De kindmaat groeit
   automatisch mee: een nachtelijke pg_cron-job (`kindmaat-meegroeien.sql`) zet de maat
   omhoog; de maattabel daar moet gelijk blijven aan `schatMaatOpLeeftijd` in `src/lib/groei.ts`.
+- Swipen op Ontdekken zit in `src/components/SwipeStapel.tsx`: de sleepbeweging past de
+  kaart direct in de DOM aan (geen React-state per frame), flick-snelheid telt mee, en
+  weggeswipete kaarten vliegen als losse laag uit zodat je meteen door kunt.
 - `TESTPLAN.md` bevat een handmatig testscript voor de volledige cyclus (registratie →
   advertentie → moderatie → chat/bod → deal → review → melden/blokkeren).
 - Fase: Next.js web-prototype (fase 1 uit de productvisie). React Native/Expo-versie en

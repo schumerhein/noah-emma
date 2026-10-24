@@ -81,7 +81,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         .eq("user_id", user.id)
         .order("created_at", { ascending: true })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (data) {
         slaActiefKindOp(data as ActiefKind);

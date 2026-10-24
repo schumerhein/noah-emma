@@ -115,7 +115,7 @@ export function FeedbackProvider({ children, tabTonen = true }: { children: Reac
               </SheetDescription>
               <button
                 onClick={() => setOpen(false)}
-                className="mt-2 w-full h-12 rounded-2xl bg-primary text-white font-bold text-sm"
+                className="mt-2 w-full h-12 rounded-full bg-primary text-white font-bold text-sm"
               >
                 Sluiten
               </button>
@@ -174,7 +174,7 @@ export function FeedbackProvider({ children, tabTonen = true }: { children: Reac
               <button
                 onClick={verstuur}
                 disabled={bericht.trim().length < 3 || bezig}
-                className="mt-4 w-full h-13 py-3.5 rounded-2xl bg-primary text-white font-black text-base flex items-center justify-center gap-2 disabled:opacity-40 active:scale-[0.98] transition-all"
+                className="mt-4 w-full h-13 py-3.5 rounded-full bg-primary text-white font-black text-base flex items-center justify-center gap-2 disabled:opacity-40 active:scale-[0.98] transition-all"
               >
                 {bezig ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-4 h-4" />}
                 {bezig ? "Versturen…" : "Feedback versturen"}

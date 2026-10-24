@@ -19,7 +19,7 @@ export default function AvatarPreviewPage() {
   const leeftijd = leeftijdBijMaat(maat);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#fff5f7] via-white to-[#f0f6ff] dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 font-display pb-16">
+    <div className="min-h-screen bg-gradient-to-b from-[#fff5f7] via-white to-[#f0f6ff] dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 pb-16">
       <header className="pt-14 pb-4 px-6 flex items-center gap-4 sticky top-0 z-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800">
         <button onClick={() => router.back()} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
           <ChevronLeft className="w-5 h-5 text-slate-600 dark:text-slate-300" />

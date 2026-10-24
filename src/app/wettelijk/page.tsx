@@ -61,7 +61,7 @@ export default function WettelijkPage() {
 
         {/* Bedrijfsgegevens */}
         <div className="px-6 pt-8 pb-4 space-y-1">
-          <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Bedrijfsgegevens</p>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-primary mb-3">Bedrijfsgegevens</p>
           <p className="text-sm text-slate-700 dark:text-slate-300 font-semibold">Noah & Emma</p>
           <p className="text-sm text-slate-400">Nederland</p>
           <p className="text-sm text-slate-400 mt-2">

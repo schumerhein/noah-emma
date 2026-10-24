@@ -87,7 +87,7 @@ export default function KindOnboardingPage() {
   const TOTAL_STEPS = 4;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#fff0f3] via-white to-[#fff8f0] font-display flex flex-col">
+    <div className="min-h-screen verloop-merk flex flex-col">
       {/* Header */}
       <header className="px-6 pt-14 pb-4 flex items-center gap-4">
         {stap > 1 && (
@@ -213,7 +213,7 @@ export default function KindOnboardingPage() {
 
             <button
               onClick={() => setStap(3)}
-              className="w-full h-14 bg-primary text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
+              className="w-full h-14 bg-primary text-white rounded-full font-bold text-lg flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
             >
               <span>Verder</span>
               <ChevronRight className="w-5 h-5" />
@@ -269,7 +269,7 @@ export default function KindOnboardingPage() {
               <button onClick={() => setStap(4)} className="flex-1 h-14 border-2 border-slate-200 text-slate-500 rounded-2xl font-bold text-sm">
                 Overslaan
               </button>
-              <button onClick={() => setStap(4)} className="flex-1 h-14 bg-primary text-white rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-[0.98] transition-all">
+              <button onClick={() => setStap(4)} className="flex-1 h-14 bg-primary text-white rounded-full font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-[0.98] transition-all">
                 <span>Verder</span>
                 <ChevronRight className="w-5 h-5" />
               </button>
@@ -332,7 +332,7 @@ export default function KindOnboardingPage() {
             <button
               onClick={handleOpslaan}
               disabled={loading}
-              className="w-full h-14 bg-primary text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
+              className="w-full h-14 bg-primary text-white rounded-full font-bold text-lg flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
             >
               {loading ? (
                 <span className="material-icons-round animate-spin">progress_activity</span>

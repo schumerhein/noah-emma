@@ -3,44 +3,26 @@
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { haalGeblokkeerdeIds, filterZichtbaar } from "@/lib/zichtbaarheid";
 import { leesActiefKind, slaActiefKindOp, zetViewportHoogte, type ActiefKind } from "@/components/ThemeProvider";
 import { useToast } from "@/hooks/use-toast";
 import { PremiumModal } from "@/components/PremiumModal";
-import { X, Zap, Rocket } from "lucide-react";
+import { Heart, ShoppingBag, X, Zap } from "lucide-react";
 import { LEGE_FEED_VOORKEUREN, scoreVoorkeurMatch, type FeedVoorkeuren } from "@/lib/feedVoorkeuren";
 import { leesRecentBekekenIds } from "@/lib/recentBekeken";
 import { OpenBeoordelingen } from "@/components/OpenBeoordelingen";
+import { NoahEmmaLogo } from "@/components/Header";
+import { SwipeStapel, type SwipeListing, type SwipeRichting, type SwipeStapelHandle } from "@/components/SwipeStapel";
 
-type Listing = {
-  id: string;
-  titel: string;
-  prijs: number;
-  maat: string;
-  conditie: string;
-  categorie: string;
-  subcategorie?: string | null;
-  merk: string | null;
-  foto_urls: string[];
-  likes: number;
-  user_id: string;
-  gepromoot?: boolean;
-  promotie_verloopdatum?: string | null;
-  profiles?: {
-    naam: string | null;
-    stad: string | null;
-    gemiddelde_beoordeling: number | null;
-    totaal_beoordelingen: number | null;
-    avatar_url: string | null;
-    vakantiestand: boolean | null;
-    privacy_instellingen?: { verberg_locatie?: boolean } | null;
-  };
-};
+type Listing = SwipeListing;
 
 export default function Home() {
   const { toast } = useToast();
+  const router = useRouter();
+  const stapelRef = useRef<SwipeStapelHandle>(null);
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [kind, setKind] = useState<ActiefKind | null>(null);
@@ -56,17 +38,15 @@ export default function Home() {
       return nieuw;
     });
   };
-  const [swiping, setSwiping] = useState<"left" | "right" | null>(null);
-  const [dragX, setDragX] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const startX = useRef(0);
-  const pendingDragX = useRef(0);
-  const dragFrame = useRef<number | null>(null);
-  const swipeThreshold = 100;
-
   // Verdienmodel
   const [isPremium, setIsPremium] = useState(false);
   const [swipesVandaag, setSwipesVandaag] = useState(0);
+  // Zelfde teller, maar direct bij te werken: bij snel achter elkaar swipen
+  // loopt de state één render achter en zou de daglimiet te laat ingaan.
+  const swipesRef = useRef(0);
+  const premiumRef = useRef(false);
+  const userIdRef = useRef<string | null>(null);
+  const gastMeldingGetoond = useRef(false);
   const SWIPE_LIMIET = 10;
   const [toonPremiumModal, setToonPremiumModal] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
@@ -90,6 +70,7 @@ export default function Home() {
       // onthouden of er iemand is ingelogd, voor de UI (bijv. de
       // swipe-teller, die voor gasten toch niet van toepassing is).
       const { data: { user } } = await supabase.auth.getUser();
+      userIdRef.current = user?.id ?? null;
       setIsGast(!user);
       setAuthChecked(true);
     })();
@@ -148,6 +129,7 @@ export default function Home() {
     const premium = profile?.is_premium &&
       (!profile.premium_verloopdatum || new Date(profile.premium_verloopdatum) > new Date());
     setIsPremium(premium || false);
+    premiumRef.current = !!premium;
 
     if (!premium) {
       const vandaag = new Date().toISOString().split("T")[0];
@@ -157,7 +139,8 @@ export default function Home() {
         .eq("user_id", user.id)
         .eq("datum", vandaag)
         .maybeSingle();
-      setSwipesVandaag(teller?.aantal || 0);
+      swipesRef.current = teller?.aantal || 0;
+      setSwipesVandaag(swipesRef.current);
     }
   };
 
@@ -347,177 +330,112 @@ export default function Home() {
   }, [listings.length, heeftMeerNormaal, authChecked, loading]);
 
   const registreerSwipe = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user || isPremium) return;
+    const userId = userIdRef.current;
+    if (!userId || premiumRef.current) return;
 
+    swipesRef.current += 1;
+    setSwipesVandaag(swipesRef.current);
     const vandaag = new Date().toISOString().split("T")[0];
     await supabase.from("swipe_tellers").upsert(
-      { user_id: user.id, datum: vandaag, aantal: swipesVandaag + 1 },
+      { user_id: userId, datum: vandaag, aantal: swipesRef.current },
       { onConflict: "user_id,datum" }
     );
-    setSwipesVandaag(prev => prev + 1);
   };
 
-  const handleSwipeAction = (direction: "left" | "right") => {
-    // Een kaart die al wegzwaait niet nog eens laten triggeren — anders kan
-    // snel dubbel tikken op de knoppen (buiten het sleep-gebaar om, dat dit
-    // al via `swiping` blokkeert) een like of swipe-telling dubbel tellen
-    // voor wat voor de gebruiker één enkele swipe lijkt.
-    if (swiping) return;
-
-    // Check swipe limiet
-    if (!isPremium && swipesVandaag >= SWIPE_LIMIET) {
+  // Daglimiet: voor ingelogde gebruikers zonder Premium. Gasten tellen niet
+  // mee (die worden pas bij een concrete actie naar inloggen gestuurd).
+  const magSwipen = () => {
+    if (userIdRef.current && !premiumRef.current && swipesRef.current >= SWIPE_LIMIET) {
       setToonPremiumModal(true);
-      return;
+      return false;
     }
+    return true;
+  };
 
-    const geswipet = current;
-    setSwiping(direction);
-    setDragX(direction === "right" ? 250 : -250);
+  const handleSwipe = (direction: SwipeRichting, geswipet: Listing) => {
+    // Meteen uit de stapel halen: de kaart vliegt als losse laag weg en de
+    // volgende is direct te swipen. Like en teller gaan op de achtergrond,
+    // zodat de animatie nooit op het netwerk hoeft te wachten.
+    setListings(prev => prev.filter(l => l.id !== geswipet.id));
 
-    // Like opslaan en swipe-teller bijwerken op de achtergrond — de
-    // kaartanimatie hoeft niet op het netwerk te wachten, anders voelt
-    // swipen traag aan zodra de verbinding wat latency heeft.
-    (async () => {
-      if (direction === "right" && geswipet) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const actiefKind = leesActiefKind();
-          await supabase.from("favorites")
-            .upsert(
-              { user_id: user.id, listing_id: geswipet.id, kind_id: actiefKind?.id ?? null },
-              { onConflict: "user_id,listing_id" }
-            );
-        } else {
-          // Gast: like wordt niet bewaard — verwijs één keer naar inloggen
-          toast({
-            title: "Log in om favorieten te bewaren",
-            description: "Als gast worden je likes niet opgeslagen.",
-          });
-        }
+    if (direction === "right") {
+      const userId = userIdRef.current;
+      if (userId) {
+        const actiefKind = leesActiefKind();
+        supabase.from("favorites")
+          .upsert(
+            { user_id: userId, listing_id: geswipet.id, kind_id: actiefKind?.id ?? null },
+            { onConflict: "user_id,listing_id" }
+          )
+          .then(() => {});
+      } else if (!gastMeldingGetoond.current) {
+        // Gast: like wordt niet bewaard — verwijs één keer naar inloggen
+        gastMeldingGetoond.current = true;
+        toast({
+          title: "Log in om favorieten te bewaren",
+          description: "Als gast worden je likes niet opgeslagen.",
+        });
       }
-      await registreerSwipe();
-    })();
-
-    // Zelfde duur als de wegzwaai-transitie hieronder (0.5s), zodat de
-    // volgende kaart pas verschijnt zodra de vorige echt van het scherm is.
-    setTimeout(() => {
-      setListings(prev => prev.length > 1 ? prev.slice(1) : []);
-      setSwiping(null);
-      setDragX(0);
-    }, 500);
-  };
-
-  const onPointerDown = (e: React.PointerEvent) => {
-    if (swiping) return;
-    setIsDragging(true);
-    startX.current = e.clientX;
-    pendingDragX.current = 0;
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-  };
-  const onPointerMove = (e: React.PointerEvent) => {
-    if (!isDragging) return;
-    // Zet elke pointermove meteen om in de nieuwste positie, maar geef die
-    // pas per animatieframe door aan React — anders vraagt een snelle sleep
-    // (vooral met een muis) meer re-renders dan het scherm kan bijhouden,
-    // en voelt het slepen hokkerig aan.
-    pendingDragX.current = e.clientX - startX.current;
-    if (dragFrame.current == null) {
-      dragFrame.current = requestAnimationFrame(() => {
-        setDragX(pendingDragX.current);
-        dragFrame.current = null;
-      });
     }
-  };
-  const onPointerUp = (e: React.PointerEvent) => {
-    if (!isDragging) return;
-    if (dragFrame.current != null) {
-      cancelAnimationFrame(dragFrame.current);
-      dragFrame.current = null;
-    }
-    setIsDragging(false);
-    (e.target as HTMLElement).releasePointerCapture(e.pointerId);
-    const eindX = pendingDragX.current;
-    if (eindX > swipeThreshold) handleSwipeAction("right");
-    else if (eindX < -swipeThreshold) handleSwipeAction("left");
-    else setDragX(0);
+    registreerSwipe();
   };
 
-  const likeOpacity = Math.min(Math.max(dragX / 80, 0), 1);
-  const nopeOpacity = Math.min(Math.max(-dragX / 80, 0), 1);
-  const rotation = dragX / 15;
   const current = listings[0];
 
-  // Zonder beoordeling: vijf lege sterren (reviews staan altijd in beeld).
-  const renderStars = (rating: number | null) => {
-    rating = rating || 0;
-    const vol = Math.floor(rating);
-    const half = rating % 1 >= 0.5;
-    return (
-      <div className="flex items-center gap-0.5">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <span key={i} className={cn(
-            "material-icons-round text-[12px]",
-            i < vol ? "text-amber-400" : (i === vol && half ? "text-amber-300" : "text-slate-200 dark:text-slate-600")
-          )}>
-            {i < vol ? "star" : (i === vol && half ? "star_half" : "star_border")}
-          </span>
-        ))}
-        <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 ml-0.5">
-          {rating.toFixed(1)}
-        </span>
-      </div>
-    );
-  };
-
   return (
-    <div className="flex flex-col bg-background-light dark:bg-background-dark relative font-display overflow-hidden" style={{ height: 'calc(var(--echte-vh, 100dvh) - 5rem - env(safe-area-inset-bottom))' }}>
+    <div className="flex flex-col verloop-merk dark:bg-none dark:bg-background-dark relative overflow-hidden" style={{ height: 'calc(var(--echte-vh, 100dvh) - 5rem - env(safe-area-inset-bottom))' }}>
 
-      {/* Header */}
-      <header className="pt-12 pb-2 px-6 flex items-center justify-between z-10 shrink-0">
-        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white leading-none">Ontdekken</h1>
-        <div className="flex items-center gap-2">
+      {/* Header — het kind-filter staat op een eigen regel: naast titel,
+          logo en teller past het op een telefoon niet op één rij. */}
+      <header className="pt-12 pb-3 px-6 z-10 shrink-0">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <NoahEmmaLogo size={30} />
+            <h1 className="text-[26px] font-extrabold text-slate-900 dark:text-white leading-none truncate">Ontdekken</h1>
+          </div>
           {/* Swipe teller — de dagelijkse limiet geldt niet voor gasten (die
               worden pas bij een concrete actie naar inloggen gestuurd), dus
               toon in plaats daarvan een duidelijke inlog-uitnodiging. */}
           {isGast ? (
-            <Link href="/login" className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary text-white text-xs font-bold">
+            <Link href="/login" className="shrink-0 flex items-center min-h-[36px] px-4 rounded-full bg-slate-900 text-white text-xs font-bold whitespace-nowrap shadow-zacht">
               Log in
             </Link>
           ) : !isPremium && (
             <button
               onClick={() => setToonPremiumModal(true)}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700"
+              aria-label="Swipes over vandaag"
+              className="shrink-0 flex items-center gap-1 min-h-[36px] px-3 rounded-full bg-white dark:bg-slate-800 shadow-zacht"
             >
               <Zap className="w-3.5 h-3.5 text-amber-500" />
-              <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
+              <span className="text-xs font-bold text-slate-600 dark:text-slate-300 whitespace-nowrap">
                 {Math.max(0, SWIPE_LIMIET - swipesVandaag)}/{SWIPE_LIMIET}
               </span>
             </button>
           )}
-          {kind && (
-            <button
-              onClick={() => setFilterOpKind(f => !f)}
-              className={cn(
-                "flex items-center px-3 py-1.5 rounded-full border text-xs font-extrabold tracking-tight transition-all",
-                filterOpKind
-                  ? "bg-primary text-white border-primary shadow-sm shadow-primary/20"
-                  : "bg-primary/10 text-primary-dark border-primary/20"
-              )}
-            >
-              <span className="mr-1.5 text-sm leading-none">
-                {kind.geslacht === "meisje" ? "👧" : kind.geslacht === "jongen" ? "👦" : "🧒"}
-              </span>
-              <span>{kind.naam || "Kind"} · Maat {kind.maat}</span>
-            </button>
-          )}
         </div>
+        {kind && (
+          <button
+            onClick={() => setFilterOpKind(f => !f)}
+            aria-pressed={filterOpKind}
+            className={cn(
+              "mt-3 flex items-center min-h-[34px] px-3 rounded-full border text-xs font-extrabold tracking-tight whitespace-nowrap transition-all",
+              filterOpKind
+                ? "bg-primary text-white border-primary shadow-[0_10px_20px_-10px_hsl(var(--primary)/0.8)]"
+                : "bg-white text-primary-dark border-primary/30"
+            )}
+          >
+            <span className="mr-1.5 text-sm leading-none">
+              {kind.geslacht === "meisje" ? "👧" : kind.geslacht === "jongen" ? "👦" : "🧒"}
+            </span>
+            <span>{kind.naam || "Kind"} · {filterOpKind ? `Maat ${kind.maat}` : "alle maten"}</span>
+          </button>
+        )}
       </header>
 
       <OpenBeoordelingen compact className="shrink-0 mx-6 mb-2" />
 
       {groeiMelding && (
-        <div className="shrink-0 mx-6 mb-2 flex items-center gap-3 rounded-2xl bg-primary/10 dark:bg-primary/20 px-4 py-3">
+        <div className="shrink-0 mx-6 mb-2 flex items-center gap-3 rounded-[20px] bg-white dark:bg-slate-800 shadow-zacht px-4 py-3">
           <span className="text-xl leading-none">🎉</span>
           <p className="flex-1 text-sm font-bold text-slate-700 dark:text-slate-200">
             {groeiMelding.naam || "Je kind"} is gegroeid! We laten nu maat {groeiMelding.maat} zien.
@@ -538,11 +456,11 @@ export default function Home() {
             {/* Recent bekeken */}
       {recentBekekenItems.length > 0 && (
         <div className="shrink-0 pb-2">
-          <p className="px-6 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Onlangs bekeken</p>
+          <p className="px-6 text-[11px] font-bold text-primary uppercase tracking-[0.14em] mb-1.5">Onlangs bekeken</p>
           <div className="flex gap-2 overflow-x-auto no-scrollbar px-6">
             {recentBekekenItems.map(item => (
               <Link key={item.id} href={`/product/${item.id}`} className="shrink-0">
-                <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 relative">
+                <div className="w-14 h-14 rounded-2xl overflow-hidden bg-white dark:bg-slate-800 border-2 border-white shadow-zacht relative">
                   {item.foto_urls?.[0] ? (
                     <Image src={item.foto_urls[0]} alt={item.titel} fill className="object-cover" />
                   ) : (
@@ -571,36 +489,36 @@ export default function Home() {
 
         {!loading && listings.length === 0 && (
           <div className="flex-1 flex items-center justify-center">
-            <div className="flex flex-col items-center gap-4 px-8 text-center">
-              <span className="material-icons-round text-slate-300 text-6xl">
-                {heeftOoitContent ? "celebration" : "inventory_2"}
+            <div className="w-full flex flex-col items-center gap-3 rounded-[32px] bg-white dark:bg-slate-800 shadow-kaart px-7 py-10 text-center">
+              <span className="w-16 h-16 rounded-[20px] bg-secondary flex items-center justify-center text-3xl" aria-hidden="true">
+                {heeftOoitContent ? "🎉" : "🧺"}
               </span>
               {heeftOoitContent ? (
                 <>
-                  <h2 className="text-xl font-bold text-slate-700 dark:text-slate-200">Je hebt alles gezien!</h2>
-                  <p className="text-slate-400 text-sm">
+                  <h2 className="mt-1 text-[22px] font-extrabold text-slate-900 dark:text-slate-100">Je hebt alles gezien!</h2>
+                  <p className="text-slate-600 dark:text-slate-300 text-[15px] leading-relaxed">
                     {kind && filterOpKind
-                      ? `Je hebt alle huidige items in maat ${kind.maat} bekeken. Kom later terug voor nieuwe aanbod.`
-                      : "Je hebt alle huidige items bekeken. Kom later terug voor nieuwe aanbod."}
+                      ? `Je hebt alle huidige items in maat ${kind.maat} bekeken. Kom later terug voor nieuw aanbod.`
+                      : "Je hebt alle huidige items bekeken. Kom later terug voor nieuw aanbod."}
                   </p>
-                  <button onClick={() => laadListings()} className="mt-2 bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm">
+                  <button onClick={() => laadListings()} className="mt-3 min-h-[52px] px-7 rounded-full bg-slate-900 text-white font-bold text-[15px] shadow-zacht">
                     Opnieuw beginnen
                   </button>
                 </>
               ) : kind && filterOpKind ? (
                 <>
-                  <h2 className="text-xl font-bold text-slate-700 dark:text-slate-200">Geen producten in maat {kind.maat}</h2>
-                  <p className="text-slate-400 text-sm">Er zijn nog geen items in de huidige maat van {kind.naam || "je kind"}.</p>
-                  <button onClick={() => setFilterOpKind(false)} className="mt-2 bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm">
+                  <h2 className="mt-1 text-[22px] font-extrabold text-slate-900 dark:text-slate-100">Nog niets in maat {kind.maat}</h2>
+                  <p className="text-slate-600 dark:text-slate-300 text-[15px] leading-relaxed">Er zijn nog geen items in de huidige maat van {kind.naam || "je kind"}.</p>
+                  <button onClick={() => setFilterOpKind(false)} className="mt-3 min-h-[52px] px-7 rounded-full bg-slate-900 text-white font-bold text-[15px] shadow-zacht">
                     Toon alle maten
                   </button>
                 </>
               ) : (
                 <>
-                  <h2 className="text-xl font-bold text-slate-700 dark:text-slate-200">Nog geen producten</h2>
-                  <p className="text-slate-400 text-sm">Wees de eerste om iets te plaatsen!</p>
-                  <Link href="/sell">
-                    <button className="mt-2 bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm">Product plaatsen</button>
+                  <h2 className="mt-1 text-[22px] font-extrabold text-slate-900 dark:text-slate-100">Nog geen producten</h2>
+                  <p className="text-slate-600 dark:text-slate-300 text-[15px] leading-relaxed">Wees de eerste die iets plaatst: wat te klein is, past een ander kind precies.</p>
+                  <Link href="/sell" className="mt-3 inline-flex items-center min-h-[52px] px-7 rounded-full bg-slate-900 text-white font-bold text-[15px] shadow-zacht">
+                    Product plaatsen
                   </Link>
                 </>
               )}
@@ -610,149 +528,40 @@ export default function Home() {
 
         {!loading && current && (
           <>
-            <div className="card-stack w-full relative flex-1 min-h-0">
-              {listings.length > 1 && (
-                <div className="absolute inset-x-2 bottom-0 top-3 bg-slate-100 dark:bg-zinc-800 rounded-2xl opacity-60 scale-[0.97]" />
-              )}
-
-              <div
-                key={current.id}
-                onPointerDown={onPointerDown}
-                onPointerMove={onPointerMove}
-                onPointerUp={onPointerUp}
-                style={{
-                  transform: (isDragging || swiping)
-                    ? `translateX(${dragX}px) rotate(${rotation}deg)`
-                    : undefined,
-                  transition: isDragging ? "none" : "transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
-                  // Zonder dit probeert de browser op mobiel de pagina zelf te
-                  // scrollen/rubberbanden zodra je horizontaal sleept, wat
-                  // precies het hokkerige gevoel geeft dat je met een muis
-                  // nooit tegenkomt — laat het slepen volledig aan onze eigen
-                  // pointer-handlers over.
-                  touchAction: "none",
-                  // Zonder GPU-hint tekent WebKit (Safari-motor, ook onder
-                  // Chrome op iPhone) de kaart soms opnieuw bij elke
-                  // transform-wijziging in plaats van 'm alleen te
-                  // verschuiven — dat geeft precies het hortende gevoel.
-                  willChange: "transform",
-                }}
-                className={cn(
-                  "absolute inset-0 bg-white dark:bg-zinc-800 rounded-2xl shadow-xl overflow-hidden flex flex-col border border-slate-100 dark:border-slate-700 select-none",
-                  !swiping && "cursor-grab active:cursor-grabbing"
-                )}
-              >
-                {/* Foto */}
-                <div className="relative flex-1 bg-slate-50 dark:bg-zinc-700 overflow-hidden pointer-events-none min-h-0">
-                  {current.foto_urls?.[0] ? (
-                    <Image src={current.foto_urls[0]} alt={current.titel} fill className="object-cover" priority />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="material-icons-round text-slate-300 text-6xl">image</span>
-                    </div>
-                  )}
-
-                  {/* LIKE / NEE badges */}
-                  <div style={{ opacity: likeOpacity }} className="absolute top-10 left-5 z-20 border-4 border-emerald-500 rounded-xl px-5 py-2 -rotate-12 bg-emerald-500/10 backdrop-blur-sm">
-                    <span className="text-2xl font-black text-emerald-500 uppercase tracking-widest">LIKE</span>
-                  </div>
-                  <div style={{ opacity: nopeOpacity }} className="absolute top-10 right-5 z-20 border-4 border-rose-500 rounded-xl px-5 py-2 rotate-12 bg-rose-500/10 backdrop-blur-sm">
-                    <span className="text-2xl font-black text-rose-500 uppercase tracking-widest">NEE</span>
-                  </div>
-
-                  {/* Gepromoot badge — alleen tonen zolang de boost echt nog loopt */}
-                  {current.gepromoot && current.promotie_verloopdatum && new Date(current.promotie_verloopdatum) > new Date() && (
-                    <div className="absolute top-3 left-3 z-20 flex items-center gap-1 bg-amber-500 px-2.5 py-1 rounded-full shadow-md">
-                      <Rocket className="w-3 h-3 text-white" />
-                      <span className="text-[10px] font-black text-white uppercase tracking-wide">Gepromoot</span>
-                    </div>
-                  )}
-
-                  {/* Prijs + likes badges */}
-                  <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
-                    {current.likes > 0 ? (
-                      <div className="bg-black/40 backdrop-blur-sm px-3 py-1.5 rounded-xl flex items-center gap-1.5">
-                        <span className="text-base">❤️</span>
-                        <span className="text-sm font-bold text-white">{current.likes}</span>
-                      </div>
-                    ) : <div />}
-                    <div className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-sm px-4 py-2 rounded-xl shadow-md">
-                      <span className="text-xl font-black text-primary">€{current.prijs.toFixed(2).replace(".", ",")}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Info sectie */}
-                <div className="p-4 flex flex-col gap-3 pointer-events-none shrink-0">
-                  <div>
-                    <h3 className="text-lg font-extrabold text-slate-900 dark:text-white leading-tight truncate">{current.titel}</h3>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      <span className="bg-slate-100 dark:bg-zinc-700 px-3 py-1 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300">Maat {current.maat}</span>
-                      <span className="bg-slate-100 dark:bg-zinc-700 px-3 py-1 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300">{current.conditie}</span>
-                      {current.merk && (
-                        <span className="bg-primary/10 px-3 py-1 rounded-lg text-xs font-bold text-primary">{current.merk}</span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-700">
-                    {current.profiles?.avatar_url ? (
-                      <Image src={current.profiles.avatar_url} alt={current.profiles.naam || ""} width={36} height={36}
-                        className="w-9 h-9 rounded-full object-cover border border-slate-100 shrink-0" />
-                    ) : (
-                      <div className="w-9 h-9 rounded-full bg-primary/15 flex items-center justify-center text-sm font-black text-primary shrink-0">
-                        {(current.profiles?.naam || "?").charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                    {/* Verkoper + beoordeling — altijd zichtbaar, ook zonder reviews */}
-                    <div className="min-w-0">
-                      <span className="block text-sm font-bold text-slate-700 dark:text-slate-200 truncate">
-                        {current.profiles?.naam || "Gebruiker"}
-                      </span>
-                      <div className="flex items-center gap-1">
-                        {renderStars(current.profiles?.gemiddelde_beoordeling ?? 0)}
-                        {current.profiles?.gemiddelde_beoordeling ? (
-                          <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
-                            {Number(current.profiles.gemiddelde_beoordeling).toFixed(1).replace(".", ",")}
-                            <span className="font-medium text-slate-400"> ({current.profiles.totaal_beoordelingen ?? 0})</span>
-                          </span>
-                        ) : (
-                          <span className="text-[11px] font-medium text-slate-400">Nog geen beoordelingen</span>
-                        )}
-                      </div>
-                    </div>
-                    {current.profiles?.stad && !current.profiles.privacy_instellingen?.verberg_locatie && (
-                      <span className="text-xs font-medium text-slate-500 dark:text-slate-400 truncate ml-auto shrink-0">
-                        📍 {current.profiles.stad}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
+            <div className="w-full relative flex-1 min-h-0">
+              <SwipeStapel
+                ref={stapelRef}
+                listings={listings}
+                magSwipen={magSwipen}
+                onSwipe={handleSwipe}
+                onOpen={(l) => router.push(`/product/${l.id}`)}
+              />
             </div>
 
             {/* Actieknoppen */}
-            <div className="flex items-center justify-center gap-8 py-7 shrink-0">
+            <div className="flex items-center justify-center gap-6 py-5 shrink-0">
               <button
-                onClick={() => handleSwipeAction("left")}
-                disabled={!!swiping}
-                className="w-16 h-16 rounded-full bg-white dark:bg-zinc-800 border border-slate-100 dark:border-zinc-700 shadow-lg flex items-center justify-center text-slate-400 active:scale-90 transition-transform disabled:opacity-50"
+                onClick={() => stapelRef.current?.swipe("left")}
+                aria-label="Volgende"
+                className="w-16 h-16 rounded-full bg-white dark:bg-slate-800 border border-slate-900/10 shadow-[0_12px_30px_-14px_rgba(36,26,46,0.35)] flex items-center justify-center text-slate-600 active:scale-90 transition-transform"
               >
-                <span className="material-icons-round text-3xl">close</span>
+                <X className="w-7 h-7" strokeWidth={2.5} />
               </button>
 
-              <Link href={`/product/${current.id}`}>
-                <button className="w-[4.5rem] h-[4.5rem] rounded-full bg-primary shadow-lg shadow-primary/30 flex items-center justify-center text-white active:scale-95 transition-transform">
-                  <span className="material-icons-round text-4xl">shopping_bag</span>
-                </button>
+              <Link
+                href={`/product/${current.id}`}
+                aria-label="Bekijk product"
+                className="w-14 h-14 rounded-full bg-slate-900 shadow-[0_12px_30px_-14px_rgba(36,26,46,0.6)] flex items-center justify-center text-white active:scale-90 transition-transform"
+              >
+                <ShoppingBag className="w-6 h-6" />
               </Link>
 
               <button
-                onClick={() => handleSwipeAction("right")}
-                disabled={!!swiping}
-                className="w-16 h-16 rounded-full bg-white dark:bg-zinc-800 border-2 border-primary/40 shadow-lg flex items-center justify-center text-primary-dark active:scale-90 transition-transform disabled:opacity-50"
+                onClick={() => stapelRef.current?.swipe("right")}
+                aria-label="Bewaren"
+                className="w-16 h-16 rounded-full bg-primary shadow-[0_14px_28px_-12px_hsl(var(--primary)/0.8)] flex items-center justify-center text-white active:scale-90 transition-transform"
               >
-                <span className="material-icons-round text-3xl">favorite_border</span>
+                <Heart className="w-7 h-7 fill-white" />
               </button>
             </div>
           </>

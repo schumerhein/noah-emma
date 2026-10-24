@@ -61,7 +61,7 @@ export default function SellPage() {
     const laadKind = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data } = await supabase.from("children").select("maat").eq("user_id", user.id).order("created_at").limit(1).single();
+      const { data } = await supabase.from("children").select("maat").eq("user_id", user.id).order("created_at").limit(1).maybeSingle();
       if (data?.maat && !maatHandmatigRef.current) {
         setSize(data.maat);
       }
@@ -242,20 +242,20 @@ export default function SellPage() {
 
   return (
     <div className="bg-background min-h-screen font-body text-slate-800 dark:text-slate-100 pb-28">
-      <header className="sticky top-0 z-50 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md px-6 py-4 flex items-center justify-between border-b border-pink-50 dark:border-slate-800">
+      <header className="sticky top-0 z-50 bg-background/90 dark:bg-background-dark/80 backdrop-blur-md px-6 py-4 flex items-center justify-between border-b border-slate-900/[0.08] dark:border-slate-800">
         <Link href="/">
           <button className="p-2 hover:bg-pink-50 dark:hover:bg-slate-800 rounded-full transition-colors">
             <X className="w-6 h-6 text-slate-400" />
           </button>
         </Link>
-        <h1 className="text-lg font-bold text-slate-700 dark:text-white">Product Toevoegen</h1>
+        <h1 className="text-lg font-extrabold text-slate-900 dark:text-white">Product toevoegen</h1>
         <div className="w-10"></div>
       </header>
 
       <main className="max-w-md mx-auto px-4 py-6 space-y-8">
         {/* Foto sectie */}
         <section className="space-y-4">
-          <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400">Foto's</h2>
+          <h2 className="text-sm font-bold uppercase tracking-[0.14em] text-primary">Foto's</h2>
 
           <div className="relative aspect-[4/5] rounded-2xl overflow-hidden border-4 border-white dark:border-slate-800 bg-slate-50 dark:bg-slate-800 shadow-md">
             {imagePreviews.length > 0 ? (
@@ -571,13 +571,13 @@ export default function SellPage() {
         <Button
           onClick={handlePost}
           disabled={loading}
-          className="w-full h-16 bg-primary hover:bg-primary-dark text-white font-bold rounded-2xl flex items-center justify-center gap-3 transition-all active:scale-95 border-none"
+          className="w-full h-16 bg-primary hover:bg-primary-dark text-white font-bold rounded-full shadow-[0_14px_28px_-14px_hsl(var(--primary)/0.9)] flex items-center justify-center gap-3 transition-all active:scale-95 border-none"
         >
           {loading ? (
             <Loader2 className="w-6 h-6 animate-spin" />
           ) : (
             <>
-              <span className="text-lg">{boostTier ? "Plaatsen & boosten" : "Product Plaatsen"}</span>
+              <span className="text-lg">{boostTier ? "Plaatsen & boosten" : "Product plaatsen"}</span>
               <ArrowRight className="w-5 h-5" />
             </>
           )}

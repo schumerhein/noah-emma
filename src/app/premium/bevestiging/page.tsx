@@ -33,7 +33,7 @@ export default function PremiumBevestigingPage() {
           </div>
           <h1 className="text-2xl font-extrabold mb-2">Welkom bij Premium!</h1>
           <p className="text-slate-500 dark:text-slate-400 mb-6">Je account is bijgewerkt. Veel plezier met alle extra's.</p>
-          <Button onClick={() => router.push("/profile")} className="bg-primary hover:bg-primary-dark text-white font-bold rounded-xl h-12 px-8 border-none">
+          <Button onClick={() => router.push("/profile")} className="bg-primary hover:bg-primary-dark text-white font-bold rounded-full h-12 px-8 border-none">
             Naar mijn profiel
           </Button>
         </>
@@ -43,7 +43,7 @@ export default function PremiumBevestigingPage() {
           <XCircle className="w-12 h-12 text-slate-400 mb-4" />
           <h1 className="text-2xl font-extrabold mb-2">Betaling niet voltooid</h1>
           <p className="text-slate-500 dark:text-slate-400 mb-6">Er is geen betaling ontvangen. Probeer het gerust nog eens.</p>
-          <Button onClick={() => router.push("/premium")} className="bg-primary hover:bg-primary-dark text-white font-bold rounded-xl h-12 px-8 border-none">
+          <Button onClick={() => router.push("/premium")} className="bg-primary hover:bg-primary-dark text-white font-bold rounded-full h-12 px-8 border-none">
             Terug naar Premium
           </Button>
         </>

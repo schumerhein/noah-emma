@@ -45,7 +45,7 @@ const VRAGEN: (Vraag & { onderwerp: Onderwerp; populair?: boolean })[] = [
   { onderwerp: "account", vraag: "Ik ben mijn wachtwoord vergeten. Wat nu?", antwoord: "Kies bij het inloggen voor 'Wachtwoord vergeten'. Je krijgt dan een mail om een nieuw wachtwoord in te stellen." },
   { onderwerp: "kopen", populair: true, vraag: "Hoe betaal ik en hoe krijg ik mijn aankoop?", antwoord: "Je spreekt dat samen met de verkoper af via de chat. Bijvoorbeeld ophalen en contant betalen, of verzenden met een betaalverzoek." },
   { onderwerp: "kopen", vraag: "Hoe neem ik contact op met een verkoper?", antwoord: "Open de advertentie en stuur de verkoper een bericht. Je kunt ook een bod doen." },
-  { onderwerp: "verkopen", vraag: "Hoe plaats ik een advertentie?", antwoord: "Tik in de app op Uploaden, maak een foto van het product, kies de maat en de staat en plaats je advertentie. Het is gratis." },
+  { onderwerp: "verkopen", vraag: "Hoe plaats ik een advertentie?", antwoord: "Tik in de app op Verkopen (de plusknop onderin), maak een foto van het product, kies de maat en de staat en plaats je advertentie. Het is gratis." },
   { onderwerp: "verkopen", vraag: "Hoe snel staat mijn advertentie online?", antwoord: "Meestal direct na de controle. Twijfelt de AI, dan kijkt een van ons mee en dat kan iets langer duren." },
   { onderwerp: "groeimodel", populair: true, vraag: "Hoe stel ik de maat van mijn kind in?", antwoord: "Ga in de app naar je profiel en kies je kind. Vul de geboortedatum of maat in. Daarna groeit de maat vanzelf mee." },
   { onderwerp: "groeimodel", vraag: "Ik heb meerdere kinderen. Werkt dat ook?", antwoord: "Ja. Je voegt elk kind toe met de eigen leeftijd of maat. Met één tik wissel je, en je ziet direct wat bij dat kind past." },

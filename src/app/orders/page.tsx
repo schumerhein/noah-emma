@@ -80,7 +80,7 @@ export default function OrdersPage() {
     dateStr ? new Date(dateStr).toLocaleDateString("nl-NL", { day: "numeric", month: "short" }) : "";
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 font-display">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <header className="pt-14 pb-4 px-6 flex items-center gap-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
         <button
           onClick={() => router.back()}
@@ -118,8 +118,8 @@ export default function OrdersPage() {
 
         {!loading && getoond.length === 0 && (
           <div className="flex flex-col items-center gap-4 py-20 text-center px-8">
-            <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-              {tab === "kopen" ? <ShoppingBag className="w-8 h-8 text-slate-300" /> : <Package className="w-8 h-8 text-slate-300" />}
+            <div className="w-16 h-16 rounded-[22px] bg-secondary dark:bg-slate-800 flex items-center justify-center">
+              {tab === "kopen" ? <ShoppingBag className="w-8 h-8 text-primary" /> : <Package className="w-8 h-8 text-primary" />}
             </div>
             <h2 className="text-lg font-bold text-slate-600 dark:text-slate-300">
               {tab === "kopen" ? "Nog niets gekocht" : "Nog niets verkocht"}

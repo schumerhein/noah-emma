@@ -53,7 +53,7 @@ export default function VoorkeurenPage() {
 
         {/* Altijd aan */}
         <div className="space-y-3">
-          <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Altijd ingeschakeld</p>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-primary">Altijd ingeschakeld</p>
           <div className="border border-slate-100 dark:border-slate-800 rounded-2xl p-5 space-y-2">
             <div className="flex items-center justify-between">
               <p className="font-bold text-sm text-slate-900 dark:text-white">Essentiële cookies</p>
@@ -67,7 +67,7 @@ export default function VoorkeurenPage() {
 
         {/* Optioneel */}
         <div className="space-y-3">
-          <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Optioneel</p>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-primary">Optioneel</p>
 
           <div className="border border-slate-100 dark:border-slate-800 rounded-2xl p-5 space-y-2">
             <p className="font-bold text-sm text-slate-900 dark:text-white">Analytische cookies</p>

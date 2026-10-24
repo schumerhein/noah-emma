@@ -435,12 +435,12 @@ function MessagesContent() {
 
           {!loadingConvs && gefilterd.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
-              <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                <MessageCircle className="w-10 h-10 text-slate-300" />
+              <div className="w-20 h-20 rounded-[22px] bg-secondary dark:bg-slate-800 flex items-center justify-center">
+                <MessageCircle className="w-10 h-10 text-primary" />
               </div>
               <h2 className="text-xl font-bold text-slate-700 dark:text-slate-200">Geen berichten</h2>
               <p className="text-slate-400 text-sm max-w-xs">Contacteer een verkoper via een productpagina om een gesprek te starten.</p>
-              <Link href="/" className="mt-2 bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm">
+              <Link href="/" className="mt-2 bg-primary text-white px-6 py-3 rounded-full font-bold text-sm">
                 Producten ontdekken
               </Link>
             </div>
@@ -511,8 +511,8 @@ function MessagesContent() {
 
           {!loadingNotifs && notificaties.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20 gap-4 text-center px-6">
-              <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                <Bell className="w-10 h-10 text-slate-300" />
+              <div className="w-20 h-20 rounded-[22px] bg-secondary dark:bg-slate-800 flex items-center justify-center">
+                <Bell className="w-10 h-10 text-primary" />
               </div>
               <h2 className="text-xl font-bold text-slate-700 dark:text-slate-200">Geen notificaties</h2>
               <p className="text-slate-400 text-sm max-w-xs">

@@ -309,7 +309,7 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
   }
 
   return (
-    <div className="bg-slate-50 dark:bg-background-dark font-display min-h-screen flex flex-col max-w-md mx-auto h-screen">
+    <div className="bg-slate-50 dark:bg-background-dark min-h-screen flex flex-col max-w-md mx-auto h-screen">
 
       {/* Nav */}
       <nav className="flex items-center justify-between px-4 pt-14 pb-3 border-b border-slate-100 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md sticky top-0 z-40 shrink-0">

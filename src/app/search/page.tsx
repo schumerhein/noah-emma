@@ -351,7 +351,7 @@ export default function SearchPage() {
           <SearchIcon className="w-9 h-9 text-primary" />
         </div>
         <div className="space-y-2">
-          <h1 className="text-2xl font-extrabold font-display text-slate-900 dark:text-white">Zoeken is Premium</h1>
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">Zoeken is Premium</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
             Met Premium zoek en filter je op merk, maat, kleur en prijs, vraag je Noah of Emma om hulp en stel je zoekwaarschuwingen in.
           </p>
@@ -424,7 +424,7 @@ export default function SearchPage() {
 
                   {/* Maat slider */}
                   <div className="space-y-4">
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400">Maat</h3>
+                    <h3 className="text-sm font-bold uppercase tracking-[0.14em] text-primary">Maat</h3>
                     {/* Dual range */}
                     <div className="relative h-10 flex items-center mx-1">
                       <div className="absolute inset-x-0 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full" />
@@ -471,7 +471,7 @@ export default function SearchPage() {
 
                   {/* Prijs */}
                   <div className="space-y-3">
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400">Prijs</h3>
+                    <h3 className="text-sm font-bold uppercase tracking-[0.14em] text-primary">Prijs</h3>
                     <div className="flex items-center gap-3">
                       <div className="flex-1 relative">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-bold">€</span>
@@ -491,7 +491,7 @@ export default function SearchPage() {
 
                   {/* Conditie */}
                   <div className="space-y-3">
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400">Conditie</h3>
+                    <h3 className="text-sm font-bold uppercase tracking-[0.14em] text-primary">Conditie</h3>
                     <div className="grid grid-cols-2 gap-2">
                       {CONDITIONS.map(cond => (
                         <button key={cond} onClick={() => toggleFilter("conditions", cond)}
@@ -508,7 +508,7 @@ export default function SearchPage() {
 
                   {/* Kleur */}
                   <div className="space-y-3">
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400">Kleur</h3>
+                    <h3 className="text-sm font-bold uppercase tracking-[0.14em] text-primary">Kleur</h3>
                     <div className="grid grid-cols-6 gap-3">
                       {KLEUREN.map(k => (
                         <button key={k.naam} onClick={() => toggleFilter("colors", k.naam)}
@@ -525,7 +525,7 @@ export default function SearchPage() {
 
                   {/* Merk */}
                   <div className="space-y-3">
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400">Merk</h3>
+                    <h3 className="text-sm font-bold uppercase tracking-[0.14em] text-primary">Merk</h3>
                     <div className="flex flex-wrap gap-2">
                       {FILTER_BRANDS.map(m => (
                         <button key={m} onClick={() => toggleFilter("merken", m)}
@@ -541,7 +541,7 @@ export default function SearchPage() {
 
                   {/* Materiaal */}
                   <div className="space-y-3">
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400">Materiaal</h3>
+                    <h3 className="text-sm font-bold uppercase tracking-[0.14em] text-primary">Materiaal</h3>
                     <div className="flex flex-wrap gap-2">
                       {MATERIALEN.map(mat => (
                         <button key={mat} onClick={() => toggleFilter("materialen", mat)}
@@ -566,7 +566,7 @@ export default function SearchPage() {
                     </button>
                   )}
                   <SheetClose asChild>
-                    <Button className="flex-1 h-12 bg-primary text-white font-bold rounded-2xl border-none">
+                    <Button className="flex-1 h-12 bg-primary text-white font-bold rounded-full border-none">
                       {resultaten.length > 0 ? `${resultaten.length} ${resultaten.length === 1 ? "resultaat" : "resultaten"}` : "Zoeken"}
                     </Button>
                   </SheetClose>
@@ -611,7 +611,7 @@ export default function SearchPage() {
               <Button
                 onClick={stelAiVraag}
                 disabled={aiBezig || !aiVraag.trim()}
-                className="w-full h-12 bg-primary text-white font-bold rounded-2xl border-none flex items-center justify-center gap-2"
+                className="w-full h-12 bg-primary text-white font-bold rounded-full border-none flex items-center justify-center gap-2"
               >
                 {aiBezig ? <span className="material-icons-round animate-spin text-sm">progress_activity</span> : <><Send className="w-4 h-4" /> Vraag het</>}
               </Button>
@@ -683,7 +683,7 @@ export default function SearchPage() {
             </div>
           ) : (
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">{resultaten.length} {resultaten.length === 1 ? "resultaat" : "resultaten"}</p>
+              <p className="text-xs font-bold text-primary uppercase tracking-[0.14em] mb-4">{resultaten.length} {resultaten.length === 1 ? "resultaat" : "resultaten"}</p>
               <div className="grid grid-cols-2 gap-3">
                 {resultaten.map(item => (
                   <Link key={item.id} href={`/product/${item.id}`}>
@@ -747,7 +747,7 @@ export default function SearchPage() {
             {/* Categorie browse */}
             <section className="space-y-2">
               <div className="flex justify-between items-center mb-2">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400">
+                <h3 className="text-xs font-bold uppercase tracking-[0.14em] text-primary">
                   {activeMainCat ?? "Categorieën"}
                 </h3>
                 {activeMainCat && (
@@ -784,7 +784,7 @@ export default function SearchPage() {
 
             {!activeMainCat && (
               <section className="space-y-3 pb-4">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400">Populaire merken</h3>
+                <h3 className="text-xs font-bold uppercase tracking-[0.14em] text-primary">Populaire merken</h3>
                 <div className="flex flex-wrap gap-2">
                   {POPULAR_BRANDS.map(brand => (
                     <button key={brand} onClick={() => { setZoekterm(brand); zoek(brand); }}

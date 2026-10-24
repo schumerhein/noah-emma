@@ -95,7 +95,7 @@ export default function FAQPage() {
   })).filter(cat => cat.items.length > 0);
 
   return (
-    <div className="bg-background min-h-screen flex flex-col font-display">
+    <div className="bg-background min-h-screen flex flex-col">
       <header className="sticky top-0 z-50 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md px-6 pt-12 pb-4 border-b border-primary/10 shrink-0">
         <div className="flex items-center justify-between mb-6">
           <button onClick={() => router.back()} className="p-2 -ml-2 text-primary">
@@ -147,7 +147,7 @@ export default function FAQPage() {
             <section key={section.category} className="space-y-4">
               <div className="flex items-center gap-2 px-1">
                 <section.icon className="w-4 h-4 text-primary" />
-                <h2 className="text-xs font-black uppercase tracking-widest text-slate-400">{section.category}</h2>
+                <h2 className="text-xs font-black uppercase tracking-[0.14em] text-primary">{section.category}</h2>
               </div>
               
               <Accordion type="single" collapsible className="w-full space-y-3">

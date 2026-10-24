@@ -1,0 +1,66 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../base.css"><script src="../assets.js"></script><script src="../lib.js"></script></head>
+<body><div id="stage">
+  <div class="a blob" style="left:-220px;top:-160px;width:720px;height:720px;background:var(--bt)"></div>
+  <div class="a blob" style="left:600px;top:1300px;width:760px;height:760px;background:var(--pt)"></div>
+
+  <!-- scene 1: hook -->
+  <div id="h1" class="a h" style="top:420px;font-size:112px;padding:0 70px"><span class="w">Kinderwagen</span> <span class="w">staat</span> <span class="w">al</span> <span class="w pk">maanden</span> <span class="w">in</span> <span class="w">de</span> <span class="w">schuur?</span></div>
+  <div id="wagen" class="a" style="left:290px;top:930px;width:500px;height:500px"></div>
+  <div id="floor" class="a" style="left:140px;top:1420px;width:800px;height:8px;border-radius:4px;background:rgba(36,26,46,.1)"></div>
+
+  <!-- scene 2: grid -->
+  <div id="t2" class="a h" style="top:260px;font-size:104px">Niet alleen<br><span class="pk">kleding</span></div>
+  <div id="grid"></div>
+
+  <!-- scene 3: chat -->
+  <div id="t3" class="a h" style="top:260px;font-size:96px">Verkocht aan<br><span class="bl">iemand uit de buurt</span></div>
+  <div id="prod" class="a card" style="left:200px;top:560px;width:680px;padding:36px;display:flex;gap:30px;align-items:center">
+    <div style="width:200px;height:200px;border-radius:28px;background:var(--bt);padding:20px" id="prodImg"></div>
+    <div><div style="font:800 52px Manrope">Kinderwagen</div><div style="font:500 36px Inter;color:var(--muted);margin-top:6px">Goede staat</div><div style="font:800 60px Manrope;color:var(--blue);margin-top:10px">€ 85</div></div>
+  </div>
+  <div id="m1" class="a card" style="left:200px;top:900px;max-width:640px;padding:30px 40px;border-radius:40px 40px 40px 10px;font:500 46px Inter;line-height:1.3">Kan ik hem zaterdag ophalen?</div>
+  <div id="m2" class="a" style="right:200px;top:1100px;max-width:620px;padding:30px 40px;border-radius:40px 40px 10px 40px;background:var(--pink);color:#fff;font:600 46px Inter;line-height:1.3">Top, tot zaterdag! 👍</div>
+
+  <!-- scene 4: gratis -->
+  <div id="g1" class="a h" style="top:640px;font-size:150px;color:var(--pink)">Gratis</div>
+  <div id="g2" class="a h" style="top:820px;font-size:92px">verkopen<br>én kopen</div>
+
+  <div id="end"></div>
+</div>
+<script>
+$('wagen').innerHTML = ICON.wagen(); $('prodImg').innerHTML = ICON.wagen();
+const items = [['wagen', 'Kinderwagens', '#E4F4FB'], ['stoel', 'Autostoeltjes', '#FFEAF1'], ['bed', 'Ledikantjes', '#FFF4D6'], ['stoeltje', 'Kinderstoelen', '#E3F5EC'], ['beer', 'Speelgoed', '#F6EBDD'], ['shirt', 'En kleding', '#FFEAF1']];
+$('grid').outerHTML = items.map((it, i) => {
+  const x = 130 + (i % 2) * 420, y = 560 + Math.floor(i / 2) * 330;
+  const img = it[0] === 'shirt' ? shirtSVG('#F27BA3', '#C0305F', star(100,110,24,'#fff')) : ICON[it[0]]();
+  return `<div id="g${i}x" class="a card" style="left:${x}px;top:${y}px;width:400px;height:300px;border-radius:40px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px"><div style="width:170px;height:170px;border-radius:30px;background:${it[2]};padding:14px">${img}</div><div style="font:800 40px Manrope">${it[1]}</div></div>`;
+}).join('');
+$('end').outerHTML = endCardHTML('Kinderkleding én kindergoed. Zonder kindergezichten.', 'noah-emma.nl');
+window.DUR = 11.8;
+window.render = t => {
+  blobs(t);
+  // scene 1
+  words('h1', t, .1, .11, .45, 2.2, 2.5);
+  const w = P(t, .3, 1.5), wo = P(t, 2.2, 2.6);
+  S('wagen', { x: lerp(-900, 0, eo(w)) + wo * 900, y: Math.abs(Math.sin(t * 9)) * -10 * (w < 1 || wo > 0 ? 1 : 0), r: (w < 1 ? Math.sin(t * 9) * 2 : 0) + Math.sin(P(t, 1.5, 2.0) * Math.PI * 2) * 3 * (1 - P(t,1.5,2.0)) });
+  S('floor', { o: Math.min(P(t, .2, .6), 1 - wo) });
+  // scene 2
+  const t2 = P(t, 2.5, 2.9), t2o = P(t, 5.4, 5.8);
+  S('t2', { y: lerp(60, 0, eo(t2)) - t2o * 50, o: t2 * (1 - t2o) });
+  for (let i = 0; i < 6; i++) {
+    const k = P(t, 2.8 + i * .28, 3.25 + i * .28);
+    S('g' + i + 'x', { s: eb(k) * (1 - t2o * .2), r: lerp(i % 2 ? 12 : -12, 0, eo(k)) + Math.sin(t * 2 + i) * 1.2, y: -t2o * 40 + Math.sin(t * 2.2 + i) * 4, o: (k > 0 ? 1 : 0) * (1 - t2o) });
+  }
+  // scene 3
+  const t3 = P(t, 5.8, 6.2), t3o = P(t, 8.3, 8.6);
+  S('t3', { y: lerp(60, 0, eo(t3)) - t3o * 50, o: t3 * (1 - t3o) });
+  const pr = P(t, 5.9, 6.4); S('prod', { y: lerp(200, 0, eo(pr)), o: pr * (1 - t3o) });
+  const m1 = P(t, 6.6, 6.95); S('m1', { y: lerp(60, 0, eo(m1)), s: lerp(.8, 1, eb(m1)), o: m1 * (1 - t3o) });
+  const m2 = P(t, 7.4, 7.75); S('m2', { y: lerp(60, 0, eo(m2)), s: lerp(.8, 1, eb(m2)), o: m2 * (1 - t3o) });
+  // scene 4
+  const g = P(t, 8.6, 9.0), gb = P(t, 8.8, 9.2), go = P(t, 9.9, 10.1);
+  S('g1', { s: eb(g) * (1 + Math.sin(P(t, 9.0, 9.6) * Math.PI) * .06), o: (g > 0 ? 1 : 0) * (1 - go) });
+  S('g2', { y: lerp(60, 0, eo(gb)), o: gb * (1 - go) });
+  endCard(t, 9.9);
+};
+</script></body></html>

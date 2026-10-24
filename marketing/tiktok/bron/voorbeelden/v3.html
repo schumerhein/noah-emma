@@ -1,0 +1,63 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../base.css"><script src="../assets.js"></script><script src="../lib.js"></script></head>
+<body><div id="stage">
+  <div class="a blob" style="left:-220px;top:200px;width:640px;height:640px;background:var(--bt)"></div>
+  <div class="a blob" style="left:640px;top:1200px;width:700px;height:700px;background:var(--pt)"></div>
+
+  <div id="h1" class="a h" style="top:700px;font-size:140px"><span class="w">Ze</span> <span class="w">groeien</span><br><span class="w pk">zó</span> <span class="w pk">snel</span><span class="w">…</span></div>
+
+  <div id="maat" class="a" style="left:0;right:0;top:260px;text-align:center">
+    <div style="font:600 46px Inter;color:var(--muted)">maat</div>
+    <div id="maatN" style="font:800 200px Manrope;letter-spacing:-.04em;line-height:1">62</div>
+  </div>
+  <div id="flyers"></div>
+  <div id="kids"></div>
+  <div id="pop" class="a" style="left:640px;top:820px;background:var(--pink);color:#fff;border-radius:999px;padding:18px 34px;font:800 46px Manrope">te klein!</div>
+  <div id="box" class="a" style="left:650px;top:1300px;width:280px;height:200px;border-radius:26px;background:var(--ink);color:#fff;display:flex;align-items:flex-end;justify-content:center;padding-bottom:26px;font:800 40px Manrope">doorgeven</div>
+
+  <div id="h2" class="a h" style="top:620px;font-size:130px">Geef het <span class="pk">door</span>.</div>
+  <div id="h2b" class="a h" style="top:820px;font-size:104px">Verdien <span class="bl">terug</span>.</div>
+  <div id="h2c" class="a sub" style="top:1040px;padding:0 140px">Stel één keer de maat in. De app groeit vanzelf mee en toont altijd wat nú past.</div>
+
+  <div id="end"></div>
+</div>
+<script>
+const M = ['62','68','74','80','86','92','98','104','110','116','122','128','134'];
+$('kids').outerHTML = M.map(m => `<div id="k${m}" class="a" style="left:-60px;top:420px;width:880px;height:1350px">${SVG['noah' + m]}</div>`).join('');
+const cols = [['#F27BA3','#C0305F'],['#5AB8DE','#176A8C'],['#FFD166','#D9A21B'],['#B9A3E3','#7A5DB8'],['#8FD3B6','#3E9C74']];
+$('flyers').outerHTML = M.map((m, i) => `<div id="f${i}" class="a" style="left:300px;top:1180px;width:180px;height:180px">${shirtSVG(cols[i % 5][0], cols[i % 5][1])}</div>`).join('');
+$('end').outerHTML = endCardHTML('Altijd de maat die nú past. Zonder kindergezichten.', 'noah-emma.nl');
+window.DUR = 12;
+const G0 = 2.0, STEP = .36; // groeifase
+window.render = t => {
+  blobs(t);
+  words('h1', t, .15, .16, .5, 1.6, 1.9);
+  const g = P(t, G0 - .2, G0 + .2), go = P(t, G0 + STEP * M.length + .3, G0 + STEP * M.length + .7);
+  S('maat', { y: lerp(-80, 0, eo(g)) - go * 80, o: g * (1 - go) });
+  S('box', { y: lerp(300, 0, eo(g)) + go * 400, o: g * (1 - go) });
+  let idx = Math.floor((t - G0) / STEP); idx = Math.max(0, Math.min(M.length - 1, idx));
+  $('maatN').textContent = M[idx];
+  const local = cl((t - G0 - idx * STEP) / .18);
+  M.forEach((m, i) => {
+    const on = i === idx && t > G0 - .2;
+    const squash = on && idx > 0 ? 1 + Math.sin(local * Math.PI) * .06 : 1;
+    S('k' + m, { sx: 1 / squash, sy: squash, y: Math.sin(t * 3) * 4 + go * 200, o: (on ? (i === 0 ? g : 1) : 0) * (1 - go) });
+    $('k' + m).style.transformOrigin = '50% 92%';
+    // oude kleding vliegt naar de doos
+    const fk = P(t, G0 + (i + 1) * STEP - .02, G0 + (i + 1) * STEP + .5);
+    const fly = i < M.length - 1 ? fk : 0;
+    S("f" + i, { x: lerp(0, 450, eio(fly)), y: lerp(0, 300, eio(fly)) - Math.sin(fly * Math.PI) * 420, r: fly * 300, s: lerp(1, .55, fly), o: fly > 0 && fly < 1 ? 1 : 0 });
+  });
+  S('maatN', { s: 1 + (1 - local) * .12 * (idx > 0 ? 1 : 0) });
+  const pp = (t - G0) % (STEP * 3) / (STEP * 3);
+  const showPop = t > G0 + STEP && t < G0 + STEP * (M.length - 1);
+  S('pop', { s: showPop ? eb(cl(pp * 4)) : 0, r: 8, o: showPop && pp < .7 ? 1 : 0 });
+  S('box', { y: lerp(300, 0, eo(g)) + go * 400, o: g * (1 - go), s: 1 + (t > G0 + STEP && t < G0 + STEP * M.length ? Math.max(0, Math.sin(((t - G0) / STEP) * Math.PI * 2)) * .05 : 0) });
+  // scene 3
+  const a = G0 + STEP * M.length + .6;
+  const h2 = P(t, a, a + .4), h2b = P(t, a + .35, a + .75), h2c = P(t, a + .7, a + 1.1), ho = P(t, a + 2.3, a + 2.6);
+  S('h2', { s: eb(h2), o: (h2 > 0 ? 1 : 0) * (1 - ho) });
+  S('h2b', { s: eb(h2b), o: (h2b > 0 ? 1 : 0) * (1 - ho) });
+  S('h2c', { y: lerp(50, 0, eo(h2c)), o: h2c * (1 - ho) });
+  endCard(t, a + 2.5);
+};
+</script></body></html>

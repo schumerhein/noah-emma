@@ -1,0 +1,17 @@
+@font-face{font-family:Manrope;font-weight:800;src:url(manrope-latin-800-normal.woff2)}
+@font-face{font-family:Manrope;font-weight:700;src:url(manrope-latin-700-normal.woff2)}
+:root{--ink:#241A2E;--muted:#5B4F63;--pink:#D63D74;--blue:#1C7FA8;--bg:#FFF9FA;--pt:#FFEAF1;--bt:#E4F4FB}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:var(--bg)}
+body{font-family:Inter,sans-serif;color:var(--ink)}
+#stage{position:relative;width:1080px;height:1920px;overflow:hidden;background:var(--bg)}
+.a{position:absolute;will-change:transform,opacity}
+.blob{border-radius:50%;filter:blur(2px)}
+.h{font-family:Manrope;font-weight:800;letter-spacing:-0.035em;line-height:1.02;text-align:center;left:0;right:0}
+.pk{color:var(--pink)}.bl{color:var(--blue)}
+.sub{font-family:Inter;font-weight:500;color:var(--muted);text-align:center;left:0;right:0;font-size:46px;line-height:1.3}
+.pill{background:var(--ink);color:#fff;border-radius:999px;font-family:Manrope;font-weight:800;font-size:54px;padding:30px 64px;display:inline-block}
+.card{background:#fff;border-radius:48px;box-shadow:0 30px 80px rgba(36,26,46,.12),0 4px 14px rgba(36,26,46,.06)}
+.w{display:inline-block}
+.logo{font-family:Manrope;font-weight:800;letter-spacing:-0.04em;font-size:96px;text-align:center;left:0;right:0}
+.logo span{color:var(--pink)}

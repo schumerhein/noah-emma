@@ -1,0 +1,94 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../base.css"><script src="../assets.js"></script><script src="../lib.js"></script></head>
+<body><div id="stage">
+  <div class="a blob" style="left:560px;top:-160px;width:720px;height:720px;background:var(--bt)"></div>
+  <div class="a blob" style="left:-260px;top:1300px;width:760px;height:760px;background:var(--pt)"></div>
+
+  <!-- scene 1: volle kast -->
+  <div id="h1" class="a h" style="top:300px;font-size:150px"><span class="w">Volle</span> <span class="w pk">kast?</span></div>
+  <div id="pile"></div>
+
+  <!-- stap-indicator -->
+  <div id="steps" class="a" style="left:0;right:0;top:250px;display:flex;justify-content:center;gap:28px">
+    <div class="dot" id="d1">1</div><div class="dot" id="d2">2</div><div class="dot" id="d3">3</div>
+  </div>
+  <style>.dot{width:110px;height:110px;border-radius:50%;background:#fff;box-shadow:0 8px 24px rgba(36,26,46,.1);font:800 54px Manrope;display:flex;align-items:center;justify-content:center;color:var(--muted)}</style>
+  <div id="st1" class="a h" style="top:420px;font-size:100px">Foto van<br><span class="pk">de kleding</span></div>
+  <div id="st2" class="a h" style="top:420px;font-size:100px">Onze AI <span class="bl">checkt</span><br>de foto</div>
+  <div id="st3" class="a h" style="top:420px;font-size:120px"><span class="pk">Verkocht!</span></div>
+
+  <!-- stap 1 -->
+  <div id="s1shirt" class="a" style="left:240px;top:760px;width:600px;height:600px"></div>
+  <div id="cam" class="a" style="left:700px;top:1250px;width:220px;height:220px;border-radius:50%;background:var(--ink);display:flex;align-items:center;justify-content:center">
+    <svg viewBox="0 0 24 24" width="120" height="120"><path fill="#fff" d="M9 3 7.2 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3H9zm3 5a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>
+  </div>
+  <div id="flash" class="a" style="inset:0;background:#fff"></div>
+
+  <!-- stap 2 -->
+  <div id="aiCard" class="a card" style="left:220px;top:720px;width:640px;height:700px;overflow:hidden">
+    <div style="position:absolute;inset:24px;border-radius:32px;background:linear-gradient(#F1F9FD,#E4F4FB)"></div>
+    <div id="aiShirt" style="position:absolute;left:120px;top:90px;width:400px;height:400px"></div>
+    <div id="aiScan" style="position:absolute;left:24px;right:24px;height:10px;background:var(--blue);box-shadow:0 0 40px 12px rgba(28,127,168,.45)"></div>
+    <div id="aiTxt" style="position:absolute;left:0;right:0;bottom:56px;text-align:center;font:800 46px Manrope;color:#2E9E6A">Geen kindergezicht ✓</div>
+  </div>
+  <div id="aiOk" class="a" style="left:720px;top:640px;width:200px;height:200px;border-radius:50%;background:#2E9E6A;display:flex;align-items:center;justify-content:center;box-shadow:0 20px 60px rgba(46,158,106,.35)">
+    <svg viewBox="0 0 24 24" width="120" height="120"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+
+  <!-- stap 3 -->
+  <div id="tag" class="a" style="left:120px;top:1000px;background:#fff;border-radius:36px;padding:34px 50px;box-shadow:0 20px 50px rgba(36,26,46,.15);font:800 110px Manrope">€ 8</div>
+  <div id="stamp" class="a" style="left:330px;top:1150px;border:14px solid var(--pink);color:var(--pink);border-radius:28px;padding:16px 40px;font:800 110px Manrope;letter-spacing:.02em;background:rgba(255,249,250,.85)">VERKOCHT</div>
+  <div id="msg" class="a card" style="left:140px;top:720px;width:800px;padding:36px 44px;border-radius:40px 40px 40px 10px">
+    <div style="font:600 34px Inter;color:var(--muted);margin-bottom:8px">Sanne · nu</div>
+    <div style="font:500 48px Inter;line-height:1.3">Is het shirtje nog beschikbaar? 😍</div>
+  </div>
+
+  <div id="end"></div>
+</div>
+<script>
+// stapel kleding
+const cols = [['#F27BA3','#C0305F'],['#5AB8DE','#176A8C'],['#FFD166','#D9A21B'],['#B9A3E3','#7A5DB8'],['#8FD3B6','#3E9C74'],['#FFB8C4','#E07A92']];
+let ph = '';
+for (let i = 0; i < 9; i++) { const c = cols[i % cols.length]; ph += `<div id="p${i}" class="a" style="left:${200 + (i % 3) * 230}px;top:${1300 - Math.floor(i / 3) * 210}px;width:280px;height:280px">${shirtSVG(c[0], c[1], i % 2 ? star(100,110,24,'#fff') : '')}</div>`; }
+$('pile').outerHTML = ph;
+$('s1shirt').innerHTML = shirtSVG('#5AB8DE', '#176A8C', star(100,110,26,'#fff'));
+$('aiShirt').innerHTML = shirtSVG('#5AB8DE', '#176A8C', star(100,110,26,'#fff'));
+$('end').outerHTML = endCardHTML('Van volle kast naar verkocht. Zonder kindergezichten.', 'noah-emma.nl');
+const conf = makeParticles(60, ['#D63D74', '#1C7FA8', '#FFD166', '#A9D2E6', '#241A2E'], 7);
+window.DUR = 11;
+window.render = t => {
+  blobs(t);
+  words('h1', t, .1, .2, .5, 1.7, 2.0);
+  for (let i = 0; i < 9; i++) {
+    const k = P(t, .2 + i * .09, .7 + i * .09), ko = P(t, 1.6, 2.1);
+    S('p' + i, { y: lerp(-1500, 0, eo(k)) + ko * (900 + i * 40), x: ko * (i % 3 - 1) * 300, r: lerp(i % 2 ? 50 : -50, (i % 3 - 1) * 9, eo(k)) + ko * 90, o: k > 0 ? 1 : 0 });
+  }
+  // stap-indicator
+  const si = P(t, 1.9, 2.3), sio = P(t, 8.5, 8.8);
+  S('steps', { y: lerp(-100, 0, eo(si)), o: si * (1 - sio) });
+  const act = t < 4.4 ? 1 : t < 6.6 ? 2 : 3;
+  [1, 2, 3].forEach(n => { const d = $('d' + n); const on = n <= act; d.style.background = on ? (n === act ? 'var(--pink)' : 'var(--ink)') : '#fff'; d.style.color = on ? '#fff' : 'var(--muted)'; S(d, { s: n === act ? 1.15 : 1 }); });
+  // titels per stap
+  const tt = (id, a, b) => { const k = P(t, a, a + .4), ko = P(t, b, b + .3); S(id, { y: lerp(70, 0, eo(k)) - ko * 60, o: k * (1 - ko) }); };
+  tt('st1', 2.1, 4.2); tt('st2', 4.5, 6.4); tt('st3', 6.7, 8.5);
+  // stap 1
+  const sh = P(t, 2.2, 2.8), sho = P(t, 4.1, 4.5);
+  S('s1shirt', { s: eb(sh) * (1 - sho * .3) * (1 + Math.sin(t * 2) * .015), r: Math.sin(t * 1.5) * 3, o: (sh > 0 ? 1 : 0) * (1 - sho) });
+  const cm = P(t, 2.6, 3.0); S('cam', { s: eb(cm) * (1 - P(t, 3.55, 3.65) * .15 + P(t, 3.65, 3.8) * .15), o: (cm > 0 ? 1 : 0) * (1 - sho) });
+  $('flash').style.opacity = t > 3.6 && t < 4.0 ? 1 - P(t, 3.6, 4.0) : 0;
+  // stap 2
+  const em = P(t, 4.5, 5.0), emo = P(t, 6.4, 6.8);
+  S('aiCard', { x: lerp(900, 0, eo(em)) - emo * 900, y: Math.sin(t * 2) * 6, o: em > 0 ? 1 : 0 });
+  const sc = P(t, 4.9, 5.7); S('aiScan', { y: lerp(20, 600, eio(sc)), o: sc > 0 && sc < 1 ? 1 : 0 });
+  const tx = P(t, 5.7, 6.0); S('aiTxt', { y: lerp(30, 0, eo(tx)), o: tx });
+  const ok = P(t, 5.65, 6.05); S('aiOk', { s: eb(ok), r: lerp(40, 0, eo(ok)), o: (ok > 0 ? 1 : 0) * (1 - emo) });
+  // spin-wipe glans
+  // stap 3
+  const tg = P(t, 6.8, 7.2), o3 = P(t, 8.5, 8.8);
+  S('tag', { s: eb(tg), r: lerp(-30, -8, eo(tg)) + Math.sin(t * 2.5) * 2, o: (tg > 0 ? 1 : 0) * (1 - o3) });
+  const mg = P(t, 7.0, 7.4); S('msg', { y: lerp(80, 0, eo(mg)), s: lerp(.8, 1, eb(mg)), o: mg * (1 - o3) });
+  const stp = P(t, 7.7, 7.95);
+  S('stamp', { s: lerp(2.4, 1, eio(stp)), r: -12, o: (stp > 0 ? 1 : 0) * (1 - o3) });
+  burst(conf, t, 7.95, 620, 1250);
+  endCard(t, 8.7);
+};
+</script></body></html>

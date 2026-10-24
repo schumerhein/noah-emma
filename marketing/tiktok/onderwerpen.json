@@ -1,0 +1,31 @@
+{
+  "_uitleg": "Onderwerpenlijst voor de automatische TikTok-video's van Noah & Emma. Elke run pakt het eerste onderwerp met status 'open' en zet het op 'gemaakt'. Regels: doelgroep vaders en moeders van kinderen 0-12; altijd CTA naar noah-emma.nl; nooit zeggen dat Noah of Emma kleding aantrekt; nooit Marktplaats of Vinted noemen; zeg 'kindergezichten'; kindergoed (kinderwagens etc.) regelmatig aan bod; alles is gratis.",
+  "gemaakt": [
+    "01 zonder foto van je kind (AI weigert kindergezichten)",
+    "02 van volle kast naar verkocht",
+    "03 ze groeien zo snel (groeimodel)",
+    "04 niet alleen kleding (kinderwagens, autostoeltjes, speelgoed)",
+    "05 zo makkelijk verkoop je",
+    "06 zo makkelijk koop je"
+  ],
+  "onderwerpen": [
+    {"id": 7, "status": "open", "titel": "Nooit meer maten checken", "kern": "Je stelt de maat of geboortedatum van je kind in; tijdens het swipen zie je altijd de maat die nu past, ook na een groeispurt."},
+    {"id": 8, "status": "open", "titel": "Autostoeltje te klein?", "kern": "Autostoeltjes en Maxi-Cosi's gaan maar kort mee. Verkoop hem gratis door aan een ouder in de buurt."},
+    {"id": 9, "status": "open", "titel": "Reviews: jij kiest van wie je koopt", "kern": "Na elke afgeronde deal geven koper en verkoper elkaar een review. Zo zie je vooraf of iemand betrouwbaar is."},
+    {"id": 10, "status": "open", "titel": "Seizoenswissel winterjas", "kern": "Winterjas van vorig jaar te klein? Zet hem nu online, net voor de winter zoeken ouders het meest."},
+    {"id": 11, "status": "open", "titel": "Hoeveel maten in 12 jaar?", "kern": "Een kind gaat van maat 50 naar maat 158/164. Teller met alle maten en de boodschap: geef het door."},
+    {"id": 12, "status": "open", "titel": "Ledikant en kinderstoel", "kern": "Grote spullen nemen ruimte in. Verkoop ze aan iemand uit de buurt die ze komt ophalen."},
+    {"id": 13, "status": "open", "titel": "Waarom geen kindergezichten?", "kern": "Een foto online blijft online. Onze AI weigert elke foto met een kindergezicht, zodat de app veilig blijft voor alle kinderen."},
+    {"id": 14, "status": "open", "titel": "Foto-tip: zo verkoop je sneller", "kern": "Leg kleding plat neer op een lichte ondergrond, bij daglicht. Geen kind op de foto nodig."},
+    {"id": 15, "status": "open", "titel": "Babykleding maat 50-68", "kern": "Babykleding wordt soms maar een paar weken gedragen. Vaak nog in nieuwstaat: ideaal om door te geven."},
+    {"id": 16, "status": "open", "titel": "Buggy of kinderwagen kopen", "kern": "Tweedehands kinderwagen kopen: chat met de verkoper, bekijk de reviews, spreek af en haal hem op."},
+    {"id": 17, "status": "open", "titel": "Gratis, echt gratis", "kern": "Gratis account, gratis kopen, gratis verkopen. Geen kosten per advertentie."},
+    {"id": 18, "status": "open", "titel": "Speelgoed opruimen", "kern": "Speelgoed waar je kind te groot voor is, maakt een ander kind blij. Verkoop het via Noah & Emma."},
+    {"id": 19, "status": "open", "titel": "Duurzaam ouderschap", "kern": "Tweedehands kopen voor je kind is beter voor het milieu en voor je portemonnee."},
+    {"id": 20, "status": "open", "titel": "Van advertentie tot ophalen in 4 stappen", "kern": "Foto, AI-check, chat, ophalen. Laat het hele proces snel zien."},
+    {"id": 21, "status": "open", "titel": "Back to school", "kern": "Schoolkleding en schooltassen voor kinderen tot 12 jaar, in de juiste maat."},
+    {"id": 22, "status": "open", "titel": "Sinterklaas en kerst", "kern": "Cadeaus tweedehands: speelgoed en kleding in de maat die nu past. Zet in november."},
+    {"id": 23, "status": "open", "titel": "Draagzak, box en badje", "kern": "Babyspullen die je maar een paar maanden gebruikt. Geef ze door aan andere ouders."},
+    {"id": 24, "status": "open", "titel": "Mythe of feit", "kern": "Quiz-format: 'Je hebt een foto van je kind nodig om kleding te verkopen.' Mythe! Alleen de kleding is genoeg."}
+  ]
+}

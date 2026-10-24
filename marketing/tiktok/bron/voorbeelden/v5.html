@@ -1,0 +1,47 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../base.css"><script src="../assets.js"></script><script src="../lib.js"></script></head>
+<body><div id="stage">
+  <div class="a blob" style="left:620px;top:-200px;width:700px;height:700px;background:var(--pt)"></div>
+  <div class="a blob" style="left:-260px;top:1250px;width:760px;height:760px;background:var(--bt)"></div>
+
+  <div id="h1" class="a h" style="top:300px;font-size:116px"><span class="w">Zo</span> <span class="w">makkelijk</span><br><span class="w pk">verkoop</span> <span class="w">je</span></div>
+  <div id="rows"></div>
+  <div id="flash" class="a" style="inset:0;background:#fff"></div>
+
+  <div id="g1" class="a h" style="top:640px;font-size:150px;color:var(--pink)">€ 0</div>
+  <div id="g2" class="a h" style="top:840px;font-size:84px;padding:0 100px">Geen kosten voor<br>je account of je verkoop</div>
+
+  <div id="end"></div>
+</div>
+<style>
+.row{left:90px;width:800px;height:200px;display:flex;align-items:center;gap:34px;padding:0 40px;border-radius:44px}
+.ico{width:130px;height:130px;border-radius:32px;flex:none;display:flex;align-items:center;justify-content:center;padding:14px}
+.rt{font:800 44px Manrope;letter-spacing:-.02em}.rs{font:500 34px Inter;color:var(--muted);margin-top:4px}
+.chk{margin-left:auto;width:84px;height:84px;border-radius:50%;background:#2E9E6A;display:flex;align-items:center;justify-content:center;flex:none}
+</style>
+<script>
+const chk = '<svg viewBox="0 0 24 24" width="54" height="54"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const cam = '<svg viewBox="0 0 24 24" width="80" height="80"><path fill="#1C7FA8" d="M9 3 7.2 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3H9zm3 5a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>';
+const user = '<svg viewBox="0 0 24 24" width="80" height="80"><circle cx="12" cy="8" r="4.2" fill="#D63D74"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7z" fill="#D63D74"/></svg>';
+const tagI = '<svg viewBox="0 0 24 24" width="80" height="80"><path fill="#D9A21B" d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9zm4.5-5A1.5 1.5 0 1 0 9 8.5 1.5 1.5 0 0 0 7.5 7z"/></svg>';
+const chat = '<svg viewBox="0 0 24 24" width="80" height="80"><path fill="#3E9C74" d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg>';
+const R = [[user, '#FFEAF1', 'Gratis account', 'Zo aangemaakt'], [cam, '#E4F4FB', 'Foto van het product', 'Kleding, kinderwagen, speelgoed'], [tagI, '#FFF4D6', 'Prijs en maat erbij', 'Jij bepaalt de prijs'], [chat, '#E3F5EC', 'Chatten en afspreken', 'Ophalen of zelf regelen']];
+$('rows').outerHTML = R.map((r, i) => `<div id="r${i}" class="a card row" style="top:${640 + i * 240}px"><div class="ico" style="background:${r[1]}">${r[0]}</div><div><div class="rt">${r[2]}</div><div class="rs">${r[3]}</div></div><div class="chk" id="c${i}">${chk}</div></div>`).join('');
+$('end').outerHTML = endCardHTML('Verkopen was nog nooit zo makkelijk. Zonder kindergezichten.', 'noah-emma.nl');
+window.DUR = 11.5;
+const T0 = 1.6, ST = 1.35;
+window.render = t => {
+  blobs(t);
+  const ho = P(t, 7.4, 7.8);
+  words('h1', t, .1, .14, .5, 7.4, 7.8);
+  for (let i = 0; i < 4; i++) {
+    const a = T0 + i * ST, k = P(t, a, a + .45), c = P(t, a + .7, a + 1.0);
+    S('r' + i, { x: lerp(i % 2 ? 1000 : -1000, 0, eo(k)), y: -ho * 60, s: 1 + Math.sin(c * Math.PI) * .03, o: (k > 0 ? 1 : 0) * (1 - ho) });
+    S('c' + i, { s: eb(c), r: lerp(-60, 0, eo(c)), o: c > 0 ? 1 : 0 });
+  }
+  const fa = T0 + ST + .55; $('flash').style.opacity = t > fa && t < fa + .35 ? (1 - P(t, fa, fa + .35)) * .9 : 0;
+  const g = P(t, 7.8, 8.2), gb = P(t, 8.0, 8.4), go = P(t, 9.4, 9.6);
+  S('g1', { s: eb(g), o: (g > 0 ? 1 : 0) * (1 - go) });
+  S('g2', { y: lerp(60, 0, eo(gb)), o: gb * (1 - go) });
+  endCard(t, 9.4);
+};
+</script></body></html>

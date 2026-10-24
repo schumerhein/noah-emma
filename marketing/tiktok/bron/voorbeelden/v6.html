@@ -1,0 +1,77 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../base.css"><script src="../assets.js"></script><script src="../lib.js"></script></head>
+<body><div id="stage">
+  <div class="a blob" style="left:-200px;top:-150px;width:700px;height:700px;background:var(--pt)"></div>
+  <div class="a blob" style="left:640px;top:1250px;width:720px;height:720px;background:var(--bt)"></div>
+
+  <div id="h1" class="a h" style="top:620px;font-size:120px"><span class="w">Zo</span> <span class="w">makkelijk</span><br><span class="w bl">koop</span> <span class="w">je</span></div>
+
+  <!-- scene 2: swipen in jouw maat -->
+  <div id="t2" class="a h" style="top:250px;font-size:84px;padding:0 80px">Je ziet alleen wat<br><span class="pk">nú past</span></div>
+  <div id="chip" class="a" style="left:0;right:0;top:470px;text-align:center"><span style="background:var(--ink);color:#fff;border-radius:999px;padding:18px 40px;font:700 42px Inter">Jouw kind: maat <b id="maat" style="font-family:Manrope">92</b></span></div>
+  <div id="cards"></div>
+  <div id="grow" class="a" style="left:0;right:0;top:1470px;text-align:center;font:700 44px Inter;color:var(--blue)">De maat groeit vanzelf mee ↑</div>
+
+  <!-- scene 3: reviews -->
+  <div id="t3" class="a h" style="top:300px;font-size:92px;padding:0 80px">Jij kiest <span class="pk">van wie</span><br>je koopt</div>
+  <div id="seller" class="a card" style="left:160px;top:640px;width:760px;padding:44px;display:flex;gap:34px;align-items:center">
+    <div style="width:150px;height:150px;border-radius:50%;background:#FFD166;display:flex;align-items:center;justify-content:center;font:800 70px Manrope;color:var(--ink);flex:none">S</div>
+    <div><div style="font:800 54px Manrope">Sanne</div><div id="stars" style="font-size:54px;color:#F5A623;letter-spacing:4px;margin-top:4px">★★★★★</div><div style="font:500 36px Inter;color:var(--muted);margin-top:4px">4,9 · 23 reviews</div></div>
+  </div>
+  <div id="rv" class="a card" style="left:200px;top:1000px;width:680px;padding:34px 40px;border-radius:40px 40px 40px 10px;font:500 42px Inter;line-height:1.35">“Alles netjes en snel geregeld!”</div>
+  <div id="pin" class="a" style="left:0;right:0;top:1230px;text-align:center"><span style="background:#fff;border-radius:999px;padding:22px 44px;font:800 46px Manrope;box-shadow:0 14px 40px rgba(36,26,46,.12)">📍 Afspreken en ophalen</span></div>
+
+  <div id="g1" class="a h" style="top:640px;font-size:150px;color:var(--pink)">Gratis</div>
+  <div id="g2" class="a h" style="top:820px;font-size:92px">kopen</div>
+
+  <div id="end"></div>
+</div>
+<script>
+const C = [
+  ['shirt', '#E4F4FB', 'T-shirt', '€ 4'],
+  ['jas', '#FFEAF1', 'Regenjas', '€ 8'],
+  ['wagen', '#E4F4FB', 'Buggy', '€ 45'],
+];
+const jas = shirtSVG('#FFD166', '#D9A21B', '<rect x="96" y="46" width="8" height="130" fill="#D9A21B"/>');
+$('cards').outerHTML = C.map((c, i) => {
+  const img = c[0] === 'shirt' ? shirtSVG('#5AB8DE', '#176A8C', star(100,110,24,'#fff')) : c[0] === 'jas' ? jas : ICON.wagen();
+  const tag = c[0] === 'wagen' ? 'Kindergoed' : 'Maat <span class="mz">92</span>';
+  return `<div id="cd${i}" class="a card" style="left:200px;top:600px;width:680px;height:820px;overflow:hidden;z-index:${10 - i}">
+    <div style="position:absolute;left:24px;right:24px;top:24px;height:560px;border-radius:32px;background:${c[1]};padding:90px">${img}</div>
+    <div style="position:absolute;left:44px;top:50px;background:#2E9E6A;color:#fff;border-radius:999px;padding:12px 26px;font:800 32px Manrope">Past nu</div>
+    <div style="position:absolute;left:48px;bottom:60px"><div style="font:800 54px Manrope">${c[2]}</div><div style="font:500 36px Inter;color:var(--muted);margin-top:4px">${tag}</div></div>
+    <div style="position:absolute;right:48px;bottom:70px;font:800 64px Manrope;color:var(--blue)">${c[3]}</div>
+    <div id="lk${i}" style="position:absolute;right:40px;top:44px;border:8px solid #2E9E6A;color:#2E9E6A;border-radius:20px;padding:6px 22px;font:800 52px Manrope;transform:rotate(12deg);opacity:0">♥ BEWAARD</div>
+  </div>`;
+}).join('');
+$('end').outerHTML = endCardHTML('Kopen in de maat van jouw kind. Zonder kindergezichten.', 'noah-emma.nl');
+window.DUR = 13;
+window.render = t => {
+  blobs(t);
+  words('h1', t, .1, .14, .5, 1.6, 1.9);
+  const t2 = P(t, 1.9, 2.3), t2o = P(t, 6.6, 7.0);
+  S('t2', { y: lerp(60, 0, eo(t2)) - t2o * 50, o: t2 * (1 - t2o) });
+  S('chip', { s: eb(P(t, 2.1, 2.5)) * (1 + Math.sin(P(t, 3.7, 4.1) * Math.PI) * .12), o: P(t, 2.1, 2.3) * (1 - t2o) });
+  const m = t < 3.9 ? '92' : '98';
+  $('maat').textContent = m; document.querySelectorAll('.mz').forEach(e => e.textContent = m);
+  const sw = [3.3, 5.0, 99];
+  for (let i = 0; i < 3; i++) {
+    const inn = P(t, 2.3 + i * .12, 2.8 + i * .12);
+    const k = P(t, sw[i], sw[i] + .5);
+    const back = (i === 0 ? 0 : P(t, sw[i - 1], sw[i - 1] + .4));
+    S('cd' + i, { x: eio(k) * 1300, y: lerp(900, 0, eo(inn)) + (1 - back) * i * 30 - t2o * 40, r: eio(k) * 25 + (1 - back) * (i % 2 ? 3 : -3), s: lerp(.92, 1, back), o: (inn > 0 ? 1 : 0) * (1 - t2o) });
+    $('lk' + i).style.opacity = P(t, sw[i] - .3, sw[i]);
+  }
+  const gr = P(t, 3.9, 4.3); S('grow', { y: lerp(30, 0, eo(gr)), o: gr * (1 - t2o) });
+  // scene 3
+  const t3 = P(t, 7.0, 7.4), t3o = P(t, 9.6, 9.9);
+  S('t3', { y: lerp(60, 0, eo(t3)) - t3o * 50, o: t3 * (1 - t3o) });
+  const se = P(t, 7.2, 7.7); S('seller', { y: lerp(200, 0, eo(se)), o: se * (1 - t3o) });
+  $('stars').style.clipPath = `inset(0 ${100 - eo(P(t, 7.6, 8.2)) * 100}% 0 0)`;
+  const rv = P(t, 8.2, 8.55); S('rv', { y: lerp(50, 0, eo(rv)), s: lerp(.85, 1, eb(rv)), o: rv * (1 - t3o) });
+  const pn = P(t, 8.8, 9.2); S('pin', { s: eb(pn), o: (pn > 0 ? 1 : 0) * (1 - t3o) });
+  const g = P(t, 9.9, 10.3), gb = P(t, 10.1, 10.5), go = P(t, 11.0, 11.2);
+  S('g1', { s: eb(g), o: (g > 0 ? 1 : 0) * (1 - go) });
+  S('g2', { y: lerp(60, 0, eo(gb)), o: gb * (1 - go) });
+  endCard(t, 11.0);
+};
+</script></body></html>

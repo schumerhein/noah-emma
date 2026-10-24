@@ -1,0 +1,86 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../base.css"><script src="../assets.js"></script><script src="../lib.js"></script></head>
+<body><div id="stage">
+  <div class="a blob" style="left:-200px;top:-120px;width:700px;height:700px;background:var(--pt)"></div>
+  <div class="a blob" style="left:620px;top:1250px;width:720px;height:720px;background:var(--bt)"></div>
+  <div class="a blob" style="left:700px;top:150px;width:300px;height:300px;background:var(--bt)"></div>
+
+  <!-- scene 1: hook -->
+  <div id="h1" class="a h" style="top:640px;font-size:132px"><span class="w">Je</span> <span class="w">kind</span><br><span class="w">online</span> <span class="w">zetten?</span></div>
+  <div id="h1b" class="a h pk" style="top:990px;font-size:150px">Liever niet.</div>
+
+  <!-- scene 2: foto met kindergezicht wordt geweigerd -->
+  <div id="t2" class="a h" style="top:250px;font-size:84px;padding:0 90px">Onze slimme AI <span class="bl">checkt</span> elke foto</div>
+  <div id="phone" class="a card" style="left:220px;top:520px;width:640px;height:900px;overflow:hidden">
+    <div style="position:absolute;inset:24px;border-radius:32px;background:linear-gradient(#EFE7EC,#E3D8DF);overflow:hidden">
+      <div style="position:absolute;left:206px;top:90px;width:180px;height:200px;border-radius:50%;background:#C9B9C3">
+        <div style="position:absolute;left:50px;top:80px;width:18px;height:18px;border-radius:50%;background:#8F7A88"></div>
+        <div style="position:absolute;right:50px;top:80px;width:18px;height:18px;border-radius:50%;background:#8F7A88"></div>
+        <div style="position:absolute;left:62px;top:122px;width:56px;height:28px;border-bottom:7px solid #8F7A88;border-radius:0 0 40px 40px"></div>
+      </div>
+      <div id="kidShirt" style="position:absolute;left:96px;top:300px;width:400px;height:400px"></div>
+      <div style="position:absolute;left:186px;top:690px;width:90px;height:200px;border-radius:30px;background:#A9D2E6"></div>
+      <div style="position:absolute;left:316px;top:690px;width:90px;height:200px;border-radius:30px;background:#A9D2E6"></div>
+      <div id="faceBox" style="position:absolute;left:186px;top:70px;width:220px;height:240px;border:8px solid #E5484D;border-radius:30px;opacity:0"></div>
+      <div id="scan" style="position:absolute;left:0;right:0;height:10px;background:var(--blue);box-shadow:0 0 40px 12px rgba(28,127,168,.45);opacity:0"></div>
+      <div id="rej" style="position:absolute;inset:0;background:rgba(36,26,46,.72);opacity:0"></div>
+    </div>
+  </div>
+  <div id="xBadge" class="a" style="left:400px;top:780px;width:280px;height:280px;border-radius:50%;background:#E5484D;display:flex;align-items:center;justify-content:center;box-shadow:0 20px 60px rgba(229,72,77,.4)">
+    <svg viewBox="0 0 24 24" width="170" height="170"><path d="M6 6l12 12M18 6 6 18" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/></svg>
+  </div>
+  <div id="xLabel" class="a" style="left:0;right:0;top:1110px;text-align:center"><span style="background:#fff;border-radius:999px;padding:20px 40px;font:800 50px Manrope;color:#E5484D;box-shadow:0 14px 40px rgba(36,26,46,.15)">Geweigerd: kindergezicht</span></div>
+
+  <!-- scene 3: alleen kleding = goedgekeurd -->
+  <div id="t3" class="a h" style="top:250px;font-size:92px;padding:0 80px">Alleen de kleding?<br><span class="pk">Goedgekeurd.</span></div>
+  <div id="card2" class="a card" style="left:220px;top:560px;width:640px;height:760px;overflow:hidden">
+    <div style="position:absolute;inset:24px;border-radius:32px;background:linear-gradient(#FFF3F7,#FFEAF1)"></div>
+    <div id="flat" style="position:absolute;left:100px;top:110px;width:440px;height:440px"></div>
+    <div style="position:absolute;left:44px;bottom:44px;font:800 52px Manrope">€ 6 <span style="font:500 36px Inter;color:var(--muted)">· maat 98</span></div>
+  </div>
+  <div id="ok" class="a" style="left:700px;top:480px;width:220px;height:220px;border-radius:50%;background:#2E9E6A;display:flex;align-items:center;justify-content:center;box-shadow:0 20px 60px rgba(46,158,106,.35)">
+    <svg viewBox="0 0 24 24" width="130" height="130"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+
+  <!-- scene 4 -->
+  <div id="t4" class="a h" style="top:600px;font-size:300px;color:var(--pink)">0</div>
+  <div id="t4b" class="a h" style="top:930px;font-size:92px;padding:0 90px">kindergezichten<br>in de app</div>
+
+  <div id="end"></div>
+</div>
+<script>
+$('kidShirt').innerHTML = shirtSVG('#F27BA3', '#C0305F', star(100,110,26,'#fff'));
+$('flat').innerHTML = shirtSVG('#F27BA3', '#C0305F', star(100,110,26,'#fff'));
+$('end').outerHTML = endCardHTML('Tweedehands kinderkleding, zónder kindergezichten', 'noah-emma.nl');
+const conf = makeParticles(46, ['#D63D74', '#1C7FA8', '#FFB8C4', '#A9D2E6', '#241A2E'], 1, 't3');
+window.DUR = 12.5;
+window.render = t => {
+  blobs(t);
+  // scene 1
+  words('h1', t, .15, .14, .5, 2.3, 2.7);
+  const lb = P(t, 1.0, 1.4), lbo = P(t, 2.3, 2.7);
+  S('h1b', { s: eb(lb) * (1 + Math.sin(P(t,1.4,2.0) * Math.PI * 3) * .04), r: Math.sin(P(t, 1.4, 2.0) * Math.PI * 4) * 3 * (1 - P(t,1.4,2.0)), o: (lb > 0 ? 1 : 0) * (1 - lbo), y: -lbo * 60 });
+  // scene 2
+  const ph = P(t, 2.5, 3.1), pho = P(t, 5.4, 5.9);
+  S('t2', { y: lerp(60, 0, eo(P(t, 2.6, 3.1))) - pho * 50, o: P(t, 2.6, 3.0) * (1 - pho) });
+  const shake = Math.sin(P(t, 4.4, 4.9) * Math.PI * 6) * 18 * (1 - P(t, 4.4, 4.9));
+  S('phone', { x: shake, y: lerp(1300, 0, eo(ph)) + pho * 40, r: lerp(8, 0, eo(ph)), s: 1 - pho * .15, o: (ph > 0 ? 1 : 0) * (1 - pho) });
+  const sc = P(t, 3.2, 4.1);
+  S('scan', { y: lerp(40, 820, eio(sc)), o: sc > 0 && sc < 1 ? 1 : 0 });
+  const fb = P(t, 3.6, 3.9); S('faceBox', { s: lerp(1.3, 1, eo(fb)), o: fb });
+  $('rej').style.opacity = P(t, 4.3, 4.6);
+  const xb = P(t, 4.35, 4.75); S('xBadge', { s: eb(xb) * (1 - pho * .2), r: lerp(-40, 0, eo(xb)), o: (xb > 0 ? 1 : 0) * (1 - pho) });
+  const xl = P(t, 4.6, 5.0); S('xLabel', { y: lerp(40, 0, eo(xl)), o: xl * (1 - pho) });
+  // scene 3
+  const t3 = P(t, 5.7, 6.2), t3o = P(t, 8.4, 8.8);
+  S('t3', { y: lerp(60, 0, eo(t3)) - t3o * 50, o: t3 * (1 - t3o) });
+  const c2 = P(t, 5.8, 6.4);
+  S('card2', { y: lerp(1300, 0, eo(c2)) + Math.sin(t * 2) * 6, r: lerp(-8, 0, eo(c2)), o: (c2 > 0 ? 1 : 0) * (1 - t3o) });
+  const ok = P(t, 6.7, 7.1); S('ok', { s: eb(ok), r: lerp(40, 0, eo(ok)), o: (ok > 0 ? 1 : 0) * (1 - t3o) });
+  burst(conf, t, 6.8, 810, 590);
+  // scene 4
+  const z = P(t, 8.7, 9.1), zo = P(t, 9.9, 10.1);
+  S('t4', { s: eb(z) * (1 - zo * .3), o: (z > 0 ? 1 : 0) * (1 - zo) });
+  const zb = P(t, 8.9, 9.3); S('t4b', { y: lerp(60, 0, eo(zb)), o: zb * (1 - zo) });
+  endCard(t, 9.9);
+};
+</script></body></html>

@@ -84,8 +84,14 @@ export default function SellPage() {
     zetStatus("bezig");
     const controle = await controleerFoto(dataUrl, "none");
     if (!isActueel()) return;
-    // Kind op de foto: niet weigeren, maar het kledingstuk laten uitknippen.
+    // Gezicht op de foto: altijd afkeuren (met melding). Daarna bieden we aan
+    // om het kledingstuk eruit te knippen; de foto zelf gaat nooit online.
     if (!controle.ok && controle.aantalGezichten) {
+      toast({
+        variant: "destructive",
+        title: "Foto afgekeurd: gezicht gezien",
+        description: "Onze AI zag een gezicht op deze foto. Foto's met een gezicht plaatsen we nooit. We knippen het kledingstuk eruit, dan kun je dat gebruiken.",
+      });
       zetStatus("uitknippen");
       return;
     }

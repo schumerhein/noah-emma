@@ -13,10 +13,18 @@ export interface MenuItem {
   sub?: MenuItem[];
 }
 
-// Het hoofdmenu van de marketingsite. Over ons klapt uit met de
-// veelgestelde vragen (de pagina /helpcentrum).
+// Het hoofdmenu van de marketingsite. Kinderkleding klapt uit met kopen en
+// verkopen, Over ons met de veelgestelde vragen (de pagina /helpcentrum).
 export const HOOFDMENU: MenuItem[] = [
-  { label: "Kinderkleding", href: "/kinderkleding" },
+  {
+    label: "Kinderkleding",
+    href: "/kinderkleding",
+    sub: [
+      { label: "Alle kinderkleding", href: "/kinderkleding" },
+      { label: "Kinderkleding kopen", href: "/kinderkleding/kopen" },
+      { label: "Kinderkleding verkopen", href: "/kinderkleding/verkopen" },
+    ],
+  },
   { label: "Accessoires", href: "/accessoires" },
   { label: "Hoe het werkt", href: "/hoe-het-werkt" },
   {

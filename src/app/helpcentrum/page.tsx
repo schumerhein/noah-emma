@@ -11,7 +11,7 @@ import {
 const PAD = "/helpcentrum";
 
 export const metadata: Metadata = {
-  title: "Helpcentrum | Noah & Emma",
+  title: "Veelgestelde vragen en hulp | Noah & Emma",
   description:
     "Antwoorden op je vragen over Noah & Emma: account, kopen, verkopen, het groeimodel, de AI-fotocontrole, reviews en veilig afspreken.",
   alternates: { canonical: `${SITE_URL}${PAD}` },
@@ -70,12 +70,12 @@ export default async function HelpcentrumPage({ searchParams }: { searchParams: 
 
   return (
     <div className="font-body bg-[#FFF9FA] text-[#241A2E] min-h-screen antialiased">
-      <StructuredData naam="Helpcentrum" pad={PAD} faq={VRAGEN.filter((v) => v.populair)} />
+      <StructuredData naam="Veelgestelde vragen" pad={PAD} faq={VRAGEN.filter((v) => v.populair)} />
       <MarketingHeader />
       <main>
         <section className="bg-gradient-to-r from-[#E4F4FB] via-[#FFF9FA] to-[#FFEAF1]">
           <div className="max-w-[820px] mx-auto px-4 sm:px-6 pt-7 sm:pt-16 pb-10 sm:pb-16 text-center">
-            <Kruimelpad naam="Helpcentrum" center />
+            <Kruimelpad naam="Veelgestelde vragen" center />
             <h1 className="font-headline font-extrabold text-[34px] sm:text-[52px] leading-[1.06] tracking-tight">
               Hoe kunnen we <span className="text-[#D63D74]">helpen?</span>
             </h1>
@@ -84,7 +84,7 @@ export default async function HelpcentrumPage({ searchParams }: { searchParams: 
             </p>
             <form id="hero-cta" role="search" action={`${PAD}#vragen`} className={`mx-auto mt-6 max-w-[560px] flex items-center gap-2.5 bg-white rounded-full pl-5 pr-1.5 py-1.5 border border-[#241A2E]/10 ${SCHADUW}`}>
               <Search className="w-5 h-5 shrink-0 text-[#5B4F63]" aria-hidden="true" />
-              <label htmlFor="zoek-help" className="sr-only">Zoek in het helpcentrum</label>
+              <label htmlFor="zoek-help" className="sr-only">Zoek in de veelgestelde vragen</label>
               <input
                 id="zoek-help"
                 name="q"

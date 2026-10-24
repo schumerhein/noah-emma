@@ -2,14 +2,18 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { bewaarCookieKeuze, leesCookieKeuze, type CookieKeuze } from "@/lib/cookieToestemming";
+import { bewaarCookieKeuze, leesCookieKeuze, openCookieMelding, opOpenCookieMelding, type CookieKeuze } from "@/lib/cookieToestemming";
 
-/** Vraagt één keer of we analytische cookies mogen plaatsen. */
+/**
+ * Vraagt of we analytische cookies mogen plaatsen. Verschijnt bij het eerste
+ * bezoek, na 12 maanden opnieuw, en via de link "Cookie-instellingen".
+ */
 export function CookieMelding() {
   const [tonen, setTonen] = useState(false);
 
   useEffect(() => {
     setTonen(leesCookieKeuze() === null);
+    return opOpenCookieMelding(() => setTonen(true));
   }, []);
 
   if (!tonen) return null;
@@ -37,5 +41,14 @@ export function CookieMelding() {
         </div>
       </div>
     </div>
+  );
+}
+
+/** Link-knop die de cookiemelding opnieuw opent, zodat je je keuze altijd kunt wijzigen. */
+export function CookieInstellingenKnop({ className }: { className?: string }) {
+  return (
+    <button type="button" onClick={openCookieMelding} className={className}>
+      Cookie-instellingen
+    </button>
   );
 }

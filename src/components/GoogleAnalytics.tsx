@@ -34,7 +34,7 @@ export function GoogleAnalytics() {
 function gtag(){dataLayer.push(arguments);}
 gtag('consent', 'default', { analytics_storage: 'granted', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' });
 gtag('js', new Date());
-gtag('config', '${MEET_ID}');`}
+gtag('config', '${MEET_ID}', { allow_google_signals: false, allow_ad_personalization_signals: false });`}
       </Script>
     </>
   );

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Check, Heart, X } from "lucide-react";
 import { NoahFace, EmmaFace } from "@/components/ai-models/NoahEmmaFaces";
+import { CookieInstellingenKnop } from "@/components/CookieMelding";
 import { FOOTER_EXTRA, LOGIN_URL, MENU_PAGINAS, SIGNUP_URL, SITE_URL } from "@/components/marketing/links";
 
 // Gedeelde bouwblokken voor de marketingpagina's, zodat elke pagina dezelfde
@@ -337,6 +338,7 @@ export function MarketingFooter() {
             {FOOTER_EXTRA.map((m) => (
               <li key={m.href}><Link href={m.href} className="hover:text-[#241A2E]">{m.label}</Link></li>
             ))}
+            <li><CookieInstellingenKnop className="hover:text-[#241A2E] text-left" /></li>
             <li><a href="mailto:info@noah-emma.nl" className="hover:text-[#241A2E]">info@noah-emma.nl</a></li>
           </ul>
         </nav>

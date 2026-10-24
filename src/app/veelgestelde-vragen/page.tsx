@@ -8,7 +8,7 @@ import {
   AfsluitendeCta, Faq, Kruimelpad, MarketingFooter, SCHADUW, Sectie, SectieKop, StructuredData, type Vraag,
 } from "@/components/marketing/Blokken";
 
-const PAD = "/helpcentrum";
+const PAD = "/veelgestelde-vragen";
 
 export const metadata: Metadata = {
   title: "Veelgestelde vragen en hulp | Noah & Emma",

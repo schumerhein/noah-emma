@@ -116,7 +116,7 @@ export function JuridischePagina({
               ))}
             </ul>
             <p className="mt-6 text-sm text-[#5B4F63]">
-              Vragen? Mail naar <a href="mailto:info@noah-emma.nl" className="font-semibold text-[#1C7FA8] underline underline-offset-2">info@noah-emma.nl</a> of bekijk de <Link href="/helpcentrum" className="font-semibold text-[#1C7FA8] underline underline-offset-2">veelgestelde vragen</Link>.
+              Vragen? Mail naar <a href="mailto:info@noah-emma.nl" className="font-semibold text-[#1C7FA8] underline underline-offset-2">info@noah-emma.nl</a> of bekijk de <Link href="/veelgestelde-vragen" className="font-semibold text-[#1C7FA8] underline underline-offset-2">veelgestelde vragen</Link>.
             </p>
           </section>
         </div>

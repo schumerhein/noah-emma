@@ -13,32 +13,37 @@ export interface MenuItem {
   sub?: MenuItem[];
 }
 
-// Het hoofdmenu van de marketingsite. Kinderkleding klapt uit met kopen en
-// verkopen, Over ons met de veelgestelde vragen (de pagina /helpcentrum).
+// Het hoofdmenu van de marketingsite. Het hoofditem zelf is klikbaar; Kinderkleding
+// en Accessoires klappen uit met kopen en verkopen, Over ons met de veelgestelde vragen.
 export const HOOFDMENU: MenuItem[] = [
   {
     label: "Kinderkleding",
     href: "/kinderkleding",
     sub: [
-      { label: "Alle kinderkleding", href: "/kinderkleding" },
       { label: "Kinderkleding kopen", href: "/kinderkleding/kopen" },
       { label: "Kinderkleding verkopen", href: "/kinderkleding/verkopen" },
     ],
   },
-  { label: "Accessoires", href: "/accessoires" },
+  {
+    label: "Accessoires",
+    href: "/accessoires",
+    sub: [
+      { label: "Kinderaccessoires kopen", href: "/accessoires/kopen" },
+      { label: "Kinderaccessoires verkopen", href: "/accessoires/verkopen" },
+    ],
+  },
   { label: "Hoe het werkt", href: "/hoe-het-werkt" },
   {
     label: "Over ons",
     href: "/over-ons",
     sub: [
-      { label: "Over Noah & Emma", href: "/over-ons" },
-      { label: "Veelgestelde vragen", href: "/helpcentrum" },
+      { label: "Veelgestelde vragen", href: "/veelgestelde-vragen" },
     ],
   },
 ];
 
 /** Alle pagina's uit het hoofdmenu, zonder dubbele (voor de footer). */
-export const MENU_PAGINAS: MenuItem[] = HOOFDMENU.flatMap((m) => m.sub ?? [m]);
+export const MENU_PAGINAS: MenuItem[] = HOOFDMENU.flatMap(({ sub, ...m }) => [m, ...(sub ?? [])]);
 
 export const FOOTER_EXTRA: MenuItem[] = [
   { label: "Inloggen", href: LOGIN_URL },

@@ -322,6 +322,11 @@ export function SwipeStapel({ listings, magSwipen, onSwipe, onOpen, ref }: Swipe
   );
 }
 
+// "Maat" alleen voor echte kledingmaten (92, 98/104, M); een leeftijd als
+// "0-1 jaar" of "Alle leeftijden" (accessoires) staat er zonder voorvoegsel.
+const maatLabel = (maat: string) =>
+  /^(\d+(\s?[/-]\s?\d+)?|XXS|XS|S|M|L|XL|XXL)$/i.test(maat.trim()) ? `Maat ${maat}` : maat;
+
 function Sterren({ waarde }: { waarde: number }) {
   const vol = Math.round(waarde);
   return (
@@ -400,7 +405,7 @@ function SwipeKaart({ listing, kaartRef, prioriteit }: { listing: SwipeListing; 
             staan er dan twee, en de foto wordt nooit kleiner door een extra regel. */}
         <div className="mt-1 flex flex-wrap gap-1.5 h-[22px] overflow-hidden">
           <span className="inline-flex items-center h-[22px] max-w-full truncate rounded-full bg-blauw-100 px-2.5 text-xs font-bold text-blauw-600">
-            Maat {listing.maat}
+            {maatLabel(listing.maat)}
           </span>
           {listing.conditie && (
             <span className="inline-flex items-center h-[22px] max-w-full truncate rounded-full bg-roze-100 px-2.5 text-xs font-bold text-roze-600">

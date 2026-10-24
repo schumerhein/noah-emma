@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Camera, X, Loader2, Trash2, Check, Rocket, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, Camera, X, Loader2, Trash2, Check, Rocket, CheckCircle2, AlertCircle } from "lucide-react";
 
 import { cn, normaliseerPrijsInvoer } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
@@ -68,6 +68,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   const [gepromoot, setGepromoot] = useState(false);
   const [promotieDuur, setPromotieDuur] = useState<3 | 7 | null>(null);
   const [promotieVerloopdatum, setPromotieVerloopdatum] = useState<string | null>(null);
+  // Afgekeurd: de reden staat bovenaan, zodat je ziet wat je moet aanpassen.
+  const [afkeurReden, setAfkeurReden] = useState<string | null>(null);
 
   useEffect(() => { laadListing(); }, [id]);
 
@@ -91,6 +93,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     setBiedenToegestaan(data.bieden_toegestaan || false);
     setActief(data.actief !== false);
     setVerkocht(data.verkocht === true);
+    setAfkeurReden(data.moderatie_status === "afgekeurd" ? (data.moderatie_reden || "Je advertentie voldoet niet aan onze regels.") : null);
     // gepromoot blijft in de database op true staan totdat er een nieuwe boost
     // wordt gestart — de boost telt hier dus alleen als echt actief zolang de
     // verloopdatum nog in de toekomst ligt, anders is de boostperiode gewoon
@@ -271,6 +274,17 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
       </header>
 
       <main className="px-5 pt-5 space-y-6 max-w-lg mx-auto">
+
+        {afkeurReden && (
+          <div className="flex items-start gap-3 rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/40 p-4">
+            <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <p className="text-sm font-bold text-red-700 dark:text-red-300">Deze advertentie is afgekeurd</p>
+              <p className="text-sm text-red-700/90 dark:text-red-300/90">{afkeurReden}</p>
+              <p className="text-xs text-red-600/80 dark:text-red-400/80">Pas aan wat er mis is en sla op. Daarna bekijken we je advertentie meteen opnieuw.</p>
+            </div>
+          </div>
+        )}
 
         {/* Foto's */}
         <div className="space-y-3">

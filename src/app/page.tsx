@@ -59,6 +59,17 @@ export default function Home() {
   const [heeftOoitContent, setHeeftOoitContent] = useState(false);
   const [isGast, setIsGast] = useState(false);
 
+  // Ontdekken is één scherm dat precies past: niets om verticaal te scrollen.
+  // Zonder deze vergrendeling schoof de hele pagina (met logo en kindfilter)
+  // soms omhoog: de body is minstens 100vh hoog, en dat is op iOS meer dan
+  // het zichtbare deel naast de adresbalk. Kwam je van een omlaag gescrolde
+  // pagina (bv. je profiel), dan begon Ontdekken ook nog half gescrold.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.documentElement.classList.add("scroll-vast");
+    return () => document.documentElement.classList.remove("scroll-vast");
+  }, []);
+
   useEffect(() => {
     (async () => {
       // Gasten mogen nu gewoon rondkijken en swipen — inloggen is pas nodig
@@ -355,12 +366,16 @@ export default function Home() {
   const current = listings[0];
 
   return (
-    <div className="flex flex-col verloop-merk dark:bg-none dark:bg-background-dark relative overflow-hidden" style={{ height: 'calc(var(--echte-vh, 100dvh) - 5rem - env(safe-area-inset-bottom))' }}>
+    // Hoogte = zichtbaar scherm min de onderbalk (5rem + safe area) en min de
+    // safe area bovenin, die AppFrame al als padding boven de pagina zet.
+    // touch-none: een sleepbeweging (ook op de kop) scrolt nooit de pagina.
+    <>
+    <div className="flex flex-col verloop-merk dark:bg-none dark:bg-background-dark relative overflow-hidden touch-none overscroll-none" style={{ height: 'calc(var(--echte-vh, 100dvh) - 5rem - env(safe-area-inset-bottom) - env(safe-area-inset-top))' }}>
 
       {/* Header — compact gehouden zodat de foto op de kaart zo groot mogelijk
           is. Met een kind ingesteld vervangt het kind-filter de titel (die
           blijft voor schermlezers); "Ontdekken" staat ook al in het menu. */}
-      <header className="pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-2.5 px-5 z-10 shrink-0 flex items-center justify-between gap-2.5">
+      <header className="pt-3.5 pb-2.5 px-5 z-10 shrink-0 flex items-center justify-between gap-2.5">
         <div className="flex items-center gap-2.5 min-w-0">
           <NoahEmmaLogo size={30} />
           <h1 className={cn("text-[26px] font-extrabold text-slate-900 dark:text-white leading-none truncate", kind && "sr-only")}>Ontdekken</h1>
@@ -516,8 +531,10 @@ export default function Home() {
           </>
         )}
       </main>
-
-      <PremiumModal open={toonPremiumModal} onClose={() => setToonPremiumModal(false)} />
     </div>
+
+    {/* Buiten de touch-none-laag, zodat de modal zelf gewoon aanraakbaar blijft */}
+    <PremiumModal open={toonPremiumModal} onClose={() => setToonPremiumModal(false)} />
+    </>
   );
 }

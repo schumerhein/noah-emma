@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { haalGebruikerOp, supabaseAdmin } from "@/lib/mollie";
+import { meldAfkeuring } from "@/lib/afkeurMelding";
 
 // Goed- of afkeuren van een advertentie in de moderatiewachtrij.
 //
@@ -46,6 +47,7 @@ export async function POST(request: Request) {
   if (!data?.length) {
     return NextResponse.json({ error: "Advertentie niet gevonden" }, { status: 404 });
   }
+  if (actie === "afkeuren") after(() => meldAfkeuring(listingId));
 
   return NextResponse.json({ ok: true });
 }

@@ -7,12 +7,13 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  Heart, ChevronRight, Baby, Edit2, LogOut, Bell, Package, Star, Plus, X, Settings, Umbrella,
+  Heart, ChevronRight, Baby, Edit2, LogOut, Package, Star, Plus, X, Settings, Umbrella,
   HelpCircle, Headphones, Sliders, FileText, Cookie, CheckCircle2, Rocket, MessageSquareHeart, Inbox
 } from "lucide-react";
 import { slaActiefKindOp, leesActiefKind } from "@/components/ThemeProvider";
 import { groeiCheck, lengteBijMaat } from "@/lib/groei";
 import { OpenBeoordelingen } from "@/components/OpenBeoordelingen";
+import { BeoordelingenOverzicht, PersoonAvatar, Sterren, cijfer, gemiddelde, type Beoordeling } from "@/components/BeoordelingenOverzicht";
 import { useFeedback } from "@/components/FeedbackProvider";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -63,16 +64,6 @@ type Favoriet = {
   listings: Listing | null;
 };
 
-type Review = {
-  id: string;
-  reviewer_id: string;
-  beoordeling: number;
-  tekst: string | null;
-  created_at: string;
-  reviewer: { naam: string | null } | null;
-  listings: { titel: string | null } | null;
-};
-
 function berekenLeeftijd(geboortedatum: string): string {
   const geb = new Date(geboortedatum);
   const nu = new Date();
@@ -89,7 +80,9 @@ export default function ProfilePage() {
   const [mijneItems, setMijneItems] = useState<Listing[]>([]);
   const [favorieten, setFavorieten] = useState<Favoriet[]>([]);
   const [loading, setLoading] = useState(true);
-  const [reviews, setReviews] = useState<Review[]>([]);
+  // Beoordelingen over mij, en die ik zelf aan anderen gaf
+  const [reviews, setReviews] = useState<Beoordeling[]>([]);
+  const [gegevenReviews, setGegevenReviews] = useState<Beoordeling[]>([]);
   const [actieveTab, setActieveTab] = useState<"items" | "favorieten" | "reviews">("favorieten");
   const [vakantiestand, setVakantiestand] = useState(false);
   const [actiefKindId, setActiefKindId] = useState<string | null>(null);
@@ -98,6 +91,12 @@ export default function ProfilePage() {
   const [nieuweFeedbackCount, setNieuweFeedbackCount] = useState(0);
   const { openFeedback } = useFeedback();
   const avatarInputRef = useRef<HTMLInputElement>(null);
+  const tabsRef = useRef<HTMLElement>(null);
+
+  const toonReviews = () => {
+    setActieveTab("reviews");
+    tabsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   useEffect(() => {
     laadProfiel();
@@ -149,6 +148,7 @@ export default function ProfilePage() {
         setMijneItems(c.items || []);
         setFavorieten(c.favorieten || []);
         setReviews(c.reviews || []);
+        setGegevenReviews(c.gegevenReviews || []);
         setWachtendCount(c.wachtendCount || 0);
         setLoading(false);
       }
@@ -159,7 +159,8 @@ export default function ProfilePage() {
     const actiefId = actief?.id ?? null;
 
     const LISTING_VELDEN = "id, titel, prijs, foto_urls, conditie, actief, likes, moderatie_status, verkocht, gepromoot, promotie_verloopdatum";
-    const [profileRes, kinderenRes, itemsRes, favorietenRes, reviewsRes, wachtendRes] = await Promise.all([
+    const REVIEW_VELDEN = "id, reviewer_id, reviewed_id, listing_id, beoordeling, tekst, created_at, listings(titel, user_id)";
+    const [profileRes, kinderenRes, itemsRes, favorietenRes, reviewsRes, gegevenRes, wachtendRes] = await Promise.all([
       supabase.from("profiles").select("id, naam, stad, bio, avatar_url, lid_sinds, gemiddelde_beoordeling, totaal_verkopen, vakantiestand, is_premium, premium_verloopdatum, is_admin").eq("id", user.id).single(),
       supabase.from("children").select("id, naam, geboortedatum, lengte, maat, geslacht").eq("user_id", user.id).order("created_at"),
       supabase.from("listings").select(LISTING_VELDEN)
@@ -174,8 +175,12 @@ export default function ProfilePage() {
         return q;
       })(),
       supabase.from("reviews")
-        .select("id, reviewer_id, beoordeling, tekst, created_at, reviewer:profiles!reviews_reviewer_id_fkey(naam), listings(titel)")
+        .select(`${REVIEW_VELDEN}, reviewer:profiles!reviews_reviewer_id_fkey(naam, avatar_url)`)
         .eq("reviewed_id", user.id)
+        .order("created_at", { ascending: false }),
+      supabase.from("reviews")
+        .select(`${REVIEW_VELDEN}, reviewed:profiles!reviews_reviewed_id_fkey(naam, avatar_url)`)
+        .eq("reviewer_id", user.id)
         .order("created_at", { ascending: false }),
       // Wachtrij-teller voor admins — tegelijk ophalen i.p.v. erna
       supabase.from("listings").select("id", { count: "exact", head: true }).eq("moderatie_status", "wachtend"),
@@ -208,7 +213,8 @@ export default function ProfilePage() {
     }
     if (itemsRes.data) setMijneItems(itemsRes.data);
     if (favorietenRes.data) setFavorieten(favorietenRes.data as unknown as Favoriet[]);
-    if (reviewsRes.data) setReviews(reviewsRes.data as unknown as Review[]);
+    if (reviewsRes.data) setReviews(reviewsRes.data as unknown as Beoordeling[]);
+    if (gegevenRes.data) setGegevenReviews(gegevenRes.data as unknown as Beoordeling[]);
     setLoading(false);
 
     try {
@@ -218,6 +224,7 @@ export default function ProfilePage() {
         items: itemsRes.data,
         favorieten: favorietenRes.data,
         reviews: reviewsRes.data,
+        gegevenReviews: gegevenRes.data,
         wachtendCount: wachtend,
       }));
     } catch {}
@@ -433,6 +440,46 @@ export default function ProfilePage() {
             <p className="text-[12px] font-semibold text-slate-600 dark:text-slate-300">Opgeslagen</p>
           </div>
         </div>
+
+        {/* Beoordelingen: de kern van vertrouwen op Noah & Emma, dus goed
+            zichtbaar bovenaan. Tikken opent alle reviews. */}
+        <button onClick={toonReviews} className="mt-3 w-full flex items-center gap-3 p-3 rounded-[18px] bg-amber-50 dark:bg-amber-900/20 text-left active:scale-[0.98] transition-transform">
+          <div className="w-11 h-11 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center shrink-0">
+            <Star className="w-5 h-5 text-amber-500 fill-amber-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            {reviews.length > 0 ? (
+              <>
+                <div className="flex items-center gap-2">
+                  <span className="font-headline text-lg font-extrabold text-amber-700 dark:text-amber-300 leading-none">{cijfer(gemiddelde(reviews))}</span>
+                  <Sterren aantal={gemiddelde(reviews)} className="text-sm leading-none" />
+                  <span className="text-xs font-semibold text-amber-700/70 dark:text-amber-300/70">
+                    {reviews.length} {reviews.length === 1 ? "beoordeling" : "beoordelingen"}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-1">
+                  {reviews[0].tekst ? <>&ldquo;{reviews[0].tekst}&rdquo; · </> : "Laatst van "}
+                  {reviews[0].reviewer?.naam || "Verwijderde gebruiker"}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="font-bold text-sm text-amber-800 dark:text-amber-300">Nog geen beoordelingen</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Na je eerste deal beoordelen koper en verkoper elkaar</p>
+              </>
+            )}
+          </div>
+          {reviews.length > 0 && (
+            <div className="flex -space-x-2 shrink-0">
+              {reviews.slice(0, 3).map(r => (
+                <div key={r.id} className="rounded-full ring-2 ring-amber-50 dark:ring-slate-900">
+                  <PersoonAvatar persoon={r.reviewer ?? null} grootte={26} />
+                </div>
+              ))}
+            </div>
+          )}
+          <ChevronRight className="w-4 h-4 text-amber-400 shrink-0" />
+        </button>
       </header>
 
       <main className="px-6 pt-6 space-y-6">
@@ -540,7 +587,7 @@ export default function ProfilePage() {
         </section>
 
         {/* Mijn items / Favorieten / Reviews tabs */}
-        <section className="space-y-4">
+        <section ref={tabsRef} className="space-y-4 scroll-mt-4">
           <OpenBeoordelingen className="mb-4" />
 
           <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl">
@@ -670,71 +717,7 @@ export default function ProfilePage() {
           )}
 
           {actieveTab === "reviews" && (
-            <div className="space-y-3">
-              {reviews.length === 0 ? (
-                <div className="text-center py-12 space-y-3">
-                  <div className="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center mx-auto">
-                    <Star className="w-8 h-8 text-amber-200" />
-                  </div>
-                  <p className="font-bold text-slate-600 dark:text-slate-300">Nog geen beoordelingen</p>
-                  <p className="text-sm text-slate-400">Na een transactie kunnen kopers en verkopers<br />elkaar een beoordeling geven.</p>
-                </div>
-              ) : (
-                <>
-                  {/* Overzicht sterren */}
-                  <div className="bg-amber-50 dark:bg-amber-900/20 rounded-2xl p-4 flex items-center gap-4">
-                    <div className="text-center">
-                      <p className="text-4xl font-black text-amber-600">
-                        {profile.gemiddelde_beoordeling ? Number(profile.gemiddelde_beoordeling).toFixed(1) : "—"}
-                      </p>
-                      <div className="flex justify-center mt-1">
-                        {[1,2,3,4,5].map(s => (
-                          <span key={s} className={s <= Math.round(profile.gemiddelde_beoordeling || 0) ? "text-amber-400" : "text-slate-200"}>★</span>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-bold text-amber-800 dark:text-amber-300 text-sm">{reviews.length} {reviews.length === 1 ? "beoordeling" : "beoordelingen"}</p>
-                      <p className="text-xs text-amber-600/70 dark:text-amber-400/70 mt-0.5">Gemiddelde van alle reviews</p>
-                    </div>
-                  </div>
-
-                  {/* Individuele reviews */}
-                  {reviews.map(review => (
-                    <div key={review.id} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-4 space-y-2">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-sm font-black text-primary shrink-0">
-                            {(review.reviewer?.naam || "?").charAt(0).toUpperCase()}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="font-bold text-sm text-slate-800 dark:text-white truncate">
-                              {review.reviewer?.naam || "Anoniem"}
-                            </p>
-                            {review.listings?.titel && (
-                              <p className="text-[10px] text-slate-400 truncate">Over: {review.listings.titel}</p>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex shrink-0">
-                          {[1,2,3,4,5].map(s => (
-                            <span key={s} className={cn("text-sm", s <= review.beoordeling ? "text-amber-400" : "text-slate-200")}>★</span>
-                          ))}
-                        </div>
-                      </div>
-                      {review.tekst && (
-                        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed pl-12">
-                          "{review.tekst}"
-                        </p>
-                      )}
-                      <p className="text-[10px] text-slate-300 pl-12">
-                        {new Date(review.created_at).toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" })}
-                      </p>
-                    </div>
-                  ))}
-                </>
-              )}
-            </div>
+            <BeoordelingenOverzicht ontvangen={reviews} gegeven={gegevenReviews} eigenId={profile.id} />
           )}
 
           {actieveTab === "favorieten" && (
@@ -803,7 +786,6 @@ export default function ProfilePage() {
           {/* Primaire acties */}
           <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-primary pb-1">Mijn account</h2>
           {[
-            { icon: <Bell className="w-5 h-5" />, label: "Notificaties", href: "/notificaties" },
             { icon: <Package className="w-5 h-5" />, label: "Bestellingen", href: "/orders" },
             { icon: <Settings className="w-5 h-5" />, label: "Instellingen", href: "/instellingen" },
             ...(profile?.is_admin
@@ -883,7 +865,7 @@ export default function ProfilePage() {
           {/* Juridisch & info */}
           <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-primary pt-4 pb-1">Info</h2>
           {[
-            { icon: <FileText className="w-5 h-5" />, label: "Wettelijke gegevens", href: "/wettelijk", sub: "Voorwaarden en privacy" },
+            { icon: <FileText className="w-5 h-5" />, label: "Wettelijke gegevens", href: "/instellingen/juridisch", sub: "Voorwaarden en privacy" },
             { icon: <Cookie className="w-5 h-5" />, label: "Mijn voorkeuren", href: "/voorkeuren", sub: "Cookievoorkeuren beheren" },
           ].map(({ icon, label, href, sub }) => (
             <Link key={label} href={href}>

@@ -3,7 +3,7 @@
 import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Search, MessageCircle, Heart, TrendingUp, UserPlus, Bell, Package } from "lucide-react";
+import { Search, MessageCircle, Heart, TrendingUp, UserPlus, Bell, Package, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
@@ -24,7 +24,7 @@ type Conversation = {
 
 type Notificatie = {
   id: string;
-  type: "favoriet" | "bod" | "volger" | "nieuwe_listing" | "zoekwaarschuwing";
+  type: "favoriet" | "bod" | "volger" | "nieuwe_listing" | "zoekwaarschuwing" | "afgekeurd";
   created_at: string;
   naam: string;
   avatar_url: string | null;
@@ -35,6 +35,7 @@ type Notificatie = {
   bieder_id?: string;
   listing_id?: string;
   zoekterm?: string;
+  reden?: string;
 };
 
 type Tab = "berichten" | "notificaties";
@@ -194,8 +195,13 @@ function MessagesContent() {
     // 5. Verkopers die ik volg, en hun nieuwe listings van de laatste 30 dagen
     const volgendPromise = supabase.from("followers").select("following_id").eq("follower_id", userId);
 
-    const [{ data: favs }, { data: bids }, { data: volgers }, { data: volgend }] = await Promise.all([
-      favsPromise, bidsPromise, volgersPromise, volgendPromise,
+    // 6. Mijn afgekeurde advertenties: waarom, en waar je ze aanpast. Blijft
+    //    staan tot je de advertentie aanpast (dan gaat hij terug naar de moderatie).
+    const afgekeurdPromise = supabase.from("listings").select("id, titel, foto_urls, moderatie_reden, afgekeurd_op, created_at")
+      .eq("user_id", userId).eq("moderatie_status", "afgekeurd").order("afgekeurd_op", { ascending: false }).limit(20);
+
+    const [{ data: favs }, { data: bids }, { data: volgers }, { data: volgend }, { data: afgekeurd }] = await Promise.all([
+      favsPromise, bidsPromise, volgersPromise, volgendPromise, afgekeurdPromise,
     ]);
 
     const volgendeIds = volgend?.map((v: { following_id: string }) => v.following_id) || [];
@@ -279,7 +285,21 @@ function MessagesContent() {
       });
     }
 
-    // 6. Nieuwe artikelen die passen bij mijn zoekwaarschuwingen
+    for (const listing of afgekeurd || []) {
+      alleNotifs.push({
+        id: `afgekeurd_${listing.id}`,
+        type: "afgekeurd",
+        created_at: listing.afgekeurd_op || listing.created_at,
+        naam: "Noah & Emma",
+        avatar_url: null,
+        titel: listing.titel,
+        foto_url: listing.foto_urls?.[0],
+        listing_id: listing.id,
+        reden: listing.moderatie_reden || undefined,
+      });
+    }
+
+    // 7. Nieuwe artikelen die passen bij mijn zoekwaarschuwingen
     const { data: waarschuwingen } = await supabase
       .from("zoekwaarschuwingen")
       .select("id, zoekterm, max_prijs, created_at")
@@ -361,11 +381,14 @@ function MessagesContent() {
     volger: "bg-blue-100 text-blue-500",
     nieuwe_listing: "bg-amber-100 text-amber-600",
     zoekwaarschuwing: "bg-violet-100 text-violet-600",
+    afgekeurd: "bg-red-100 text-red-600",
   };
 
   // Een bod open je in het gesprek met de bieder: daar kun je het accepteren
-  // of afwijzen. Overige meldingen gaan naar het product.
+  // of afwijzen. Een afgekeurde advertentie open je om hem aan te passen.
+  // Overige meldingen gaan naar het product.
   const openNotificatie = async (n: Notificatie) => {
+    if (n.type === "afgekeurd") { router.push(`/product/${n.listing_id}/edit`); return; }
     if (n.type === "bod" && n.bieder_id && currentUserId) {
       const { data: gesprek } = await supabase.from("conversations").select("id")
         .eq("listing_id", n.listing_id!).eq("buyer_id", n.bieder_id).eq("seller_id", currentUserId).maybeSingle();
@@ -382,6 +405,7 @@ function MessagesContent() {
     }
     if (n.type === "nieuwe_listing") return `heeft een nieuw artikel geplaatst: "${n.titel}"`;
     if (n.type === "zoekwaarschuwing") return `nieuw artikel voor "${n.zoekterm}": "${n.titel}"`;
+    if (n.type === "afgekeurd") return `heeft "${n.titel}" afgekeurd. ${n.reden || "Je advertentie voldoet niet aan onze regels."} Tik om je advertentie aan te passen.`;
     return "volgt je nu";
   };
 
@@ -534,7 +558,7 @@ function MessagesContent() {
               </div>
               <h2 className="text-xl font-bold text-slate-700 dark:text-slate-200">Geen notificaties</h2>
               <p className="text-slate-400 text-sm max-w-xs">
-                Je ziet hier meldingen zodra iemand jouw artikel als favoriet markeert, een bod doet, jou volgt, een verkoper die jij volgt iets nieuws plaatst, of er een artikel verschijnt dat past bij een zoekwaarschuwing.
+                Je ziet hier meldingen zodra iemand jouw artikel als favoriet markeert, een bod doet, jou volgt, een verkoper die jij volgt iets nieuws plaatst, er een artikel verschijnt dat past bij een zoekwaarschuwing, of als een advertentie van jou is afgekeurd.
               </p>
             </div>
           )}
@@ -564,6 +588,7 @@ function MessagesContent() {
                   {notif.type === "volger" && <UserPlus className="w-2.5 h-2.5" />}
                   {notif.type === "nieuwe_listing" && <Package className="w-2.5 h-2.5" />}
                   {notif.type === "zoekwaarschuwing" && <Bell className="w-2.5 h-2.5" />}
+                  {notif.type === "afgekeurd" && <AlertCircle className="w-2.5 h-2.5" />}
                 </div>
               </div>
 

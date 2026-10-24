@@ -20,7 +20,9 @@ import { telGezichten } from './kledingDetectie';
 
 export type FotoControle =
   | { ok: true; aantalGezichten: number }
-  | { ok: false; reden: string };
+  // aantalGezichten is gezet als de foto vanwege gezichten geweigerd is: dan
+  // kan het verkoopscherm het kledingstuk laten uitknippen (KledingUitknipper).
+  | { ok: false; reden: string; aantalGezichten?: number };
 
 function laadAfbeelding(dataUrl: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -48,6 +50,7 @@ export async function controleerFoto(
   if (model === 'none' && aantal > 0) {
     return {
       ok: false,
+      aantalGezichten: aantal,
       reden: "Er staat een gezicht op deze foto. Om kinderen te beschermen plaatsen we geen foto's met gezichten. Maak een foto zonder gezicht in beeld, bijvoorbeeld platgelegd of op een hanger.",
     };
   }

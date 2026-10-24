@@ -378,9 +378,6 @@ function SwipeKaart({ listing, kaartRef, prioriteit }: { listing: SwipeListing; 
             <span className="text-[10px] font-black uppercase tracking-wide text-white">Gepromoot</span>
           </div>
         )}
-        <span className="absolute top-3 right-3 z-10 rounded-full bg-[#E4F4FB] px-3 py-1 text-xs font-bold text-[#1C7FA8] shadow-sm">
-          Maat {listing.maat}
-        </span>
 
         <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
           {listing.likes > 0 ? (
@@ -398,11 +395,25 @@ function SwipeKaart({ listing, kaartRef, prioriteit }: { listing: SwipeListing; 
       {/* Info */}
       <div className="shrink-0 px-2 pt-2.5 pb-1 pointer-events-none">
         <h3 className="font-headline text-[19px] font-extrabold leading-tight tracking-tight text-slate-900 dark:text-white truncate">{listing.titel}</h3>
-        <p className="mt-0.5 text-[13px] text-slate-600 dark:text-slate-300 truncate">
-          {listing.conditie}
-          {listing.merk ? ` · ${listing.merk}` : ""}
-        </p>
-        <div className="mt-2 flex items-center gap-2">
+        {/* Kenmerken altijd op één regel. Past het laatste label niet, dan
+            loopt het door naar een tweede regel die buiten beeld valt: er
+            staan er dan twee, en de foto wordt nooit kleiner door een extra regel. */}
+        <div className="mt-1 flex flex-wrap gap-1.5 h-[22px] overflow-hidden">
+          <span className="inline-flex items-center h-[22px] max-w-full truncate rounded-full bg-blauw-100 px-2.5 text-xs font-bold text-blauw-600">
+            Maat {listing.maat}
+          </span>
+          {listing.conditie && (
+            <span className="inline-flex items-center h-[22px] max-w-full truncate rounded-full bg-roze-100 px-2.5 text-xs font-bold text-roze-600">
+              {listing.conditie}
+            </span>
+          )}
+          {listing.merk && (
+            <span className="inline-flex items-center h-[22px] max-w-full truncate rounded-full bg-slate-100 dark:bg-slate-700 px-2.5 text-xs font-bold text-slate-700 dark:text-slate-200">
+              {listing.merk}
+            </span>
+          )}
+        </div>
+        <div className="mt-1.5 flex items-center gap-2">
           {p?.avatar_url ? (
             <Image src={p.avatar_url} alt="" width={28} height={28} className="w-7 h-7 rounded-full object-cover shrink-0" draggable={false} />
           ) : (

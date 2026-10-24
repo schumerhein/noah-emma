@@ -17,15 +17,19 @@ export interface Vraag {
   antwoord: string;
 }
 
+/** Bovenliggende pagina in het kruimelpad, bv. Kinderkleding boven Kopen. */
+export interface Ouder {
+  naam: string;
+  pad: string;
+}
+
 /** BreadcrumbList (en optioneel FAQPage) als JSON-LD. */
-export function StructuredData({ naam, pad, faq }: { naam: string; pad: string; faq?: Vraag[] }) {
+export function StructuredData({ naam, pad, faq, ouder }: { naam: string; pad: string; faq?: Vraag[]; ouder?: Ouder }) {
+  const kruimels = [{ name: "Home", item: `${SITE_URL}/` }, ...(ouder ? [{ name: ouder.naam, item: `${SITE_URL}${ouder.pad}` }] : []), { name: naam, item: `${SITE_URL}${pad}` }];
   const graph: object[] = [
     {
       "@type": "BreadcrumbList",
-      itemListElement: [
-        { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_URL}/` },
-        { "@type": "ListItem", position: 2, name: naam, item: `${SITE_URL}${pad}` },
-      ],
+      itemListElement: kruimels.map((k, i) => ({ "@type": "ListItem", position: i + 1, ...k })),
     },
   ];
   if (faq?.length) {
@@ -37,11 +41,17 @@ export function StructuredData({ naam, pad, faq }: { naam: string; pad: string; 
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", "@graph": graph }) }} />;
 }
 
-export function Kruimelpad({ naam, center = false }: { naam: string; center?: boolean }) {
+export function Kruimelpad({ naam, center = false, ouder }: { naam: string; center?: boolean; ouder?: Ouder }) {
   return (
-    <nav aria-label="Kruimelpad" className={`text-[13px] text-[#5B4F63] flex gap-2 mb-5 ${center ? "justify-center" : ""}`}>
+    <nav aria-label="Kruimelpad" className={`text-[13px] text-[#5B4F63] flex flex-wrap gap-2 mb-5 ${center ? "justify-center" : ""}`}>
       <Link href="/" className="underline underline-offset-2">Home</Link>
       <span aria-hidden="true">/</span>
+      {ouder && (
+        <>
+          <Link href={ouder.pad} className="underline underline-offset-2">{ouder.naam}</Link>
+          <span aria-hidden="true">/</span>
+        </>
+      )}
       <span className="text-[#241A2E] font-semibold">{naam}</span>
     </nav>
   );
@@ -99,8 +109,10 @@ export function Hero({
   usps,
   tweedeKnop = { label: "Bekijk hoe het werkt", href: "/hoe-het-werkt" },
   beeld,
+  ouder,
 }: {
   naam: string;
+  ouder?: Ouder;
   eyebrow: string;
   titel: React.ReactNode;
   intro?: string;
@@ -112,7 +124,7 @@ export function Hero({
     <section className="bg-gradient-to-r from-[#E4F4FB] via-[#FFF9FA] to-[#FFEAF1]">
       <div className="max-w-[1180px] mx-auto px-4 sm:px-6 pt-7 sm:pt-16 pb-10 sm:pb-16 flex flex-col lg:flex-row gap-10 lg:gap-12 items-center">
         <div className="flex-1 min-w-0 w-full">
-          <Kruimelpad naam={naam} />
+          <Kruimelpad naam={naam} ouder={ouder} />
           <Eyebrow>{eyebrow}</Eyebrow>
           <h1 className="mt-5 font-headline font-extrabold text-[34px] sm:text-[46px] lg:text-[52px] leading-[1.06] tracking-tight">{titel}</h1>
           {intro && <p className="mt-4 text-lg leading-relaxed text-[#5B4F63] max-w-[56ch]">{intro}</p>}
@@ -137,6 +149,8 @@ export interface Product {
 // Productfoto's (gemaakt in Canva, zonder kinderen). Elke pagina krijgt een
 // eigen kledingstuk, zodat dezelfde foto niet op meerdere pagina's staat.
 export const PRODUCTEN = {
+  trui: { afbeelding: "/images/trui-groen.png", alt: "Groene gebreide kindertrui aan een houten hanger", titel: "Gebreide trui, groen", maat: "98", staat: "Zo goed als nieuw", kind: "Voor Noor, 3 jaar" },
+  sneakers: { afbeelding: "/images/sneakers-blauw.png", alt: "Blauwe kindersneakers aan een houten haakje", titel: "Sneakers, blauw", maat: "26", staat: "Goed", kind: "Voor Finn, 3 jaar" },
   vestje: { afbeelding: "/images/vestje-beige.png", alt: "Beige gebreid kindervestje aan een houten hanger", titel: "Gebreid vestje, beige", maat: "92", staat: "Zo goed als nieuw", kind: "Voor Lotte, 2 jaar" },
   regenjas: { afbeelding: "/images/regenjas-geel.png", alt: "Gele kinderregenjas aan een houten hanger", titel: "Regenjas, geel", maat: "104", staat: "Zo goed als nieuw", kind: "Voor Daan, 4 jaar" },
   jurkje: { afbeelding: "/images/jurkje-gestreept.png", alt: "Gestreept kinderjurkje met roze kraag aan een houten hanger", titel: "Gestreept jurkje", maat: "110", staat: "Nieuw met label", kind: "Voor Mila, 5 jaar" },
@@ -209,6 +223,27 @@ export function Tegels({ items, kolommen = "grid-cols-2 md:grid-cols-4" }: { ite
 }
 
 /** Genummerde witte kaarten. */
+/** Genummerde stappen in een gekleurd kader (kopen of verkopen). */
+export function Stappen({ titel, stappen, kleur }: { titel: string; stappen: { titel: string; tekst: string }[]; kleur: "roze" | "blauw" }) {
+  const tekstKleur = kleur === "roze" ? "text-[#D63D74]" : "text-[#1C7FA8]";
+  return (
+    <div className={`rounded-[28px] p-6 sm:p-8 bg-gradient-to-br to-white ${kleur === "roze" ? "from-[#FFEAF1]" : "from-[#E4F4FB]"}`}>
+      <h3 className={`font-headline font-extrabold text-2xl ${tekstKleur}`}>{titel}</h3>
+      <ol className="mt-5 flex flex-col gap-5">
+        {stappen.map((s, i) => (
+          <li key={s.titel} className="flex gap-3.5 items-start">
+            <span className={`shrink-0 w-9 h-9 rounded-full bg-white flex items-center justify-center font-headline font-extrabold ${tekstKleur}`}>{i + 1}</span>
+            <span>
+              <strong className="block text-[17px]">{s.titel}</strong>
+              <span className="text-[#5B4F63] leading-relaxed">{s.tekst}</span>
+            </span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
 export function Kaarten({ items, kolommen = "sm:grid-cols-2 lg:grid-cols-3" }: { items: { titel: string; tekst: string }[]; kolommen?: string }) {
   return (
     <div className={`mt-10 grid ${kolommen} gap-5`}>

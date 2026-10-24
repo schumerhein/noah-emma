@@ -42,7 +42,7 @@ function Uitklapmenu({ item, pathname }: { item: MenuItem; pathname: string }) {
         <ChevronDown className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`} aria-hidden="true" />
       </button>
       {open && (
-        <div className="absolute right-0 top-full pt-2 z-50">
+        <div className="absolute left-0 top-full pt-2 z-50">
           <ul className="min-w-[220px] bg-white rounded-2xl p-2 border border-[#241A2E]/[0.08] shadow-[0_20px_40px_-18px_rgba(36,26,46,0.35)]">
             {item.sub!.map((s) => (
               <li key={s.href}>

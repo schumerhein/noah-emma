@@ -5,7 +5,7 @@ import { MarketingHeader } from "@/components/marketing/MarketingHeader";
 import { StickyCta } from "@/components/marketing/StickyCta";
 import { SIGNUP_URL, SITE_URL, OG_AFBEELDING } from "@/components/marketing/links";
 import {
-  AfsluitendeCta, Faq, Groeimodel, Hero, Kaarten, MarketingFooter, PRODUCTEN, SCHADUW, Sectie, SectieKop, StructuredData, type Vraag,
+  AfsluitendeCta, Faq, Groeimodel, Hero, Kaarten, MarketingFooter, PRODUCTEN, SCHADUW, Sectie, SectieKop, Stappen, StructuredData, type Vraag,
 } from "@/components/marketing/Blokken";
 
 const PAD = "/hoe-het-werkt";
@@ -85,26 +85,6 @@ function FotoControle() {
         </span>
       </div>
       <p className="mx-1.5 mt-1 text-sm text-[#5B4F63] leading-snug">Onze slimme AI controleert elke foto voordat een advertentie live gaat.</p>
-    </div>
-  );
-}
-
-function Stappen({ titel, stappen, kleur }: { titel: string; stappen: { titel: string; tekst: string }[]; kleur: "roze" | "blauw" }) {
-  const tekstKleur = kleur === "roze" ? "text-[#D63D74]" : "text-[#1C7FA8]";
-  return (
-    <div className={`rounded-[28px] p-6 sm:p-8 bg-gradient-to-br to-white ${kleur === "roze" ? "from-[#FFEAF1]" : "from-[#E4F4FB]"}`}>
-      <h3 className={`font-headline font-extrabold text-2xl ${tekstKleur}`}>{titel}</h3>
-      <ol className="mt-5 flex flex-col gap-5">
-        {stappen.map((s, i) => (
-          <li key={s.titel} className="flex gap-3.5 items-start">
-            <span className={`shrink-0 w-9 h-9 rounded-full bg-white flex items-center justify-center font-headline font-extrabold ${tekstKleur}`}>{i + 1}</span>
-            <span>
-              <strong className="block text-[17px]">{s.titel}</strong>
-              <span className="text-[#5B4F63] leading-relaxed">{s.tekst}</span>
-            </span>
-          </li>
-        ))}
-      </ol>
     </div>
   );
 }

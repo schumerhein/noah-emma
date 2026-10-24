@@ -22,7 +22,10 @@ const nextConfig: NextConfig = {
   },
   // De oude "Over"-pagina uit de app is vervangen door de marketingpagina.
   async redirects() {
-    return [{ source: '/over', destination: '/over-ons', permanent: true }];
+    return [
+      { source: '/over', destination: '/over-ons', permanent: true },
+      { source: '/helpcentrum', destination: '/veelgestelde-vragen', permanent: true },
+    ];
   },
   // Het .vercel.app-adres toont dezelfde site; houd het uit Google zodat alleen
   // www.noah-emma.nl geïndexeerd wordt.

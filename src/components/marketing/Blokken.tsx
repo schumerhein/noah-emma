@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { ArrowRight, Check, Heart, X } from "lucide-react";
+import { ArrowRight, Check, Heart, X, type LucideIcon } from "lucide-react";
 import { NoahFace, EmmaFace } from "@/components/ai-models/NoahEmmaFaces";
 import { CookieInstellingenKnop } from "@/components/CookieMelding";
-import { FOOTER_EXTRA, LOGIN_URL, MENU_PAGINAS, SIGNUP_URL, SITE_URL } from "@/components/marketing/links";
+import { FOOTER_EXTRA, LOGIN_URL, MENU_PAGINAS, SIGNUP_URL, SITE_URL, SOCIALS } from "@/components/marketing/links";
 
 // Gedeelde bouwblokken voor de marketingpagina's, zodat elke pagina dezelfde
 // huisstijl, hetzelfde afsluitende aanmeldblok en dezelfde footer heeft.
@@ -17,15 +17,19 @@ export interface Vraag {
   antwoord: string;
 }
 
+/** Bovenliggende pagina in het kruimelpad, bv. Kinderkleding boven Kopen. */
+export interface Ouder {
+  naam: string;
+  pad: string;
+}
+
 /** BreadcrumbList (en optioneel FAQPage) als JSON-LD. */
-export function StructuredData({ naam, pad, faq }: { naam: string; pad: string; faq?: Vraag[] }) {
+export function StructuredData({ naam, pad, faq, ouder }: { naam: string; pad: string; faq?: Vraag[]; ouder?: Ouder }) {
+  const kruimels = [{ name: "Home", item: `${SITE_URL}/` }, ...(ouder ? [{ name: ouder.naam, item: `${SITE_URL}${ouder.pad}` }] : []), { name: naam, item: `${SITE_URL}${pad}` }];
   const graph: object[] = [
     {
       "@type": "BreadcrumbList",
-      itemListElement: [
-        { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_URL}/` },
-        { "@type": "ListItem", position: 2, name: naam, item: `${SITE_URL}${pad}` },
-      ],
+      itemListElement: kruimels.map((k, i) => ({ "@type": "ListItem", position: i + 1, ...k })),
     },
   ];
   if (faq?.length) {
@@ -37,11 +41,17 @@ export function StructuredData({ naam, pad, faq }: { naam: string; pad: string; 
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", "@graph": graph }) }} />;
 }
 
-export function Kruimelpad({ naam, center = false }: { naam: string; center?: boolean }) {
+export function Kruimelpad({ naam, center = false, ouder }: { naam: string; center?: boolean; ouder?: Ouder }) {
   return (
-    <nav aria-label="Kruimelpad" className={`text-[13px] text-[#5B4F63] flex gap-2 mb-5 ${center ? "justify-center" : ""}`}>
+    <nav aria-label="Kruimelpad" className={`text-[13px] text-[#5B4F63] flex flex-wrap gap-2 mb-5 ${center ? "justify-center" : ""}`}>
       <Link href="/" className="underline underline-offset-2">Home</Link>
       <span aria-hidden="true">/</span>
+      {ouder && (
+        <>
+          <Link href={ouder.pad} className="underline underline-offset-2">{ouder.naam}</Link>
+          <span aria-hidden="true">/</span>
+        </>
+      )}
       <span className="text-[#241A2E] font-semibold">{naam}</span>
     </nav>
   );
@@ -99,8 +109,10 @@ export function Hero({
   usps,
   tweedeKnop = { label: "Bekijk hoe het werkt", href: "/hoe-het-werkt" },
   beeld,
+  ouder,
 }: {
   naam: string;
+  ouder?: Ouder;
   eyebrow: string;
   titel: React.ReactNode;
   intro?: string;
@@ -112,7 +124,7 @@ export function Hero({
     <section className="bg-gradient-to-r from-[#E4F4FB] via-[#FFF9FA] to-[#FFEAF1]">
       <div className="max-w-[1180px] mx-auto px-4 sm:px-6 pt-7 sm:pt-16 pb-10 sm:pb-16 flex flex-col lg:flex-row gap-10 lg:gap-12 items-center">
         <div className="flex-1 min-w-0 w-full">
-          <Kruimelpad naam={naam} />
+          <Kruimelpad naam={naam} ouder={ouder} />
           <Eyebrow>{eyebrow}</Eyebrow>
           <h1 className="mt-5 font-headline font-extrabold text-[34px] sm:text-[46px] lg:text-[52px] leading-[1.06] tracking-tight">{titel}</h1>
           {intro && <p className="mt-4 text-lg leading-relaxed text-[#5B4F63] max-w-[56ch]">{intro}</p>}
@@ -137,6 +149,8 @@ export interface Product {
 // Productfoto's (gemaakt in Canva, zonder kinderen). Elke pagina krijgt een
 // eigen kledingstuk, zodat dezelfde foto niet op meerdere pagina's staat.
 export const PRODUCTEN = {
+  trui: { afbeelding: "/images/trui-groen.png", alt: "Groene gebreide kindertrui aan een houten hanger", titel: "Gebreide trui, groen", maat: "98", staat: "Zo goed als nieuw", kind: "Voor Noor, 3 jaar" },
+  sneakers: { afbeelding: "/images/sneakers-blauw.png", alt: "Blauwe kindersneakers aan een houten haakje", titel: "Sneakers, blauw", maat: "26", staat: "Goed", kind: "Voor Finn, 3 jaar" },
   vestje: { afbeelding: "/images/vestje-beige.png", alt: "Beige gebreid kindervestje aan een houten hanger", titel: "Gebreid vestje, beige", maat: "92", staat: "Zo goed als nieuw", kind: "Voor Lotte, 2 jaar" },
   regenjas: { afbeelding: "/images/regenjas-geel.png", alt: "Gele kinderregenjas aan een houten hanger", titel: "Regenjas, geel", maat: "104", staat: "Zo goed als nieuw", kind: "Voor Daan, 4 jaar" },
   jurkje: { afbeelding: "/images/jurkje-gestreept.png", alt: "Gestreept kinderjurkje met roze kraag aan een houten hanger", titel: "Gestreept jurkje", maat: "110", staat: "Nieuw met label", kind: "Voor Mila, 5 jaar" },
@@ -168,6 +182,39 @@ export function SwipeKaart({ product = PRODUCTEN.vestje }: { product?: Product }
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+export interface AccessoireItem {
+  titel: string;
+  sub: string;
+  Icoon: LucideIcon;
+  kleur: Kleur;
+}
+
+/** Kaart met een lijstje accessoires, als beeld in de hero van accessoirepagina's. */
+export function AccessoireKaart({ kop, label, items, voetnoot = "Voorbeeld van het aanbod. Je ziet het echte aanbod na gratis aanmelden." }: { kop: string; label: string; items: AccessoireItem[]; voetnoot?: string }) {
+  return (
+    <div className="w-full max-w-[320px] bg-white rounded-[36px] p-3.5 shadow-[0_30px_60px_-24px_rgba(36,26,46,0.45)] -rotate-2">
+      <div className="flex items-center justify-between px-2 pt-1.5 pb-3">
+        <span className="text-[13px] font-bold">{kop}</span>
+        <span className="text-xs font-bold text-[#1C7FA8] bg-[#E4F4FB] px-2.5 py-1 rounded-full">{label}</span>
+      </div>
+      <ul className="flex flex-col gap-2.5">
+        {items.map(({ titel, sub, Icoon, kleur }) => (
+          <li key={titel} className="flex gap-3 items-center p-3 rounded-[18px] bg-[#FFF9FA]">
+            <span className={`shrink-0 w-[52px] h-[52px] rounded-[14px] flex items-center justify-center ${tint(kleur)}`}>
+              <Icoon className="w-6 h-6" aria-hidden="true" />
+            </span>
+            <span className="min-w-0">
+              <strong className="block text-[15px]">{titel}</strong>
+              <span className="text-[13px] text-[#5B4F63]">{sub}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+      <p className="mx-2 mt-3 mb-1 text-[13px] text-[#5B4F63]">{voetnoot}</p>
     </div>
   );
 }
@@ -209,6 +256,27 @@ export function Tegels({ items, kolommen = "grid-cols-2 md:grid-cols-4" }: { ite
 }
 
 /** Genummerde witte kaarten. */
+/** Genummerde stappen in een gekleurd kader (kopen of verkopen). */
+export function Stappen({ titel, stappen, kleur }: { titel: string; stappen: { titel: string; tekst: string }[]; kleur: "roze" | "blauw" }) {
+  const tekstKleur = kleur === "roze" ? "text-[#D63D74]" : "text-[#1C7FA8]";
+  return (
+    <div className={`rounded-[28px] p-6 sm:p-8 bg-gradient-to-br to-white ${kleur === "roze" ? "from-[#FFEAF1]" : "from-[#E4F4FB]"}`}>
+      <h3 className={`font-headline font-extrabold text-2xl ${tekstKleur}`}>{titel}</h3>
+      <ol className="mt-5 flex flex-col gap-5">
+        {stappen.map((s, i) => (
+          <li key={s.titel} className="flex gap-3.5 items-start">
+            <span className={`shrink-0 w-9 h-9 rounded-full bg-white flex items-center justify-center font-headline font-extrabold ${tekstKleur}`}>{i + 1}</span>
+            <span>
+              <strong className="block text-[17px]">{s.titel}</strong>
+              <span className="text-[#5B4F63] leading-relaxed">{s.tekst}</span>
+            </span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
 export function Kaarten({ items, kolommen = "sm:grid-cols-2 lg:grid-cols-3" }: { items: { titel: string; tekst: string }[]; kolommen?: string }) {
   return (
     <div className={`mt-10 grid ${kolommen} gap-5`}>
@@ -306,6 +374,19 @@ export function AfsluitendeCta({ titel, accent, tekst }: { titel: string; accent
   );
 }
 
+// Merklogo's van de socials (eenvoudige paden, 24x24).
+const SOCIAL_ICOON: Record<(typeof SOCIALS)[number]["naam"], React.ReactNode> = {
+  Instagram: (
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" strokeWidth="2" />
+      <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" strokeWidth="2" />
+      <circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" />
+    </>
+  ),
+  TikTok: <path fill="currentColor" d="M16.6 5.82A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 0 1-2.59 2.5 2.6 2.6 0 0 1-2.59-2.6 2.6 2.6 0 0 1 3.37-2.48V9.66a5.68 5.68 0 0 0-6.45 5.64A5.68 5.68 0 0 0 9.87 21a5.68 5.68 0 0 0 5.68-5.68V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3a4.28 4.28 0 0 1-3.25-1.48Z" />,
+  Facebook: <path fill="currentColor" d="M13.5 21v-7.5h2.53l.38-2.94H13.5V8.69c0-.85.24-1.43 1.46-1.43h1.56V4.63a20.9 20.9 0 0 0-2.27-.12c-2.25 0-3.79 1.37-3.79 3.9v2.15H7.92v2.94h2.54V21h3.04Z" />,
+};
+
 export function MarketingFooter() {
   return (
     <footer className="mt-16 sm:mt-20 border-t border-[#241A2E]/[0.08] px-4 sm:px-6 pt-10 pb-24 sm:pb-10">
@@ -323,6 +404,21 @@ export function MarketingFooter() {
           <p className="mt-3 text-sm text-[#5B4F63] max-w-[36ch] leading-relaxed">
             Tweedehands kinderkleding en accessoires voor kinderen van 0 tot 12 jaar. Zonder kindergezichten, helemaal gratis.
           </p>
+          <ul aria-label="Volg ons" className="mt-4 flex gap-2">
+            {SOCIALS.map((s) => (
+              <li key={s.naam}>
+                <a
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Noah & Emma op ${s.naam}`}
+                  className="w-11 h-11 rounded-full bg-white border border-[#241A2E]/10 flex items-center justify-center text-[#241A2E] hover:text-[#D63D74] transition-colors"
+                >
+                  <svg viewBox="0 0 24 24" className="w-5 h-5" aria-hidden="true">{SOCIAL_ICOON[s.naam]}</svg>
+                </a>
+              </li>
+            ))}
+          </ul>
         </div>
         <nav aria-label="Footer: pagina's">
           <p className="font-headline font-extrabold text-sm">Noah &amp; Emma</p>

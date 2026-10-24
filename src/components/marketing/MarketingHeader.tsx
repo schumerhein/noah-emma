@@ -10,11 +10,11 @@ import { HOOFDMENU, SIGNUP_URL, type MenuItem } from "@/components/marketing/lin
 const LINK = "px-3.5 py-2.5 rounded-full text-[15px] font-semibold text-[#241A2E] hover:bg-[#241A2E]/5 transition-colors";
 const ACTIEF = "aria-[current=page]:bg-[#FFEAF1] aria-[current=page]:text-[#D63D74] aria-[current=page]:font-bold";
 
-/** Desktop-menuknop met een uitklaplijst (bv. Over ons → Veelgestelde vragen). */
+/** Desktop-menuknop: het label is een link, het pijltje klapt de subpagina's uit. */
 function Uitklapmenu({ item, pathname }: { item: MenuItem; pathname: string }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const actief = item.sub!.some((s) => s.href === pathname);
+  const actief = pathname === item.href || item.sub!.some((s) => s.href === pathname);
 
   useEffect(() => {
     if (!open) return;
@@ -31,18 +31,23 @@ function Uitklapmenu({ item, pathname }: { item: MenuItem; pathname: string }) {
 
   return (
     <div ref={ref} className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        aria-haspopup="true"
-        className={`${LINK} inline-flex items-center gap-1 ${actief ? "bg-[#FFEAF1] text-[#D63D74] font-bold" : ""}`}
-      >
-        {item.label}
-        <ChevronDown className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`} aria-hidden="true" />
-      </button>
+      <div className={`${LINK} inline-flex items-center gap-0.5 pr-2 ${actief ? "bg-[#FFEAF1] text-[#D63D74] font-bold" : ""}`}>
+        <Link href={item.href} aria-current={pathname === item.href ? "page" : undefined}>
+          {item.label}
+        </Link>
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          aria-haspopup="true"
+          aria-label={`Submenu ${item.label}`}
+          className="w-6 h-6 -my-1 rounded-full flex items-center justify-center"
+        >
+          <ChevronDown className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`} aria-hidden="true" />
+        </button>
+      </div>
       {open && (
-        <div className="absolute right-0 top-full pt-2 z-50">
+        <div className="absolute left-0 top-full pt-2 z-50">
           <ul className="min-w-[220px] bg-white rounded-2xl p-2 border border-[#241A2E]/[0.08] shadow-[0_20px_40px_-18px_rgba(36,26,46,0.35)]">
             {item.sub!.map((s) => (
               <li key={s.href}>
@@ -119,7 +124,14 @@ export function MarketingHeader({ menu = HOOFDMENU }: { menu?: MenuItem[] }) {
             <div key={item.label}>
               {item.sub ? (
                 <>
-                  <span className="flex items-center min-h-[52px] text-base font-semibold text-[#241A2E]">{item.label}</span>
+                  <Link
+                    href={item.href}
+                    onClick={() => setOpen(false)}
+                    aria-current={pathname === item.href ? "page" : undefined}
+                    className="flex items-center min-h-[52px] text-base font-semibold text-[#241A2E] aria-[current=page]:text-[#D63D74]"
+                  >
+                    {item.label}
+                  </Link>
                   {item.sub.map((s) => (
                     <Link
                       key={s.href}

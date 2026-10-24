@@ -1,7 +1,4 @@
-"use client";
-
-import { useRouter } from "next/navigation";
-import { ChevronLeft, Cookie } from "lucide-react";
+import { JuridischePagina } from "@/components/marketing/JuridischePagina";
 import { CookieInstellingenKnop } from "@/components/CookieMelding";
 
 const SECTIES = [
@@ -25,6 +22,8 @@ const SECTIES = [
 
 • _ga (cookie van Google, 2 jaar): onderscheidt bezoekers.
 • _ga_N04N5JQH0R (cookie van Google, 2 jaar): onthoudt je bezoek.
+
+We meten daarbij ook een paar acties, zonder te zien wie je bent: dat je een account hebt aangemaakt en dat je op een e-mailadres klikt. Wat je in een e-mail of formulier invult, sturen we nooit naar Google.
 
 Zo hebben we Google Analytics ingesteld:
 • Google Signals en advertentiepersonalisatie staan uit. Je gegevens worden niet gebruikt voor advertenties.
@@ -55,46 +54,16 @@ Je kunt cookies ook zelf wissen via de instellingen van je browser. Wis je de no
   },
 ];
 
-export default function CookiesPage() {
-  const router = useRouter();
-
+export default function CookiesPagina() {
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-900 pb-20">
-      <header className="px-5 pt-14 pb-5 border-b border-slate-100 dark:border-slate-800 sticky top-0 z-20 bg-white dark:bg-slate-900">
-        <div className="flex items-center gap-4">
-          <button onClick={() => router.back()} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-            <ChevronLeft className="w-5 h-5 text-slate-600 dark:text-slate-300" />
-          </button>
-          <h1 className="text-xl font-black text-slate-900 dark:text-white">Cookiebeleid</h1>
-        </div>
-      </header>
-
-      <main className="px-5 pt-6 pb-10 max-w-2xl mx-auto space-y-8">
-        {/* Intro */}
-        <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl p-5 flex items-start gap-4">
-          <div className="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-800 flex items-center justify-center shrink-0">
-            <Cookie className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-          </div>
-          <div>
-            <p className="font-bold text-sm text-emerald-800 dark:text-emerald-200">Wij houden het simpel</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-              Noah & Emma gebruikt standaard alleen noodzakelijke cookies. Analytische cookies staan uit tot jij ze aanzet. Geen advertenties, geen dataverkoop.
-            </p>
-            <CookieInstellingenKnop className="mt-3 min-h-[44px] px-4 rounded-full bg-[#241A2E] text-white text-sm font-bold" />
-          </div>
-        </div>
-
-        <p className="text-xs text-slate-400">Laatste wijziging: 24 oktober 2026</p>
-
-        {SECTIES.map(sectie => (
-          <section key={sectie.titel} className="space-y-3">
-            <h2 className="text-base font-black text-slate-900 dark:text-white">{sectie.titel}</h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-line">
-              {sectie.tekst}
-            </p>
-          </section>
-        ))}
-      </main>
-    </div>
+    <JuridischePagina
+      naam="Cookiebeleid"
+      pad="/cookies"
+      titel="Cookiebeleid"
+      intro="Noah & Emma gebruikt standaard alleen noodzakelijke cookies. Analytische cookies staan uit tot jij ze aanzet. Geen advertenties, geen dataverkoop."
+      datum="Laatste wijziging: 24 oktober 2026"
+      secties={SECTIES}
+      extra={<CookieInstellingenKnop className="min-h-[44px] px-5 rounded-full bg-[#241A2E] text-white text-sm font-bold" />}
+    />
   );
 }

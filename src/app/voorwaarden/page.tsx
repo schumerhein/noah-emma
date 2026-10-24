@@ -1,7 +1,4 @@
-"use client";
-
-import { useRouter } from "next/navigation";
-import { ChevronLeft, FileText } from "lucide-react";
+import { JuridischePagina } from "@/components/marketing/JuridischePagina";
 import { PREMIUM_PRIJS } from "@/lib/prijzen";
 
 const PREMIUM_PRIJS_TEKST = `€${PREMIUM_PRIJS.toFixed(2).replace(".", ",")}`;
@@ -131,45 +128,15 @@ Adres: Noah & Emma, Nederland`,
   },
 ];
 
-export default function VoorwaardenPage() {
-  const router = useRouter();
-
+export default function VoorwaardenPagina() {
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-900 pb-20">
-      <header className="px-5 pt-14 pb-5 border-b border-slate-100 dark:border-slate-800 sticky top-0 z-20 bg-white dark:bg-slate-900">
-        <div className="flex items-center gap-4">
-          <button onClick={() => router.back()} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-            <ChevronLeft className="w-5 h-5 text-slate-600 dark:text-slate-300" />
-          </button>
-          <h1 className="text-xl font-black text-slate-900 dark:text-white">Algemene voorwaarden</h1>
-        </div>
-      </header>
-
-      <main className="px-5 pt-6 pb-10 max-w-2xl mx-auto space-y-8">
-        {/* Intro banner */}
-        <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-5 flex items-start gap-4">
-          <div className="w-12 h-12 rounded-xl bg-slate-200 dark:bg-slate-700 flex items-center justify-center shrink-0">
-            <FileText className="w-6 h-6 text-slate-500" />
-          </div>
-          <div>
-            <p className="font-bold text-sm text-slate-800 dark:text-white">Algemene voorwaarden Noah & Emma</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-              Door gebruik te maken van ons platform ga je akkoord met deze voorwaarden. Lees ze zorgvuldig door.
-            </p>
-          </div>
-        </div>
-
-        <p className="text-xs text-slate-400">Versie 1.1 · Ingangsdatum: 4 september 2026</p>
-
-        {SECTIES.map(sectie => (
-          <section key={sectie.titel} className="space-y-3">
-            <h2 className="text-base font-black text-slate-900 dark:text-white">{sectie.titel}</h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-line">
-              {sectie.tekst}
-            </p>
-          </section>
-        ))}
-      </main>
-    </div>
+    <JuridischePagina
+      naam="Algemene voorwaarden"
+      pad="/voorwaarden"
+      titel="Algemene voorwaarden"
+      intro="Door Noah & Emma te gebruiken ga je akkoord met deze voorwaarden. Lees ze rustig door; bij vragen helpen we je graag."
+      datum="Versie 1.1 · Ingangsdatum: 4 september 2026"
+      secties={SECTIES}
+    />
   );
 }

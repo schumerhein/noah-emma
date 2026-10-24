@@ -99,6 +99,19 @@ export default function KinderkledingPage() {
           </Link>
         </section>
 
+        <section className="max-w-[1180px] mx-auto px-4 sm:px-6 pt-4 grid md:grid-cols-2 gap-4">
+          <Link href="/kinderkleding/kopen" className={`rounded-[28px] p-6 sm:p-7 bg-white ${SCHADUW} flex flex-col gap-1.5 transition-transform hover:-translate-y-0.5`}>
+            <span className="font-headline font-extrabold text-[22px]">Kinderkleding kopen</span>
+            <span className="text-[#5B4F63]">Tweedehands, in de maat die je kind nu heeft.</span>
+            <span className="font-bold text-[#1C7FA8]">Zo werkt kopen →</span>
+          </Link>
+          <Link href="/kinderkleding/verkopen" className={`rounded-[28px] p-6 sm:p-7 bg-white ${SCHADUW} flex flex-col gap-1.5 transition-transform hover:-translate-y-0.5`}>
+            <span className="font-headline font-extrabold text-[22px]">Kinderkleding verkopen</span>
+            <span className="text-[#5B4F63]">Gratis, en zonder foto van je kind.</span>
+            <span className="font-bold text-[#D63D74]">Zo werkt verkopen →</span>
+          </Link>
+        </section>
+
         <Sectie>
           <SectieKop label="Soorten kleding" titel="Wat zoek je?" />
           <Tegels items={SOORTEN} />

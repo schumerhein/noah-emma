@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { NoahEmmaLogo } from "@/components/Header";
 import { MailCheck } from "lucide-react";
 import { leesbareDeviceLabel } from "@/lib/deviceLabel";
+import { meetGebeurtenis } from "@/lib/analytics";
 
 // Na inloggen terug naar de pagina waar je vandaan kwam (bv. een review-link
 // uit een e-mail: /login?next=/reviews/schrijf?...). Alleen paden binnen de
@@ -19,7 +20,6 @@ function volgendePagina(): string | null {
 // Supabase geeft Engelse foutmeldingen terug; vertaal de gebruikelijke.
 function registratieFout(bericht: string): string {
   const m = bericht.toLowerCase();
-  if (m.includes("already registered") || m.includes("already been registered")) return "Er bestaat al een account met dit e-mailadres. Log in, of kies 'Vergeten?' als je je wachtwoord niet meer weet.";
   if (m.includes("password") && (m.includes("at least") || m.includes("short"))) return "Kies een wachtwoord van minimaal 6 tekens.";
   if (m.includes("weak") || m.includes("pwned") || m.includes("leaked")) return "Dit wachtwoord is te makkelijk te raden. Kies een sterker wachtwoord.";
   if (m.includes("invalid") && m.includes("email")) return "Dit e-mailadres lijkt niet te kloppen. Controleer het even.";
@@ -132,6 +132,23 @@ export default function LoginPage() {
         emailRedirectTo: `${window.location.origin}/onboarding/kind`,
       },
     });
+    // Bestaat het e-mailadres al, dan geeft Supabase met e-mailbevestiging aan
+    // een gebruiker zonder identities terug, en zonder bevestiging de fout
+    // "User already registered". Dan geen nieuw account: we zetten het
+    // formulier op inloggen, met het e-mailadres al ingevuld.
+    const bestaatAl = error
+      ? error.code === "user_already_exists" || error.message.toLowerCase().includes("already registered")
+      : !!data.user && (data.user.identities?.length ?? 0) === 0;
+    if (bestaatAl) {
+      setMode("login");
+      setPassword("");
+      setError("Er bestaat al een account met dit e-mailadres. Log hieronder in, of klik op \"Vergeten?\" als je je wachtwoord niet meer weet.");
+      setLoading(false);
+      return;
+    }
+    if (!error && data.user) {
+      meetGebeurtenis("sign_up", { method: "email" });
+    }
     if (error) {
       setError(registratieFout(error.message));
     } else if (data.session) {

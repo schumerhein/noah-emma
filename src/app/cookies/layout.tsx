@@ -4,7 +4,7 @@ import { SITE_URL } from "@/components/marketing/links";
 // De pagina zelf is een clientcomponent; titel en canonical staan daarom hier.
 export const metadata: Metadata = {
   title: "Cookiebeleid | Noah & Emma",
-  description: "Welke cookies Noah & Emma gebruikt en waarvoor.",
+  description: "Welke cookies Noah & Emma gebruikt en waarvoor. Analytische cookies alleen met jouw toestemming, nooit advertentiecookies. Wijzig je keuze wanneer je wilt.",
   alternates: { canonical: `${SITE_URL}/cookies` },
 };
 

@@ -1,78 +1,64 @@
-"use client";
-
-import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
+import { MarketingHeader } from "@/components/marketing/MarketingHeader";
+import { MarketingPaginaMarker } from "@/components/marketing/MarketingModus";
+import { JURIDISCHE_PAGINAS } from "@/components/marketing/JuridischePagina";
+import { AfsluitendeCta, Kruimelpad, MarketingFooter, SCHADUW, StructuredData } from "@/components/marketing/Blokken";
+import { SITE_URL } from "@/components/marketing/links";
 
-const LINKS = [
-  {
-    titel: "Gebruiksvoorwaarden",
-    beschrijving: "Regels voor het gebruik van Noah & Emma",
-    href: "/voorwaarden",
-    icoon: "description",
-  },
-  {
-    titel: "Privacybeleid",
-    beschrijving: "Hoe we jouw gegevens verwerken en beschermen",
-    href: "/privacy",
-    icoon: "privacy_tip",
-  },
-  {
-    titel: "Cookiebeleid",
-    beschrijving: "Welke cookies we gebruiken en waarom",
-    href: "/cookies",
-    icoon: "cookie",
-  },
-  {
-    titel: "Richtlijnen voor de community",
-    beschrijving: "Gedragsregels voor een veilige marktplaats",
-    href: "/community",
-    icoon: "groups",
-  },
-];
+const PAD = "/wettelijk";
 
-export default function WettelijkPage() {
-  const router = useRouter();
+export const metadata: Metadata = {
+  title: "Wettelijke informatie | Noah & Emma",
+  description: "Alle juridische informatie van Noah & Emma op één plek: algemene voorwaarden, privacyverklaring, cookiebeleid, communityrichtlijnen en bedrijfsgegevens.",
+  alternates: { canonical: `${SITE_URL}${PAD}` },
+};
 
+export default function WettelijkPagina() {
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-900 pb-20">
-      <header className="px-5 pt-14 pb-5 border-b border-slate-100 dark:border-slate-800 sticky top-0 z-20 bg-white dark:bg-slate-900">
-        <div className="flex items-center gap-3">
-          <button onClick={() => router.back()}>
-            <ChevronLeft className="w-6 h-6 text-slate-600 dark:text-slate-300" />
-          </button>
-          <h1 className="text-xl font-black text-slate-900 dark:text-white">Wettelijke gegevens</h1>
-        </div>
-      </header>
-
+    <div className="font-body bg-[#FFF9FA] text-[#241A2E] min-h-screen antialiased">
+      <MarketingPaginaMarker />
+      <StructuredData naam="Wettelijke informatie" pad={PAD} />
+      <MarketingHeader />
       <main>
-        {LINKS.map((item, idx) => (
-          <Link key={idx} href={item.href}>
-            <div className="flex items-center gap-4 px-6 py-4 border-b border-slate-100 dark:border-slate-800 active:bg-slate-50 dark:active:bg-slate-800 transition-colors">
-              <span className="material-icons-round text-slate-400 text-xl">{item.icoon}</span>
-              <div className="flex-1">
-                <p className="text-[17px] text-slate-900 dark:text-white">{item.titel}</p>
-                <p className="text-xs text-slate-400 mt-0.5">{item.beschrijving}</p>
-              </div>
-              <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />
-            </div>
-          </Link>
-        ))}
+        <section className="bg-gradient-to-r from-[#E4F4FB] via-[#FFF9FA] to-[#FFEAF1]">
+          <div className="max-w-[820px] mx-auto px-4 sm:px-6 pt-7 sm:pt-14 pb-10 sm:pb-14">
+            <Kruimelpad naam="Wettelijke informatie" />
+            <h1 className="font-headline font-extrabold text-[32px] sm:text-[44px] leading-[1.08] tracking-tight">Wettelijke informatie</h1>
+            <p className="mt-4 text-lg leading-relaxed text-[#5B4F63] max-w-[60ch]">
+              Alle afspraken en regels van Noah &amp; Emma op één plek. Ook zonder account te lezen.
+            </p>
+          </div>
+        </section>
 
-        {/* Bedrijfsgegevens */}
-        <div className="px-6 pt-8 pb-4 space-y-1">
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-primary mb-3">Bedrijfsgegevens</p>
-          <p className="text-sm text-slate-700 dark:text-slate-300 font-semibold">Noah & Emma</p>
-          <p className="text-sm text-slate-400">Nederland</p>
-          <p className="text-sm text-slate-400 mt-2">
-            <a href="mailto:info@noah-emma.nl" className="text-primary">info@noah-emma.nl</a>
-          </p>
+        <div className="max-w-[820px] mx-auto px-4 sm:px-6 pt-8 sm:pt-12">
+          <ul className="grid sm:grid-cols-2 gap-3">
+            {JURIDISCHE_PAGINAS.map((p) => (
+              <li key={p.href}>
+                <Link href={p.href} className={`block h-full bg-white rounded-2xl p-5 ${SCHADUW} hover:-translate-y-0.5 transition-transform`}>
+                  <span className="font-headline font-extrabold text-lg">{p.titel}</span>
+                  <span className="block mt-1 text-[15px] text-[#5B4F63]">{p.tekst}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+
+          <section className={`mt-10 bg-white rounded-3xl p-6 ${SCHADUW}`}>
+            <h2 className="font-headline font-extrabold text-[22px] tracking-tight">Bedrijfsgegevens</h2>
+            <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-[15px]">
+              <dt className="font-semibold">Naam</dt>
+              <dd className="text-[#5B4F63]">Noah &amp; Emma</dd>
+              <dt className="font-semibold">Land</dt>
+              <dd className="text-[#5B4F63]">Nederland</dd>
+              <dt className="font-semibold">E-mail</dt>
+              <dd><a href="mailto:info@noah-emma.nl" className="font-semibold text-[#1C7FA8] underline underline-offset-2">info@noah-emma.nl</a></dd>
+            </dl>
+          </section>
         </div>
 
-        <div className="px-6 pt-4">
-          <p className="text-xs text-slate-300">© 2026 Noah & Emma. Alle rechten voorbehouden.</p>
-        </div>
+        <AfsluitendeCta titel="Zie vandaag nog wat jouw kind" accent="nu past" tekst="Maak gratis een account, stel de maat van je kind in en zie direct kleding en accessoires die passen. Nooit kindergezichten." />
       </main>
+      <MarketingFooter />
     </div>
   );
 }

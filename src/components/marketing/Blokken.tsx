@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Check, Heart, X } from "lucide-react";
+import { ArrowRight, Check, Heart, X, type LucideIcon } from "lucide-react";
 import { NoahFace, EmmaFace } from "@/components/ai-models/NoahEmmaFaces";
 import { CookieInstellingenKnop } from "@/components/CookieMelding";
 import { FOOTER_EXTRA, LOGIN_URL, MENU_PAGINAS, SIGNUP_URL, SITE_URL } from "@/components/marketing/links";
@@ -182,6 +182,39 @@ export function SwipeKaart({ product = PRODUCTEN.vestje }: { product?: Product }
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+export interface AccessoireItem {
+  titel: string;
+  sub: string;
+  Icoon: LucideIcon;
+  kleur: Kleur;
+}
+
+/** Kaart met een lijstje accessoires, als beeld in de hero van accessoirepagina's. */
+export function AccessoireKaart({ kop, label, items, voetnoot = "Voorbeeld van het aanbod. Je ziet het echte aanbod na gratis aanmelden." }: { kop: string; label: string; items: AccessoireItem[]; voetnoot?: string }) {
+  return (
+    <div className="w-full max-w-[320px] bg-white rounded-[36px] p-3.5 shadow-[0_30px_60px_-24px_rgba(36,26,46,0.45)] -rotate-2">
+      <div className="flex items-center justify-between px-2 pt-1.5 pb-3">
+        <span className="text-[13px] font-bold">{kop}</span>
+        <span className="text-xs font-bold text-[#1C7FA8] bg-[#E4F4FB] px-2.5 py-1 rounded-full">{label}</span>
+      </div>
+      <ul className="flex flex-col gap-2.5">
+        {items.map(({ titel, sub, Icoon, kleur }) => (
+          <li key={titel} className="flex gap-3 items-center p-3 rounded-[18px] bg-[#FFF9FA]">
+            <span className={`shrink-0 w-[52px] h-[52px] rounded-[14px] flex items-center justify-center ${tint(kleur)}`}>
+              <Icoon className="w-6 h-6" aria-hidden="true" />
+            </span>
+            <span className="min-w-0">
+              <strong className="block text-[15px]">{titel}</strong>
+              <span className="text-[13px] text-[#5B4F63]">{sub}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+      <p className="mx-2 mt-3 mb-1 text-[13px] text-[#5B4F63]">{voetnoot}</p>
     </div>
   );
 }

@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Armchair, Baby, Car, Check, ToyBrick } from "lucide-react";
 import { MarketingHeader } from "@/components/marketing/MarketingHeader";
 import { StickyCta } from "@/components/marketing/StickyCta";
 import { SITE_URL, OG_AFBEELDING } from "@/components/marketing/links";
 import {
-  AfsluitendeCta, Faq, Hero, Kaarten, MarketingFooter, SCHADUW, Sectie, SectieKop, StructuredData, Tegels, type Vraag,
+  AccessoireKaart, AfsluitendeCta, Faq, Hero, Kaarten, MarketingFooter, SCHADUW, Sectie, SectieKop, StructuredData, Tegels, type Vraag,
 } from "@/components/marketing/Blokken";
 
 const PAD = "/accessoires";
@@ -70,31 +71,6 @@ const FAQ: Vraag[] = [
   { vraag: "Kost het iets om accessoires te verkopen?", antwoord: "Nee. Een account, kopen en verkopen is helemaal gratis." },
 ];
 
-function AanbodKaart() {
-  return (
-    <div className="w-full max-w-[320px] bg-white rounded-[36px] p-3.5 shadow-[0_30px_60px_-24px_rgba(36,26,46,0.45)] -rotate-2">
-      <div className="flex items-center justify-between px-2 pt-1.5 pb-3">
-        <span className="text-[13px] font-bold">Voor Daan, 8 maanden</span>
-        <span className="text-xs font-bold text-[#1C7FA8] bg-[#E4F4FB] px-2.5 py-1 rounded-full">Maat 74</span>
-      </div>
-      <ul className="flex flex-col gap-2.5">
-        {VOORBEELDEN.map(({ titel, sub, Icoon, kleur }) => (
-          <li key={titel} className="flex gap-3 items-center p-3 rounded-[18px] bg-[#FFF9FA]">
-            <span className={`shrink-0 w-[52px] h-[52px] rounded-[14px] flex items-center justify-center ${kleur === "roze" ? "bg-[#FFEAF1] text-[#D63D74]" : "bg-[#E4F4FB] text-[#1C7FA8]"}`}>
-              <Icoon className="w-6 h-6" aria-hidden="true" />
-            </span>
-            <span className="min-w-0">
-              <strong className="block text-[15px]">{titel}</strong>
-              <span className="text-[13px] text-[#5B4F63]">{sub}</span>
-            </span>
-          </li>
-        ))}
-      </ul>
-      <p className="mx-2 mt-3 mb-1 text-[13px] text-[#5B4F63]">Voorbeeld van het aanbod. Je ziet het echte aanbod na gratis aanmelden.</p>
-    </div>
-  );
-}
-
 export default function AccessoiresPage() {
   return (
     <div className="font-body bg-[#FFF9FA] text-[#241A2E] min-h-screen antialiased">
@@ -106,8 +82,21 @@ export default function AccessoiresPage() {
           eyebrow="Alles voor kinderen van 0 tot 12 jaar"
           titel={<>Tweedehands kinderwagens, autostoeltjes en <span className="text-[#D63D74]">alles voor je kind</span></>}
           usps={USPS}
-          beeld={<AanbodKaart />}
+          beeld={<AccessoireKaart kop="Voor Daan, 8 maanden" label="Maat 74" items={[...VOORBEELDEN]} />}
         />
+
+        <section className="max-w-[1180px] mx-auto px-4 sm:px-6 pt-10 sm:pt-[72px] grid md:grid-cols-2 gap-4">
+          <Link href="/accessoires/kopen" className={`rounded-[28px] p-6 sm:p-7 bg-white ${SCHADUW} flex flex-col gap-1.5 transition-transform hover:-translate-y-0.5`}>
+            <span className="font-headline font-extrabold text-[22px]">Kinderaccessoires kopen</span>
+            <span className="text-[#5B4F63]">Kinderwagens, autostoeltjes en speelgoed van andere ouders.</span>
+            <span className="font-bold text-[#1C7FA8]">Zo werkt kopen →</span>
+          </Link>
+          <Link href="/accessoires/verkopen" className={`rounded-[28px] p-6 sm:p-7 bg-white ${SCHADUW} flex flex-col gap-1.5 transition-transform hover:-translate-y-0.5`}>
+            <span className="font-headline font-extrabold text-[22px]">Kinderaccessoires verkopen</span>
+            <span className="text-[#5B4F63]">Gratis, aan ouders die het nu nodig hebben.</span>
+            <span className="font-bold text-[#D63D74]">Zo werkt verkopen →</span>
+          </Link>
+        </section>
 
         <section className="max-w-[1180px] mx-auto px-4 sm:px-6 pt-10 sm:pt-[72px]">
           <SectieKop links label="Categorieën" titel="Accessoires per categorie" sub="Grote spullen gebruik je maar een korte periode. Bij een andere ouder krijgen ze een tweede leven." />

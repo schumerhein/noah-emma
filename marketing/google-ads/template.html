@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="ad.size" content="width={{W}},height={{H}}">
+<title>Noah &amp; Emma {{W}}x{{H}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+<script>var clickTag = "{{URL}}";</script>
+<style>
+/*
+  Eén ontwerp, alle formaten. De generator (scripts/bouw.mjs) vult W/H, layout
+  en de maat-variabelen in. Tijdlijn (15 s, speelt één keer, eindigt op eindbeeld):
+    0.0 – 3.5  scène 1  "Ontgroeid?"
+    3.5 – 7.8  scène 2  Noah & Emma dragen de kleding
+    7.8 – 11.4 scène 3  geen echte kinderfoto's
+   11.4 – 15   scène 4  logo + CTA (blijft staan)
+*/
+:root {
+  --roze: #ffb8c4;
+  --roze-donker: #f793ab;
+  --blauw: #7fb5e8;
+  --tekst: #0f172a;
+  --sub: #475569;
+  --h1: {{H1}}px;
+  --p: {{P}}px;
+  --cta: {{CTA}}px;
+  --vis: {{VIS}}px;
+  --logo: {{LOGO}}px;
+  --pad: {{PAD}}px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: {{W}}px; height: {{H}}px; overflow: hidden; background: #fff; }
+#ad {
+  position: relative; width: 100%; height: 100%; overflow: hidden; cursor: pointer;
+  background: linear-gradient(160deg, #fff7f9 0%, #ffe9ee 100%);
+  border: {{BORDER}}px solid #e2e8f0;
+  font-family: Inter, "Helvetica Neue", Arial, sans-serif; color: var(--tekst);
+}
+
+/* ---------- Achtergrond-blobs ---------- */
+.blob { position: absolute; border-radius: 50%; filter: blur(2px); opacity: .55; }
+.blob.b1 { width: 70%; aspect-ratio: 1; background: var(--roze); left: -25%; top: -35%; animation: drift 15s ease-in-out both; }
+.blob.b2 { width: 55%; aspect-ratio: 1; background: #ffd9e1; right: -20%; bottom: -30%; animation: drift 15s ease-in-out reverse both; }
+@keyframes drift { from { transform: translate(0, 0) scale(1); } to { transform: translate(8%, 6%) scale(1.12); } }
+
+/* ---------- Scènes ---------- */
+.scene {
+  position: absolute; inset: 0; padding: var(--pad);
+  display: flex; align-items: center; justify-content: center; gap: calc(var(--pad) * .9);
+  opacity: 0;
+  animation: sceneIn .5s ease-out var(--in) both, sceneOut .4s ease-in var(--out) forwards;
+}
+.s1 { --in: 0s;    --out: 3.1s; }
+.s2 { --in: 3.5s;  --out: 7.4s; }
+.s3 { --in: 7.8s;  --out: 11s; }
+.s4 { --in: 11.4s; --out: 99s; }
+@keyframes sceneIn  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sceneOut { from { opacity: 1; } to { opacity: 0; } }
+
+.visual { flex: 0 0 auto; display: flex; align-items: flex-end; justify-content: center; height: var(--vis); }
+.tekst { display: flex; flex-direction: column; gap: calc(var(--p) * .45); }
+h1, .wordmark {
+  font-family: Manrope, "Helvetica Neue", Arial, sans-serif; font-weight: 800;
+  font-size: var(--h1); line-height: 1.08; letter-spacing: -.02em;
+}
+p { font-size: var(--p); line-height: 1.3; color: var(--sub); font-weight: 500; }
+h1 em { font-style: normal; color: var(--roze-donker); }
+.kort { display: none; }
+
+/* Tekst schuift in na de scène */
+h1, .wordmark { animation: omhoog .55s cubic-bezier(.2,.8,.2,1) calc(var(--in) + .15s) both; }
+p            { animation: omhoog .55s cubic-bezier(.2,.8,.2,1) calc(var(--in) + .32s) both; }
+@keyframes omhoog { from { opacity: 0; transform: translateY(40%); } to { opacity: 1; transform: none; } }
+
+/* Scène 1: zwevende kledingstukken */
+.kleding { position: relative; width: calc(var(--vis) * 1.25); max-width: 100%; height: var(--vis); }
+.kleding svg { position: absolute; width: 46%; height: auto; animation: plop .5s cubic-bezier(.3,1.6,.5,1) both, zweef 1.6s ease-in-out 2 alternate; }
+.kleding .k1 { left: 0;    top: 8%;  --r: -12deg; animation-delay: .1s, .6s; }
+.kleding .k2 { left: 30%;  top: 38%; --r: 8deg;   animation-delay: .35s, .85s; }
+.kleding .k3 { left: 56%;  top: 0;   --r: 14deg;  animation-delay: .6s, 1.1s; }
+@keyframes plop  { from { opacity: 0; transform: scale(.2) rotate(var(--r)); } to { opacity: 1; transform: scale(1) rotate(var(--r)); } }
+@keyframes zweef { from { translate: 0 0; } to { translate: 0 -10%; } }
+
+/* Scène 2: Noah & Emma springen erin */
+.duo { gap: 4%; width: calc(var(--vis) * 1.05); max-width: 100%; }
+.duo svg { height: 100%; width: auto; }
+.duo .noah { animation: spring .7s cubic-bezier(.3,1.5,.5,1) 3.7s both, wiebel 1.2s ease-in-out 4.6s 2 alternate; }
+.duo .emma { animation: spring .7s cubic-bezier(.3,1.5,.5,1) 3.95s both, wiebel 1.2s ease-in-out 4.9s 2 alternate-reverse; }
+@keyframes spring { from { opacity: 0; transform: translateY(60%) scale(.8); } to { opacity: 1; transform: none; } }
+@keyframes wiebel { from { rotate: -3deg; } to { rotate: 3deg; } }
+.duo svg { transform-origin: 50% 100%; }
+
+/* Scène 3: schild */
+.schild svg { height: 88%; width: auto; animation: plop .6s cubic-bezier(.3,1.6,.5,1) 8s both; --r: 0deg; }
+.schild .vink { stroke-dasharray: 60; stroke-dashoffset: 60; animation: vink .5s ease-out 8.5s forwards; }
+@keyframes vink { to { stroke-dashoffset: 0; } }
+
+/* Scène 4: logo + CTA */
+.gezichten { align-items: center; }
+.gezichten svg { width: var(--logo); height: auto; border-radius: 50%; border: max(2px, calc(var(--logo) * .04)) solid #fff; box-shadow: 0 6px 18px rgba(15,23,42,.15); }
+.gezichten svg + svg { margin-left: calc(var(--logo) * -.22); }
+.gezichten .gn { animation: plop .55s cubic-bezier(.3,1.6,.5,1) 11.5s both; --r: -6deg; }
+.gezichten .ge { animation: plop .55s cubic-bezier(.3,1.6,.5,1) 11.7s both; --r: 6deg; }
+.cta {
+  flex: 0 0 auto; align-self: center;
+  background: var(--tekst); color: #fff; font-family: Manrope, Arial, sans-serif; font-weight: 800;
+  font-size: var(--cta); padding: .6em 1.15em; border-radius: 999px; white-space: nowrap;
+  animation: omhoog .5s cubic-bezier(.2,.8,.2,1) 12.1s both, puls .9s ease-in-out 13s 3 alternate;
+}
+.cta::after { content: " →"; }
+@keyframes puls { to { transform: scale(1.07); background: #1e293b; } }
+
+/* ---------- Layouts ---------- */
+.layout-hoog .scene, .layout-blok .scene { flex-direction: column-reverse; text-align: center; }
+.layout-hoog .s4, .layout-blok .s4 { flex-direction: column; }
+.layout-hoog .s4 .tekst, .layout-blok .s4 .tekst { order: 2; }
+.layout-hoog .s4 .visual, .layout-blok .s4 .visual { order: 1; height: auto; }
+.layout-hoog .s4 .cta, .layout-blok .s4 .cta { order: 3; }
+.layout-blok .scene { gap: calc(var(--pad) * .6); }
+
+.layout-breed .scene, .layout-mini .scene { flex-direction: row; justify-content: flex-start; text-align: left; }
+.layout-breed .tekst, .layout-mini .tekst { flex: 1 1 auto; }
+.layout-breed .s4 .visual, .layout-mini .s4 .visual { height: auto; }
+.layout-breed .wordmark, .layout-mini .wordmark { white-space: nowrap; }
+.layout-breed .s4, .layout-mini .s4 { gap: calc(var(--pad) * .6); }
+.layout-breed .s4 .tekst, .layout-mini .s4 .tekst { min-width: 0; }
+
+/* Optioneel: gestapeld, gecentreerd eindbeeld (16:9-video) */
+.eind-gestapeld .s4 { flex-direction: column !important; justify-content: center !important; text-align: center !important; }
+.eind-gestapeld .s4 .tekst { flex: 0 0 auto !important; }
+
+.layout-mini p { display: none; }
+.layout-mini .lang { display: none; }
+.layout-mini .kort { display: inline; }
+.layout-mini .kleding { width: calc(var(--vis) * 1.5); }
+</style>
+</head>
+<body>
+<div id="ad" class="layout-{{LAYOUT}} {{EXTRA}}" onclick="window.open(window.clickTag)">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+
+  <section class="scene s1">
+    <div class="visual kleding">
+      <svg class="k1" viewBox="0 0 64 64"><path d="M22 8 12 12 4 24l8 6 4-4v30h32V26l4 4 8-6-8-12-10-4q-10 8-20 0Z" fill="#ffb8c4"/><path d="M22 8q10 8 20 0" stroke="#f793ab" stroke-width="2" fill="none"/></svg>
+      <svg class="k2" viewBox="0 0 64 64"><path d="M25 6h4l3 6 3-6h4l-1 14 12 36H14l12-36Z" fill="#7fb5e8"/><path d="M18 46h28" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".7"/></svg>
+      <svg class="k3" viewBox="0 0 64 64"><path d="M24 6h14v30l12 9q5 6-1 11-4 3-9 0L27 49q-4-2-3-8Z" fill="#ffd58a"/><path d="M24 12h14" stroke="#fff" stroke-width="3" opacity=".8"/></svg>
+    </div>
+    <div class="tekst">
+      <h1>Ontgroeid?</h1>
+      <p>Geef kinderkleding een tweede leven.</p>
+    </div>
+  </section>
+
+  <section class="scene s2">
+    <div class="visual duo">
+      {{NOAH_BODY}}
+      {{EMMA_BODY}}
+    </div>
+    <div class="tekst">
+      <h1><span class="lang">Noah &amp; Emma <em>dragen het</em> voor je</span><span class="kort">Noah &amp; Emma <em>dragen het</em></span></h1>
+      <p>Onze AI-modellen showen de kleding.</p>
+    </div>
+  </section>
+
+  <section class="scene s3">
+    <div class="visual schild">
+      <svg viewBox="0 0 64 64"><path d="M32 4 56 12v18c0 16-11 26-24 30C19 56 8 46 8 30V12Z" fill="#ffb8c4"/><path d="M32 9 51 15.5V30c0 13-8.5 21-19 24.5C21.5 51 13 43 13 30V15.5Z" fill="#fff" opacity=".35"/><path class="vink" d="M21 32l8 8 15-16" stroke="#0f172a" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="tekst">
+      <h1><span class="lang">Geen echte <em>kinderfoto's</em></span><span class="kort">Geen <em>kinderfoto's</em> nodig</span></h1>
+      <p>Privacy by design — veilig voor je kind.</p>
+    </div>
+  </section>
+
+  <section class="scene s4">
+    <div class="visual gezichten">
+      {{NOAH_FACE}}
+      {{EMMA_FACE}}
+    </div>
+    <div class="tekst">
+      <div class="wordmark">Noah &amp; Emma</div>
+      <p>Tweedehands kindermode · <span style="white-space:nowrap">0–12 jaar</span></p>
+    </div>
+    <div class="cta">Ontdek nu</div>
+  </section>
+</div>
+</body>
+</html>

@@ -78,6 +78,7 @@ src/components/ai-models/  → Noah/Emma render-componenten
 src/components/avatar/     → 3D avatar viewer
 src/ai/flows/        → Genkit AI-flows
 src/lib/              → Supabase client, avatar-compositie, groeicurve, utils
+marketing/            → TikTok-posts en Google Ads-banners (generators + output), zie marketing/README.md
 ```
 
 ## Status & lopende zaken

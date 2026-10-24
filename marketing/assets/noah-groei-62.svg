@@ -1,0 +1,66 @@
+<svg viewBox="50 0 200 462" xmlns="http://www.w3.org/2000/svg"><defs>
+    <radialGradient id="huid-noah62" cx="40%" cy="32%" r="72%">
+      <stop offset="0%" stop-color="#EFB07C"/>
+      <stop offset="100%" stop-color="#DE9A62"/>
+    </radialGradient>
+    <linearGradient id="shirt-noah62" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E9EDF3"/>
+    </linearGradient>
+    <linearGradient id="accent-noah62" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7FB5E8"/>
+      <stop offset="100%" stop-color="#5B94CF"/>
+    </linearGradient>
+    <radialGradient id="haar-noah62" cx="50%" cy="28%" r="78%">
+      <stop offset="0%" stop-color="#45280E"/>
+      <stop offset="100%" stop-color="#2A1808"/>
+    </radialGradient>
+  </defs><ellipse cx="150" cy="449" rx="55.6" ry="9" fill="#0F172A" opacity="0.08"/><rect x="116.4" y="369.1" width="19.3" height="64.9" rx="9.7" fill="#DE9A62"/><g>
+        <path d="M 106.4 440 L 106.4 433 Q 106.4 428 112.4 428 L 133.8 428 Q 141.8 428 141.8 436 L 141.8 440 Z" fill="#FBFCFE"/>
+        <path d="M 125.9 429 Q 141.8 430 141.8 437 L 141.8 440 L 127.6 440 Q 124.8 434 125.9 429 Z" fill="url(#accent-noah62)" opacity="0.85"/>
+        <path d="M 110.4 434 q 7.8 4 15.5 0" stroke="#D5DBE3" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+        <rect x="105.4" y="439" width="37.3" height="6" rx="3" fill="#E2E7ED"/>
+      </g><rect x="164.2" y="369.1" width="19.3" height="64.9" rx="9.7" fill="#DE9A62"/><g>
+        <path d="M 158.2 440 L 158.2 433 Q 158.2 428 164.2 428 L 185.6 428 Q 193.6 428 193.6 436 L 193.6 440 Z" fill="#FBFCFE"/>
+        <path d="M 177.7 429 Q 193.6 430 193.6 437 L 193.6 440 L 179.4 440 Q 176.6 434 177.7 429 Z" fill="url(#accent-noah62)" opacity="0.85"/>
+        <path d="M 162.2 434 q 7.8 4 15.5 0" stroke="#D5DBE3" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+        <rect x="157.2" y="439" width="37.3" height="6" rx="3" fill="#E2E7ED"/>
+      </g><path d="M 111.2 357.1 L 188.8 357.1 Q 192.8 382.3 189.8 392.4 L 154 392.4 L 150 381.1 L 146 392.4 L 110.2 392.4 Q 107.2 382.3 111.2 357.1 Z" fill="url(#accent-noah62)"/>
+      <rect x="110.2" y="387.4" width="35.8" height="5" rx="2.5" fill="#5B94CF"/>
+      <rect x="154" y="387.4" width="35.8" height="5" rx="2.5" fill="#5B94CF"/><path d="M 102.9 296.4
+      Q 102.9 284.4 116.9 282.4
+      L 183.1 282.4
+      Q 197.1 284.4 197.1 296.4
+      Q 200 335.8 190.8 371.1
+      Q 150 380.6 109.2 371.1
+      Q 100 335.8 102.9 296.4 Z"
+      fill="url(#shirt-noah62)" stroke="#E2E8F0" stroke-width="1"/>
+    <path d="M 135 283.4 Q 150 293.4 165 283.4" fill="none" stroke="#DFE5EC" stroke-width="2.5" stroke-linecap="round"/><g transform="rotate(-19 101.9 292.4)">
+      <rect x="93.2" y="290.4" width="17.4" height="55.6" rx="8.7" fill="#DE9A62"/>
+      <circle cx="101.9" cy="346" r="10.8" fill="#EFB07C"/>
+      <rect x="90.7" y="288.4" width="22.4" height="22.7" rx="11.2" fill="url(#shirt-noah62)" stroke="#E2E8F0" stroke-width="0.8"/>
+    </g><g transform="rotate(19 198.1 292.4)">
+      <rect x="189.4" y="290.4" width="17.4" height="55.6" rx="8.7" fill="#DE9A62"/>
+      <circle cx="198.1" cy="346" r="10.8" fill="#EFB07C"/>
+      <rect x="186.9" y="288.4" width="22.4" height="22.7" rx="11.2" fill="url(#shirt-noah62)" stroke="#E2E8F0" stroke-width="0.8"/>
+    </g><path d="M 140 271.8 L 160 271.8 L 159 286.4 Q 150 290.4 141 286.4 Z" fill="#C58350"/><ellipse cx="150" cy="239" rx="49.3" ry="46.8" fill="url(#huid-noah62)"/><ellipse cx="101.2" cy="244.6" rx="7.5" ry="10" fill="#DE9A62"/>
+      <ellipse cx="103.6" cy="244.6" rx="4" ry="6" fill="#C58350" opacity="0.5"/><ellipse cx="198.8" cy="244.6" rx="7.5" ry="10" fill="#DE9A62"/>
+      <ellipse cx="196.4" cy="244.6" rx="4" ry="6" fill="#C58350" opacity="0.5"/><path d="M 101.2 238.1
+        C 96.7 194.6 127.8 179.1 150 181
+        C 172.2 179.1 203.3 194.6 198.8 238.1
+        C 195.4 219.4 177.1 211.9 150 212.8
+        C 122.9 211.9 104.6 219.4 101.2 238.1 Z"
+        fill="url(#haar-noah62)"/><circle cx="109.5" cy="213.3" r="9.9" fill="url(#haar-noah62)"/><circle cx="127.8" cy="197.8" r="10.4" fill="url(#haar-noah62)"/><circle cx="150" cy="192.2" r="10.9" fill="url(#haar-noah62)"/><circle cx="172.2" cy="197.8" r="10.4" fill="url(#haar-noah62)"/><circle cx="190.5" cy="213.3" r="9.9" fill="url(#haar-noah62)"/><circle cx="120.4" cy="203.9" r="4.9" fill="#45280E" opacity="0.6"/><circle cx="140.1" cy="194.6" r="4.4" fill="#45280E" opacity="0.6"/><circle cx="162.3" cy="196" r="4.9" fill="#45280E" opacity="0.6"/><circle cx="182.1" cy="207.2" r="4.4" fill="#45280E" opacity="0.6"/><path d="M 121.3 230.1 q 8 -4.5 15.5 -1" stroke="#2A1808" stroke-width="2.6" fill="none" stroke-linecap="round" opacity="0.85"/>
+      <path d="M 163.2 229.1 q 8 -3.5 15.5 1" stroke="#2A1808" stroke-width="2.6" fill="none" stroke-linecap="round" opacity="0.85"/><ellipse cx="129.3" cy="246.5" rx="9.4" ry="10.5" fill="#FFFFFF"/>
+        <circle cx="129.3" cy="248" r="5.8" fill="#5A3416"/>
+        <circle cx="129.3" cy="248" r="3.2" fill="#170B02"/>
+        <circle cx="127.2" cy="244.8" r="2" fill="#FFFFFF"/>
+        <circle cx="131.6" cy="249.5" r="0.9" fill="#FFFFFF" opacity="0.85"/>
+        <path d="M 119.9 241.3 Q 129.3 235.4 138.7 241.3" stroke="#C58350" stroke-width="1.4" fill="none" opacity="0.35"/><ellipse cx="170.7" cy="246.5" rx="9.4" ry="10.5" fill="#FFFFFF"/>
+        <circle cx="170.7" cy="248" r="5.8" fill="#5A3416"/>
+        <circle cx="170.7" cy="248" r="3.2" fill="#170B02"/>
+        <circle cx="168.7" cy="244.8" r="2" fill="#FFFFFF"/>
+        <circle cx="173.1" cy="249.5" r="0.9" fill="#FFFFFF" opacity="0.85"/>
+        <path d="M 161.3 241.3 Q 170.7 235.4 180.1 241.3" stroke="#C58350" stroke-width="1.4" fill="none" opacity="0.35"/><path d="M 147.5 259.1 q 2.5 3.5 5 0" stroke="#C58350" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.8"/><path d="M 141.5 264.7 Q 150 275.4 158.5 264.7 Q 150 267.2 141.5 264.7 Z" fill="#9C4433"/>
+      <path d="M 146 271.1 Q 150 274 154 271.1" fill="#E8837A"/><ellipse cx="120.4" cy="257.7" rx="9" ry="5.5" fill="#D97C50" opacity="0.4"/>
+      <ellipse cx="179.6" cy="257.7" rx="9" ry="5.5" fill="#D97C50" opacity="0.4"/></svg>

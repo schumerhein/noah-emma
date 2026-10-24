@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { NoahEmmaLogo } from "@/components/Header";
 import { MailCheck } from "lucide-react";
 import { leesbareDeviceLabel } from "@/lib/deviceLabel";
+import { meetGebeurtenis } from "@/lib/analytics";
 
 // Na inloggen terug naar de pagina waar je vandaan kwam (bv. een review-link
 // uit een e-mail: /login?next=/reviews/schrijf?...). Alleen paden binnen de
@@ -121,6 +122,11 @@ export default function LoginPage() {
         emailRedirectTo: `${window.location.origin}/onboarding/kind`,
       },
     });
+    // Bestaat het e-mailadres al, dan geeft Supabase (met e-mailbevestiging aan)
+    // een gebruiker zonder identities terug: dat is geen nieuw account.
+    if (!error && data.user && (data.user.identities?.length ?? 0) > 0) {
+      meetGebeurtenis("sign_up", { method: "email" });
+    }
     if (error) {
       setError(error.message);
     } else if (data.session) {

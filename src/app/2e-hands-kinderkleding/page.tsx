@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
 import { MarketingHeader } from "@/components/marketing/MarketingHeader";
 import { StickyCta } from "@/components/marketing/StickyCta";
-import { LOGIN_URL, SIGNUP_URL, SITE_URL } from "@/components/marketing/links";
+import { LOGIN_URL, SIGNUP_URL, SITE_URL, OG_AFBEELDING } from "@/components/marketing/links";
 import { MarketingFooter, SwipeKaart } from "@/components/marketing/Blokken";
 
 const PAGINA_URL = `${SITE_URL}/2e-hands-kinderkleding`;
@@ -11,7 +11,7 @@ const PAGINA_URL = `${SITE_URL}/2e-hands-kinderkleding`;
 export const metadata: Metadata = {
   title: "2e hands kinderkleding kopen en verkopen | Noah & Emma",
   description:
-    "2e hands kinderkleding en accessoires voor kinderen van 0 tot 12 jaar, altijd in de juiste maat. Nooit kindergezichten, zelf kiezen van wie je koopt. Helemaal gratis.",
+    "2e hands kinderkleding en accessoires voor 0 tot 12 jaar, altijd in de juiste maat. Nooit kindergezichten en helemaal gratis.",
   alternates: { canonical: PAGINA_URL },
   openGraph: {
     title: "2e hands kinderkleding, altijd in de juiste maat | Noah & Emma",
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     siteName: "Noah & Emma",
     locale: "nl_NL",
     type: "website",
-    images: [{ url: "/images/vestje-beige.png", alt: "Beige gebreid kindervestje aan een houten hanger" }],
+    images: [OG_AFBEELDING],
   },
 };
 

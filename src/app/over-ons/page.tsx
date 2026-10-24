@@ -4,7 +4,7 @@ import Image from "next/image";
 import { NoahFace, EmmaFace } from "@/components/ai-models/NoahEmmaFaces";
 import { MarketingHeader } from "@/components/marketing/MarketingHeader";
 import { StickyCta } from "@/components/marketing/StickyCta";
-import { SITE_URL } from "@/components/marketing/links";
+import { SITE_URL, OG_AFBEELDING } from "@/components/marketing/links";
 import {
   AfsluitendeCta, Hero, Kaarten, MarketingFooter, SCHADUW, Sectie, SectieKop, StructuredData,
 } from "@/components/marketing/Blokken";
@@ -12,9 +12,9 @@ import {
 const PAD = "/over-ons";
 
 export const metadata: Metadata = {
-  title: "Over ons | Noah & Emma",
+  title: "Over ons: tweedehands zonder kindergezichten | Noah & Emma",
   description:
-    "Noah & Emma is de app voor vaders en moeders van kinderen van 0 tot 12 jaar. Tweedehands kleding en accessoires, altijd in de juiste maat en zonder ooit een kindergezicht te tonen.",
+    "De app voor vaders en moeders van kinderen van 0 tot 12 jaar: tweedehands kleding en accessoires, altijd in de juiste maat en zonder kindergezichten.",
   alternates: { canonical: `${SITE_URL}${PAD}` },
   openGraph: {
     title: "Over Noah & Emma",
@@ -23,6 +23,7 @@ export const metadata: Metadata = {
     siteName: "Noah & Emma",
     locale: "nl_NL",
     type: "website",
+    images: [OG_AFBEELDING],
   },
 };
 

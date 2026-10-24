@@ -64,7 +64,7 @@ Stuur een e-mail naar info@noah-emma.nl om een van deze rechten uit te oefenen. 
   },
   {
     titel: "7. Cookies en tracking",
-    tekst: `Noah & Emma gebruikt functionele cookies die strikt noodzakelijk zijn voor het werken van de applicatie (ingelogd blijven, sessies bijhouden). Wij gebruiken geen tracking cookies van derden voor advertentiedoeleinden.`,
+    tekst: `Noah & Emma gebruikt functionele cookies die strikt noodzakelijk zijn voor het werken van de applicatie (ingelogd blijven, sessies bijhouden). Alleen als je daar toestemming voor geeft, gebruiken we Google Analytics om te meten hoe de website en app gebruikt worden. Wij gebruiken geen tracking cookies van derden voor advertentiedoeleinden.`,
   },
   {
     titel: "8. Beveiliging en derde partijen",

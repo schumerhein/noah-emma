@@ -4,7 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { MarketingHeader } from "@/components/marketing/MarketingHeader";
 import { StickyCta } from "@/components/marketing/StickyCta";
 import { MarketingPaginaMarker } from "@/components/marketing/MarketingModus";
-import { SITE_URL } from "@/components/marketing/links";
+import { SITE_URL, OG_AFBEELDING } from "@/components/marketing/links";
 import {
   AfsluitendeCta, Eyebrow, Faq, Groeimodel, HeroKnoppen, Kaarten, MarketingFooter, PRODUCTEN, SCHADUW, Sectie, SectieKop, SwipeKaart, UspLijst, type Vraag,
 } from "@/components/marketing/Blokken";
@@ -14,9 +14,9 @@ import {
 // marketingpagina's, met de sticky aanmeldbalk onderin.
 
 export const metadata: Metadata = {
-  title: "Noah & Emma | Tweedehands kinderkleding en accessoires, altijd in de juiste maat",
+  title: "Tweedehands kinderkleding en accessoires | Noah & Emma",
   description:
-    "Koop en verkoop tweedehands kinderkleding, kinderwagens, autostoeltjes en speelgoed voor kinderen van 0 tot 12 jaar. De maat groeit vanzelf mee, nooit kindergezichten en helemaal gratis.",
+    "Tweedehands kinderkleding, kinderwagens en speelgoed voor 0 tot 12 jaar. De maat groeit vanzelf mee, nooit kindergezichten en helemaal gratis.",
   alternates: { canonical: `${SITE_URL}/` },
   openGraph: {
     title: "Noah & Emma: tweedehands voor je kind, altijd in de juiste maat",
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     siteName: "Noah & Emma",
     locale: "nl_NL",
     type: "website",
-    images: [{ url: PRODUCTEN.regenjas.afbeelding, alt: PRODUCTEN.regenjas.alt }],
+    images: [OG_AFBEELDING],
   },
 };
 
@@ -90,9 +90,11 @@ export default function LandingPage() {
         <section className="bg-gradient-to-r from-[#E4F4FB] via-[#FFF9FA] to-[#FFEAF1]">
           <div className="max-w-[1180px] mx-auto px-4 sm:px-6 pt-7 sm:pt-16 pb-10 sm:pb-16 flex flex-col lg:flex-row gap-10 lg:gap-12 items-center">
             <div className="flex-1 min-w-0 w-full">
-              <Eyebrow>Kleding &amp; accessoires 0 tot 12 jaar</Eyebrow>
-              <h1 className="mt-5 font-headline font-extrabold text-[34px] sm:text-[46px] lg:text-[54px] leading-[1.05] tracking-tight">
-                Wat te klein is, past een ander kind <span className="text-[#D63D74]">precies</span>
+              {/* Het zoekwoord staat in het label boven de slogan, zodat het in de H1 zit. */}
+              <h1 className="font-headline font-extrabold text-[34px] sm:text-[46px] lg:text-[54px] leading-[1.05] tracking-tight">
+                <Eyebrow>Tweedehands kinderkleding</Eyebrow>
+                <span className="sr-only">: </span>
+                <span className="block mt-5">Wat te klein is, past een ander kind <span className="text-[#D63D74]">precies</span></span>
               </h1>
               <UspLijst usps={USPS} />
               <HeroKnoppen tweede={{ label: "Bekijk hoe het werkt", href: "/hoe-het-werkt" }} />

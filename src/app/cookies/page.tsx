@@ -17,10 +17,10 @@ const SECTIES = [
 • Voorkeurscookie: Onthoudt jouw instellingen zoals donkere modus. Vervalt na 1 jaar.
 
 **Optionele cookies (alleen met jouw toestemming)**
-• Analytische cookies: Helpen ons begrijpen hoe de app gebruikt wordt, zodat we hem kunnen verbeteren. Gegevens zijn geanonimiseerd.
+• Analytische cookies (Google Analytics): Helpen ons begrijpen hoe de website en app gebruikt worden, zodat we ze kunnen verbeteren. We delen deze gegevens niet voor advertenties. Bewaartermijn: maximaal 14 maanden.
 • Personalisatiecookies: Maken een gepersonaliseerde feed en relevante aanbevelingen mogelijk.
 
-Optionele cookies staan standaard UIT. Je beheert ze via Profiel → Mijn voorkeuren. Wij plaatsen nooit advertentiecookies en verkopen nooit gegevens aan derden.`,
+Optionele cookies staan standaard UIT. Bij je eerste bezoek vragen we of je ze toestaat; je kunt je keuze altijd wijzigen via Profiel → Mijn voorkeuren. Wij plaatsen nooit advertentiecookies en verkopen nooit gegevens aan derden.`,
   },
   {
     titel: "Third-party diensten",
@@ -28,8 +28,9 @@ Optionele cookies staan standaard UIT. Je beheert ze via Profiel → Mijn voorke
 
 • **Supabase**: onze database- en authenticatieprovider. Supabase plaatst technische cookies voor sessiebeheer. Zie supabase.com/privacy voor hun beleid.
 • **DiceBear**: voor het genereren van avatars. DiceBear is een statische API en plaatst geen cookies.
+• **Google Analytics**: alleen als je analytische cookies toestaat. Google plaatst dan de cookies _ga en _ga_*. Zie policies.google.com/privacy voor hun beleid.
 
-Er worden geen advertentie- of trackingcookies van Google Ads, Facebook Pixel of vergelijkbare diensten gebruikt.`,
+Er worden geen advertentiecookies van Google Ads, Facebook Pixel of vergelijkbare diensten gebruikt.`,
   },
   {
     titel: "Cookies beheren",

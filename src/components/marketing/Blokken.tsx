@@ -324,7 +324,7 @@ export function MarketingFooter() {
           </p>
         </div>
         <nav aria-label="Footer: pagina's">
-          <h2 className="font-headline font-extrabold text-sm">Noah &amp; Emma</h2>
+          <p className="font-headline font-extrabold text-sm">Noah &amp; Emma</p>
           <ul className="mt-3 flex flex-col gap-2 text-sm text-[#5B4F63]">
             {MENU_PAGINAS.map((m) => (
               <li key={m.href}><Link href={m.href} className="hover:text-[#241A2E]">{m.label}</Link></li>
@@ -332,7 +332,7 @@ export function MarketingFooter() {
           </ul>
         </nav>
         <nav aria-label="Footer: meer">
-          <h2 className="font-headline font-extrabold text-sm">Meer</h2>
+          <p className="font-headline font-extrabold text-sm">Meer</p>
           <ul className="mt-3 flex flex-col gap-2 text-sm text-[#5B4F63]">
             {FOOTER_EXTRA.map((m) => (
               <li key={m.href}><Link href={m.href} className="hover:text-[#241A2E]">{m.label}</Link></li>

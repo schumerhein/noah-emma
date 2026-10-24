@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { MarketingHeader } from "@/components/marketing/MarketingHeader";
 import { StickyCta } from "@/components/marketing/StickyCta";
-import { SIGNUP_URL, SITE_URL } from "@/components/marketing/links";
+import { SIGNUP_URL, SITE_URL, OG_AFBEELDING } from "@/components/marketing/links";
 import {
   AfsluitendeCta, Faq, Groeimodel, Hero, MarketingFooter, PRODUCTEN, SCHADUW, Sectie, SectieKop, StructuredData, SwipeKaart, Tegels, type Vraag,
 } from "@/components/marketing/Blokken";
@@ -12,7 +12,7 @@ const PAD = "/kinderkleding";
 export const metadata: Metadata = {
   title: "Tweedehands kinderkleding maat 50 tot 164 | Noah & Emma",
   description:
-    "Tweedehands kinderkleding voor jongens en meisjes van 0 tot 12 jaar, altijd in de maat die nu past. Het groeimodel schuift vanzelf mee. Gratis kopen en verkopen.",
+    "Tweedehands kinderkleding voor jongens en meisjes van 0 tot 12 jaar, altijd in de maat die nu past. De maat groeit vanzelf mee. Gratis kopen en verkopen.",
   alternates: { canonical: `${SITE_URL}${PAD}` },
   openGraph: {
     title: "Tweedehands kinderkleding, altijd in de maat die nu past | Noah & Emma",
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     siteName: "Noah & Emma",
     locale: "nl_NL",
     type: "website",
-    images: [{ url: PRODUCTEN.jurkje.afbeelding, alt: PRODUCTEN.jurkje.alt }],
+    images: [OG_AFBEELDING],
   },
 };
 

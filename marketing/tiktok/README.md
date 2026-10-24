@@ -7,6 +7,7 @@ De werkwijze en de regels voor de inhoud staan in [REGELS.md](REGELS.md).
 - `bron/`: animatiebibliotheek, renderer (Playwright → ffmpeg), geluid (`audio.py`) en voorbeelden
 - `onderwerpen.json`: lijst met onderwerpen, de taak werkt die van boven naar beneden af
 - `posts/`: één map per video met `video.mp4`, `meta.json` (caption, thumbnail-moment, uploadstatus)
+- `upload_meta.py`: plaatst dezelfde post als Reel (of carrousel) op Instagram en Facebook via de Meta Graph API
 - `upload_tiktok.py`: plaatst een video via de TikTok Content Posting API
 
 Inloggegevens (TIKTOK_CLIENT_KEY, TIKTOK_CLIENT_SECRET, TIKTOK_REFRESH_TOKEN, TIKTOK_PRIVACY)

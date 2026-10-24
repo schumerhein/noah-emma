@@ -29,7 +29,16 @@ Dit bestand is de vaste instructie voor die taak.
 6. Upload: `python3 ../../upload_tiktok.py posts/<map>` (vanuit `marketing/tiktok`).
    Exitcode 2 betekent dat de inloggegevens nog ontbreken: niet als fout behandelen,
    de video staat dan klaar om handmatig te posten.
-7. Zet het onderwerp op `"status": "gemaakt"`, voeg het toe aan `gemaakt`, commit en push.
+7. Instagram en Facebook: `python3 upload_meta.py posts/<map>` (vanuit `marketing/tiktok`).
+   Dit plaatst dezelfde video als Reel op Instagram en op de Facebook-pagina (openbaar), met
+   de caption uit `meta.json`. Het script past de caption zelf aan per kanaal: op Facebook
+   wordt "noah-emma.nl (link in bio)" de klikbare link https://www.noah-emma.nl en blijven er
+   2 hashtags over, op Instagram maximaal 5. Wil je een eigen tekst per kanaal, zet dan
+   `caption_instagram` of `caption_facebook` in `meta.json`.
+   Exitcode 2 = geen `META_ACCESS_TOKEN`: niet als fout behandelen. Exitcode 1 = één kanaal
+   mislukt; de fout staat in `meta.json` onder `instagram` of `facebook`. Een mislukte
+   Meta-upload houdt de TikTok-post en de commit niet tegen; noem hem in de samenvatting.
+8. Zet het onderwerp op `"status": "gemaakt"`, voeg het toe aan `gemaakt`, commit en push.
 
 ## Afwisseling: video of carrousel
 
@@ -56,7 +65,10 @@ video het eerste open onderwerp zonder `"vorm": "carrousel"`.
 3. Bekijk alle slides. Controleer: tekst niet afgesneden, niets rechts boven x=940 of onder
    y=1500 behalve de eindkaart, geen overlap. Herstel en render opnieuw tot het klopt.
 4. `meta.json` zoals bij een video, plus `"vorm": "carrousel"` en `"cover_ms": 1000`
-   (de cover). Upload met `upload_tiktok.py` zoals een video.
+   (de cover). Upload met `upload_tiktok.py` en daarna `upload_meta.py` zoals een video.
+   Op Instagram wordt een carrousel een echte fotocarrousel (de slides gaan tijdelijk in de
+   openbare Supabase-bucket `social`, daarna worden ze weer verwijderd); op Facebook gaat
+   de swipe-video.
 
 De JPG's blijven bewaard. Een echte TikTok-fotocarrousel (swipen door losse foto's) kan
 alleen met afbeeldingen op een openbare URL van het geverifieerde domein noah-emma.nl; dat

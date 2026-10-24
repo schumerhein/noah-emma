@@ -4,6 +4,7 @@ import { ArrowRight, Check } from "lucide-react";
 import { MarketingHeader } from "@/components/marketing/MarketingHeader";
 import { StickyCta } from "@/components/marketing/StickyCta";
 import { LOGIN_URL, SIGNUP_URL } from "@/components/marketing/links";
+import { MarketingFooter, SwipeKaart } from "@/components/marketing/Blokken";
 
 const PAGINA_URL = "https://noah-emma.nl/2e-hands-kinderkleding";
 
@@ -179,26 +180,7 @@ export default function TweedehandsKinderkledingPage() {
             </div>
 
             <div className="flex-1 min-w-0 w-full flex justify-center">
-              <div className="w-full max-w-[300px] bg-white rounded-[36px] p-3.5 shadow-[0_30px_60px_-24px_rgba(36,26,46,0.45)] -rotate-3">
-                <div className="flex items-center justify-between px-2 pt-1.5 pb-3">
-                  <span className="text-[13px] font-bold">Voor Lotte, 2 jaar</span>
-                  <span className="text-xs font-bold text-[#1C7FA8] bg-[#E4F4FB] px-2.5 py-1 rounded-full">Maat 92</span>
-                </div>
-                <div className="rounded-[26px] overflow-hidden">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="/images/vestje-beige.png"
-                    alt="Beige gebreid kindervestje aan een houten hanger"
-                    width={1136}
-                    height={1408}
-                    className="block w-full h-[300px] object-cover"
-                  />
-                  <div className="px-4 pt-3.5 pb-4 bg-white">
-                    <div className="font-headline font-extrabold text-[17px]">Gebreid vestje, beige</div>
-                    <div className="text-[13px] text-[#5B4F63] mt-1">Maat 92 · Zo goed als nieuw</div>
-                  </div>
-                </div>
-              </div>
+              <SwipeKaart />
             </div>
           </div>
 
@@ -392,17 +374,7 @@ export default function TweedehandsKinderkledingPage() {
         </section>
       </main>
 
-      <footer className="mt-16 sm:mt-20 border-t border-[#241A2E]/[0.08] px-4 sm:px-6 pt-8 pb-24 sm:pb-8">
-        <div className="max-w-[1180px] mx-auto flex flex-wrap gap-6 justify-between text-sm text-[#5B4F63]">
-          <span>Noah &amp; Emma: tweedehands kinderkleding en accessoires, zonder kindergezichten.</span>
-          <nav aria-label="Footer" className="flex flex-wrap gap-5">
-            <Link href="/over">Over ons</Link>
-            <Link href="/helpdesk">Helpcentrum</Link>
-            <Link href="/privacy">Privacy</Link>
-            <Link href="/voorwaarden">Voorwaarden</Link>
-          </nav>
-        </div>
-      </footer>
+      <MarketingFooter />
 
       <StickyCta />
     </div>

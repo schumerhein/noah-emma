@@ -20,6 +20,10 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '10mb',
     },
   },
+  // De oude "Over"-pagina uit de app is vervangen door de marketingpagina.
+  async redirects() {
+    return [{ source: '/over', destination: '/over-ons', permanent: true }];
+  },
   images: {
     remotePatterns: [
       {

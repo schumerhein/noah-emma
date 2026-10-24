@@ -100,7 +100,7 @@ function InstellingenInner() {
         { label: "Privacyverklaring", href: "/privacy" },
         { label: "Algemene voorwaarden", href: "/voorwaarden" },
         { label: "Cookiebeleid", href: "/cookies" },
-        { label: "Over Noah & Emma", href: "/over" },
+        { label: "Over Noah & Emma", href: "/over-ons" },
       ],
     },
     {

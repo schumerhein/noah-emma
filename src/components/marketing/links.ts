@@ -45,6 +45,13 @@ export const HOOFDMENU: MenuItem[] = [
 /** Alle pagina's uit het hoofdmenu, zonder dubbele (voor de footer). */
 export const MENU_PAGINAS: MenuItem[] = HOOFDMENU.flatMap(({ sub, ...m }) => [m, ...(sub ?? [])]);
 
+/** Social-mediakanalen, in de footer en als sameAs in de JSON-LD van de organisatie. */
+export const SOCIALS = [
+  { naam: "Instagram", href: "https://www.instagram.com/noah_emma_kinderkleding/" },
+  { naam: "TikTok", href: "https://www.tiktok.com/@noah_emma_kinderkleding" },
+  { naam: "Facebook", href: "https://www.facebook.com/1424061760784280" },
+] as const;
+
 export const FOOTER_EXTRA: MenuItem[] = [
   { label: "Inloggen", href: LOGIN_URL },
   { label: "2e hands kinderkleding", href: "/2e-hands-kinderkleding" },

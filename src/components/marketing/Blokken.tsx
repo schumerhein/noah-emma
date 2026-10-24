@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Check, Heart, X, type LucideIcon } from "lucide-react";
 import { NoahFace, EmmaFace } from "@/components/ai-models/NoahEmmaFaces";
 import { CookieInstellingenKnop } from "@/components/CookieMelding";
-import { FOOTER_EXTRA, LOGIN_URL, MENU_PAGINAS, SIGNUP_URL, SITE_URL } from "@/components/marketing/links";
+import { FOOTER_EXTRA, LOGIN_URL, MENU_PAGINAS, SIGNUP_URL, SITE_URL, SOCIALS } from "@/components/marketing/links";
 
 // Gedeelde bouwblokken voor de marketingpagina's, zodat elke pagina dezelfde
 // huisstijl, hetzelfde afsluitende aanmeldblok en dezelfde footer heeft.
@@ -374,6 +374,19 @@ export function AfsluitendeCta({ titel, accent, tekst }: { titel: string; accent
   );
 }
 
+// Merklogo's van de socials (eenvoudige paden, 24x24).
+const SOCIAL_ICOON: Record<(typeof SOCIALS)[number]["naam"], React.ReactNode> = {
+  Instagram: (
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" strokeWidth="2" />
+      <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" strokeWidth="2" />
+      <circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" />
+    </>
+  ),
+  TikTok: <path fill="currentColor" d="M16.6 5.82A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 0 1-2.59 2.5 2.6 2.6 0 0 1-2.59-2.6 2.6 2.6 0 0 1 3.37-2.48V9.66a5.68 5.68 0 0 0-6.45 5.64A5.68 5.68 0 0 0 9.87 21a5.68 5.68 0 0 0 5.68-5.68V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3a4.28 4.28 0 0 1-3.25-1.48Z" />,
+  Facebook: <path fill="currentColor" d="M13.5 21v-7.5h2.53l.38-2.94H13.5V8.69c0-.85.24-1.43 1.46-1.43h1.56V4.63a20.9 20.9 0 0 0-2.27-.12c-2.25 0-3.79 1.37-3.79 3.9v2.15H7.92v2.94h2.54V21h3.04Z" />,
+};
+
 export function MarketingFooter() {
   return (
     <footer className="mt-16 sm:mt-20 border-t border-[#241A2E]/[0.08] px-4 sm:px-6 pt-10 pb-24 sm:pb-10">
@@ -391,6 +404,21 @@ export function MarketingFooter() {
           <p className="mt-3 text-sm text-[#5B4F63] max-w-[36ch] leading-relaxed">
             Tweedehands kinderkleding en accessoires voor kinderen van 0 tot 12 jaar. Zonder kindergezichten, helemaal gratis.
           </p>
+          <ul aria-label="Volg ons" className="mt-4 flex gap-2">
+            {SOCIALS.map((s) => (
+              <li key={s.naam}>
+                <a
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Noah & Emma op ${s.naam}`}
+                  className="w-11 h-11 rounded-full bg-white border border-[#241A2E]/10 flex items-center justify-center text-[#241A2E] hover:text-[#D63D74] transition-colors"
+                >
+                  <svg viewBox="0 0 24 24" className="w-5 h-5" aria-hidden="true">{SOCIAL_ICOON[s.naam]}</svg>
+                </a>
+              </li>
+            ))}
+          </ul>
         </div>
         <nav aria-label="Footer: pagina's">
           <p className="font-headline font-extrabold text-sm">Noah &amp; Emma</p>

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Armchair, Baby, Car, Check, ToyBrick } from "lucide-react";
 import { MarketingHeader } from "@/components/marketing/MarketingHeader";
 import { StickyCta } from "@/components/marketing/StickyCta";
-import { SITE_URL } from "@/components/marketing/links";
+import { SITE_URL, OG_AFBEELDING } from "@/components/marketing/links";
 import {
   AfsluitendeCta, Faq, Hero, Kaarten, MarketingFooter, SCHADUW, Sectie, SectieKop, StructuredData, Tegels, type Vraag,
 } from "@/components/marketing/Blokken";
@@ -10,9 +10,9 @@ import {
 const PAD = "/accessoires";
 
 export const metadata: Metadata = {
-  title: "Tweedehands kinderwagens, autostoeltjes en speelgoed | Noah & Emma",
+  title: "Tweedehands kinderwagens en autostoeltjes | Noah & Emma",
   description:
-    "Tweedehands kinderwagens, buggy's, autostoeltjes, speelgoed en meubels voor de kinderkamer. Van ouders uit de buurt, met reviews na elke deal. Helemaal gratis.",
+    "Tweedehands kinderwagens, buggy's, autostoeltjes, speelgoed en meubels. Van ouders uit de buurt, met reviews na elke deal. Helemaal gratis.",
   alternates: { canonical: `${SITE_URL}${PAD}` },
   openGraph: {
     title: "Tweedehands kinderwagens, autostoeltjes en meer | Noah & Emma",
@@ -21,6 +21,7 @@ export const metadata: Metadata = {
     siteName: "Noah & Emma",
     locale: "nl_NL",
     type: "website",
+    images: [OG_AFBEELDING],
   },
 };
 

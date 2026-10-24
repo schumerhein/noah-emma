@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type CookieKeuze = "alle" | "essentieel" | null;
+import { bewaarCookieKeuze, leesCookieKeuze, type CookieKeuze as Keuze } from "@/lib/cookieToestemming";
 
-const OPSLAGSLEUTEL = "noah-emma-cookievoorkeur";
+type CookieKeuze = Keuze | null;
 
 export default function VoorkeurenPage() {
   const router = useRouter();
@@ -15,13 +15,12 @@ export default function VoorkeurenPage() {
   const [opgeslagen, setOpgeslagen] = useState(false);
 
   useEffect(() => {
-    const bestaand = localStorage.getItem(OPSLAGSLEUTEL);
-    if (bestaand === "alle" || bestaand === "essentieel") setKeuze(bestaand);
+    setKeuze(leesCookieKeuze());
   }, []);
 
   const slaOp = (k: CookieKeuze) => {
     setKeuze(k);
-    if (k) localStorage.setItem(OPSLAGSLEUTEL, k);
+    if (k) bewaarCookieKeuze(k);
     setOpgeslagen(true);
     setTimeout(() => setOpgeslagen(false), 2000);
   };
@@ -73,7 +72,7 @@ export default function VoorkeurenPage() {
           <div className="border border-slate-100 dark:border-slate-800 rounded-2xl p-5 space-y-2">
             <p className="font-bold text-sm text-slate-900 dark:text-white">Analytische cookies</p>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Helpen ons begrijpen hoe de app gebruikt wordt zodat we hem kunnen verbeteren. Gegevens zijn geanonimiseerd.
+              Google Analytics helpt ons begrijpen hoe de app gebruikt wordt, zodat we hem kunnen verbeteren. Nooit voor advertenties.
             </p>
           </div>
 

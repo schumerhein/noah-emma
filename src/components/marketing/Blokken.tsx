@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Check, Heart, X } from "lucide-react";
 import { NoahFace, EmmaFace } from "@/components/ai-models/NoahEmmaFaces";
+import { CookieInstellingenKnop } from "@/components/CookieMelding";
 import { FOOTER_EXTRA, LOGIN_URL, MENU_PAGINAS, SIGNUP_URL, SITE_URL } from "@/components/marketing/links";
 
 // Gedeelde bouwblokken voor de marketingpagina's, zodat elke pagina dezelfde
@@ -324,7 +325,7 @@ export function MarketingFooter() {
           </p>
         </div>
         <nav aria-label="Footer: pagina's">
-          <h2 className="font-headline font-extrabold text-sm">Noah &amp; Emma</h2>
+          <p className="font-headline font-extrabold text-sm">Noah &amp; Emma</p>
           <ul className="mt-3 flex flex-col gap-2 text-sm text-[#5B4F63]">
             {MENU_PAGINAS.map((m) => (
               <li key={m.href}><Link href={m.href} className="hover:text-[#241A2E]">{m.label}</Link></li>
@@ -332,11 +333,12 @@ export function MarketingFooter() {
           </ul>
         </nav>
         <nav aria-label="Footer: meer">
-          <h2 className="font-headline font-extrabold text-sm">Meer</h2>
+          <p className="font-headline font-extrabold text-sm">Meer</p>
           <ul className="mt-3 flex flex-col gap-2 text-sm text-[#5B4F63]">
             {FOOTER_EXTRA.map((m) => (
               <li key={m.href}><Link href={m.href} className="hover:text-[#241A2E]">{m.label}</Link></li>
             ))}
+            <li><CookieInstellingenKnop className="hover:text-[#241A2E] text-left" /></li>
             <li><a href="mailto:info@noah-emma.nl" className="hover:text-[#241A2E]">info@noah-emma.nl</a></li>
           </ul>
         </nav>

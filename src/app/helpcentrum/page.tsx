@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Check, Search } from "lucide-react";
 import { MarketingHeader } from "@/components/marketing/MarketingHeader";
 import { StickyCta } from "@/components/marketing/StickyCta";
-import { SITE_URL } from "@/components/marketing/links";
+import { SITE_URL, OG_AFBEELDING } from "@/components/marketing/links";
 import {
   AfsluitendeCta, Faq, Kruimelpad, MarketingFooter, SCHADUW, Sectie, SectieKop, StructuredData, type Vraag,
 } from "@/components/marketing/Blokken";
@@ -15,6 +15,15 @@ export const metadata: Metadata = {
   description:
     "Antwoorden op je vragen over Noah & Emma: account, kopen, verkopen, het groeimodel, de AI-fotocontrole, reviews en veilig afspreken.",
   alternates: { canonical: `${SITE_URL}${PAD}` },
+  openGraph: {
+    title: "Veelgestelde vragen en hulp | Noah & Emma",
+    description: "Antwoorden over je account, kopen, verkopen, het groeimodel en veilig afspreken.",
+    url: `${SITE_URL}${PAD}`,
+    siteName: "Noah & Emma",
+    locale: "nl_NL",
+    type: "website",
+    images: [OG_AFBEELDING],
+  },
 };
 
 const ONDERWERPEN = [
@@ -77,10 +86,10 @@ export default async function HelpcentrumPage({ searchParams }: { searchParams: 
           <div className="max-w-[820px] mx-auto px-4 sm:px-6 pt-7 sm:pt-16 pb-10 sm:pb-16 text-center">
             <Kruimelpad naam="Veelgestelde vragen" center />
             <h1 className="font-headline font-extrabold text-[34px] sm:text-[52px] leading-[1.06] tracking-tight">
-              Hoe kunnen we <span className="text-[#D63D74]">helpen?</span>
+              Veelgestelde vragen en <span className="text-[#D63D74]">hulp</span>
             </h1>
             <p className="mx-auto mt-3.5 max-w-[48ch] text-[17px] leading-relaxed text-[#5B4F63]">
-              Zoek je vraag of kies een onderwerp. Staat het er niet bij, dan helpen we je persoonlijk.
+              Hoe kunnen we helpen? Zoek je vraag of kies een onderwerp. Staat het er niet bij, dan helpen we je persoonlijk.
             </p>
             <form id="hero-cta" role="search" action={`${PAD}#vragen`} className={`mx-auto mt-6 max-w-[560px] flex items-center gap-2.5 bg-white rounded-full pl-5 pr-1.5 py-1.5 border border-[#241A2E]/10 ${SCHADUW}`}>
               <Search className="w-5 h-5 shrink-0 text-[#5B4F63]" aria-hidden="true" />

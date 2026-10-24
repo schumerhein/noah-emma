@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Check, UserRound } from "lucide-react";
 import { MarketingHeader } from "@/components/marketing/MarketingHeader";
 import { StickyCta } from "@/components/marketing/StickyCta";
-import { SIGNUP_URL, SITE_URL } from "@/components/marketing/links";
+import { SIGNUP_URL, SITE_URL, OG_AFBEELDING } from "@/components/marketing/links";
 import {
   AfsluitendeCta, Faq, Groeimodel, Hero, Kaarten, MarketingFooter, PRODUCTEN, SCHADUW, Sectie, SectieKop, StructuredData, type Vraag,
 } from "@/components/marketing/Blokken";
@@ -11,9 +11,9 @@ import {
 const PAD = "/hoe-het-werkt";
 
 export const metadata: Metadata = {
-  title: "Hoe het werkt: tweedehands kinderkleding kopen en verkopen | Noah & Emma",
+  title: "Hoe werkt het? Kinderkleding kopen en verkopen | Noah & Emma",
   description:
-    "Zo werkt Noah & Emma: maak gratis een account, stel de maat van je kind in, swipe door het aanbod en spreek zelf af met de verkoper. Onze AI weigert elke foto met een kindergezicht.",
+    "Maak gratis een account, stel de maat van je kind in, swipe door het aanbod en spreek af met de verkoper. Onze AI weigert elke foto met een kindergezicht.",
   alternates: { canonical: `${SITE_URL}${PAD}` },
   openGraph: {
     title: "Zo werkt Noah & Emma",
@@ -22,6 +22,7 @@ export const metadata: Metadata = {
     siteName: "Noah & Emma",
     locale: "nl_NL",
     type: "website",
+    images: [OG_AFBEELDING],
   },
 };
 

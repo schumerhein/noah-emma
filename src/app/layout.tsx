@@ -5,12 +5,22 @@ import './globals.css';
 import {Toaster} from '@/components/ui/toaster';
 import {ThemeProvider} from '@/components/ThemeProvider';
 import {AppFrame} from '@/components/AppFrame';
-import {SITE_URL} from '@/components/marketing/links';
+import {GoogleAnalytics} from '@/components/GoogleAnalytics';
+import {CookieMelding} from '@/components/CookieMelding';
+import {OG_AFBEELDING, SITE_URL} from '@/components/marketing/links';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: 'Noah & Emma | Kinderkleding & Accessoires Kopen en Verkopen',
   description: 'De makkelijkste en veiligste manier om kinderkleding en accessoires te kopen en verkopen voor kids van 0 tot 12 jaar.',
+  // Standaard voor pagina's zonder eigen openGraph (privacy, voorwaarden, cookies).
+  openGraph: {
+    images: [OG_AFBEELDING],
+    siteName: 'Noah & Emma',
+    locale: 'nl_NL',
+    type: 'website',
+  },
+  twitter: { card: 'summary_large_image' },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
@@ -47,6 +57,8 @@ export default async function RootLayout({
         <ThemeProvider>
           <AppFrame forceMarketing={forceMarketing}>{children}</AppFrame>
           <Toaster />
+          <CookieMelding />
+          <GoogleAnalytics />
         </ThemeProvider>
       </body>
     </html>

@@ -3,6 +3,9 @@ export const LOGIN_URL = "/login";
 // Het hoofddomein: noah-emma.nl stuurt bij Vercel met een 301 door naar www.
 export const SITE_URL = "https://www.noah-emma.nl";
 
+/** Deelafbeelding (1200x630) voor WhatsApp, Facebook en andere socials. */
+export const OG_AFBEELDING = { url: "/images/og-noah-emma.png", width: 1200, height: 630, alt: "Noah & Emma: tweedehands voor je kind, altijd in de juiste maat" };
+
 export interface MenuItem {
   label: string;
   href: string;

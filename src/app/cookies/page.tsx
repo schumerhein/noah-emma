@@ -2,53 +2,56 @@
 
 import { useRouter } from "next/navigation";
 import { ChevronLeft, Cookie } from "lucide-react";
+import { CookieInstellingenKnop } from "@/components/CookieMelding";
 
 const SECTIES = [
   {
     titel: "Wat zijn cookies?",
-    tekst: `Cookies zijn kleine tekstbestanden die door een website op je apparaat worden geplaatst wanneer je de website bezoekt. Ze worden gebruikt om de website goed te laten functioneren en om informatie te onthouden over jou als gebruiker.`,
+    tekst: `Cookies zijn kleine tekstbestanden die een website op je apparaat plaatst. Vergelijkbare technieken, zoals lokale opslag in je browser (localStorage), vallen onder dezelfde regels. In dit beleid noemen we ze allemaal cookies.`,
   },
   {
-    titel: "Welke cookies gebruiken wij?",
-    tekst: `Noah & Emma gebruikt standaard alleen functionele cookies. Dit zijn cookies die strikt noodzakelijk zijn voor het werken van de applicatie.
+    titel: "Noodzakelijke cookies (altijd aan)",
+    tekst: `Deze zijn nodig om de website en app te laten werken. Hiervoor hoeven we geen toestemming te vragen.
 
-**Functionele cookies (noodzakelijk)**
-• Sessiecookie: Houdt bij dat je bent ingelogd, zodat je niet bij elke pagina opnieuw hoeft in te loggen. Vervalt wanneer je de browser afsluit of na 30 dagen.
-• Voorkeurscookie: Onthoudt jouw instellingen zoals donkere modus. Vervalt na 1 jaar.
-
-**Optionele cookies (alleen met jouw toestemming)**
-• Analytische cookies: Helpen ons begrijpen hoe de app gebruikt wordt, zodat we hem kunnen verbeteren. Gegevens zijn geanonimiseerd.
-• Personalisatiecookies: Maken een gepersonaliseerde feed en relevante aanbevelingen mogelijk.
-
-Optionele cookies staan standaard UIT. Je beheert ze via Profiel → Mijn voorkeuren. Wij plaatsen nooit advertentiecookies en verkopen nooit gegevens aan derden.`,
+• ne_ingelogd (cookie, 30 dagen): onthoudt dat je ingelogd bent, zodat je direct in de app terechtkomt.
+• ne_gast (cookie, tot je de browser sluit): onthoudt dat je als gast het aanbod bekijkt.
+• Inlogsessie van Supabase (lokale opslag): houdt je ingelogd. Verdwijnt als je uitlogt.
+• noah-emma-cookievoorkeur (lokale opslag, 12 maanden): onthoudt je cookiekeuze, met datum.
+• App-instellingen zoals donkere modus, filters en meldingen (lokale opslag): blijven tot je ze wist.`,
   },
   {
-    titel: "Third-party diensten",
-    tekst: `Noah & Emma maakt gebruik van de volgende diensten die mogelijk eigen cookies plaatsen:
+    titel: "Analytische cookies (alleen met jouw toestemming)",
+    tekst: `Met Google Analytics zien we welke pagina's goed werken en waar het beter kan. Deze cookies plaatsen we pas nadat je op "Akkoord" hebt geklikt.
 
-• **Supabase**: onze database- en authenticatieprovider. Supabase plaatst technische cookies voor sessiebeheer. Zie supabase.com/privacy voor hun beleid.
-• **DiceBear**: voor het genereren van avatars. DiceBear is een statische API en plaatst geen cookies.
+• _ga (cookie van Google, 2 jaar): onderscheidt bezoekers.
+• _ga_N04N5JQH0R (cookie van Google, 2 jaar): onthoudt je bezoek.
 
-Er worden geen advertentie- of trackingcookies van Google Ads, Facebook Pixel of vergelijkbare diensten gebruikt.`,
+Zo hebben we Google Analytics ingesteld:
+• Google Signals en advertentiepersonalisatie staan uit. Je gegevens worden niet gebruikt voor advertenties.
+• Google Analytics slaat geen IP-adressen op.
+• Gegevens worden maximaal 14 maanden bewaard.
+
+Google is de verwerker van deze gegevens. Meer informatie vind je op policies.google.com/privacy.`,
   },
   {
-    titel: "Cookies beheren",
-    tekst: `Functionele cookies zijn noodzakelijk voor het werken van de app en kunnen niet worden uitgeschakeld zonder de werking te beïnvloeden.
+    titel: "Wat we niet doen",
+    tekst: `We plaatsen geen advertentie- of trackingcookies, zoals die van Google Ads of de Facebook Pixel. We verkopen nooit gegevens aan derden.`,
+  },
+  {
+    titel: "Je keuze wijzigen of intrekken",
+    tekst: `Bij je eerste bezoek vragen we of je analytische cookies toestaat. Weigeren is net zo makkelijk als accepteren. Je keuze geldt 12 maanden, daarna vragen we het opnieuw.
 
-Je kunt cookies verwijderen via de instellingen van je browser. Let op: als je de sessiescookie verwijdert, word je uitgelogd en moet je opnieuw inloggen.
+Je kunt je keuze altijd wijzigen met de knop bovenaan deze pagina, via "Cookie-instellingen" onderaan de website, of in de app via Profiel → Mijn voorkeuren. Trek je je toestemming in, dan stopt het meten direct en verwijderen we de Google Analytics-cookies.
 
-Instructies per browser:
-• Chrome: Instellingen → Privacy en beveiliging → Cookies
-• Safari: Instellingen → Safari → Geavanceerd
-• Firefox: Instellingen → Privacy en beveiliging`,
+Je kunt cookies ook zelf wissen via de instellingen van je browser. Wis je de noodzakelijke cookies, dan word je uitgelogd.`,
   },
   {
     titel: "Wijzigingen",
-    tekst: `Dit cookiebeleid kan worden aangepast als wij nieuwe diensten toevoegen. We informeren je hierover via de app.`,
+    tekst: `Komt er een nieuw soort cookie bij, dan passen we dit beleid aan en vragen we opnieuw om je toestemming.`,
   },
   {
     titel: "Contact",
-    tekst: `Vragen over ons cookiebeleid? Stuur een e-mail naar info@noah-emma.nl.`,
+    tekst: `Vragen over ons cookiebeleid? Stuur een e-mail naar info@noah-emma.nl. Lees ook onze privacyverklaring op noah-emma.nl/privacy.`,
   },
 ];
 
@@ -75,12 +78,13 @@ export default function CookiesPage() {
           <div>
             <p className="font-bold text-sm text-emerald-800 dark:text-emerald-200">Wij houden het simpel</p>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-              Noah & Emma gebruikt standaard alleen noodzakelijke cookies. Optionele cookies staan uit tot jij ze aanzet. Geen advertenties, geen dataverkoop.
+              Noah & Emma gebruikt standaard alleen noodzakelijke cookies. Analytische cookies staan uit tot jij ze aanzet. Geen advertenties, geen dataverkoop.
             </p>
+            <CookieInstellingenKnop className="mt-3 min-h-[44px] px-4 rounded-full bg-[#241A2E] text-white text-sm font-bold" />
           </div>
         </div>
 
-        <p className="text-xs text-slate-400">Laatste wijziging: 1 juni 2025</p>
+        <p className="text-xs text-slate-400">Laatste wijziging: 24 oktober 2026</p>
 
         {SECTIES.map(sectie => (
           <section key={sectie.titel} className="space-y-3">

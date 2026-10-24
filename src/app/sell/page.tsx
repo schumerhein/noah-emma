@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,8 +18,7 @@ import { BOOST_TIERS, type BoostTier } from "@/lib/prijzen";
 import { CATEGORY_HIERARCHY } from "@/lib/categorieen";
 import { verkleinAfbeelding } from "@/lib/afbeelding";
 import { controleerFoto } from "@/lib/fotoVeiligheid";
-import { KledingUitknipper, type GekozenUitsnede } from "@/components/KledingUitknipper";
-import { alsBestand, stelSamen, type Model } from "@/lib/kledingUitknippen";
+import { KledingUitknipper } from "@/components/KledingUitknipper";
 
 const MAX_FOTOS = 8;
 const KLEDING_CATEGORIEEN = ["Meisjeskleding", "Jongenskleding"];
@@ -56,10 +55,6 @@ export default function SellPage() {
   const [loading, setLoading] = useState(false);
   const imageCountRef = useRef(0); // bijhouden hoeveel afbeeldingen er al zijn
   const maatHandmatigRef = useRef(false); // true zodra de verkoper zelf een maat kiest
-  const [kindGeslacht, setKindGeslacht] = useState<string | null>(null);
-  // Uitgeknipte kledingstukken per foto-index, zodat het hoofd van Noah/Emma
-  // meeverandert als de verkoper daarna nog categorie of maat aanpast.
-  const uitsneden = useRef<((GekozenUitsnede & { modelSleutel: string }) | undefined)[]>([]);
   const { toast } = useToast();
 
   // Laad het kindprofiel van de ingelogde gebruiker en stel de maat daarop in
@@ -68,11 +63,10 @@ export default function SellPage() {
     const laadKind = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data } = await supabase.from("children").select("maat, geslacht").eq("user_id", user.id).order("created_at").limit(1).maybeSingle();
+      const { data } = await supabase.from("children").select("maat").eq("user_id", user.id).order("created_at").limit(1).maybeSingle();
       if (data?.maat && !maatHandmatigRef.current) {
         setSize(data.maat);
       }
-      setKindGeslacht(data?.geslacht ?? null);
     };
     laadKind();
   }, []);
@@ -134,19 +128,10 @@ export default function SellPage() {
     });
   };
 
-  // Wie draagt het kledingstuk op een uitgeknipte foto: Noah bij
-  // jongenskleding, Emma bij meisjeskleding, anders volgens het kindprofiel.
-  const model = useMemo<Model>(() => ({
-    naam: mainCategory === "Jongenskleding" || (mainCategory !== "Meisjeskleding" && kindGeslacht === "jongen") ? "noah" : "emma",
-    maat: size,
-  }), [mainCategory, kindGeslacht, size]);
-  const modelSleutel = `${model.naam}-${model.maat}`;
-
   // De uitsnede vervangt de originele foto: alleen het kledingstuk gaat mee
   // met de upload, de foto met het kind blijft op het toestel.
-  const vervangDoorUitsnede = (index: number, uitsnede: GekozenUitsnede) => {
+  const vervangDoorUitsnede = (index: number, uitsnede: { file: File; dataUrl: string }) => {
     verwerkVersie.current[index] = ++laatsteVersie.current;
-    uitsneden.current[index] = { ...uitsnede, modelSleutel };
     setImagePreviews(prev => prev.map((p, i) => (i === index ? uitsnede.dataUrl : p)));
     setImageFiles(prev => prev.map((f, i) => (i === index ? uitsnede.file : f)));
     setFotoCheck(prev => prev.map((c, i) => (i === index ? { status: "ok", reden: null } : c)));
@@ -154,30 +139,11 @@ export default function SellPage() {
   };
   const uitknipIndex = fotoCheck.findIndex(f => f.status === "uitknippen");
 
-  // Categorie of maat veranderd: Noah/Emma op de uitgeknipte foto's bijwerken.
-  // (Ook na het verwijderen van een foto: een lopende update op een
-  // verschoven index wordt dan genegeerd en hier opnieuw gestart.)
-  const aantalFotos = imagePreviews.length;
-  useEffect(() => {
-    uitsneden.current.forEach((u, index) => {
-      if (!u?.metHoofd || u.modelSleutel === modelSleutel) return;
-      const versie = ++laatsteVersie.current;
-      verwerkVersie.current[index] = versie;
-      stelSamen(u.uitsnede, model).then(alsBestand).then((nieuw) => {
-        if (verwerkVersie.current[index] !== versie) return;
-        uitsneden.current[index] = { ...u, ...nieuw, modelSleutel };
-        setImagePreviews(prev => prev.map((p, i) => (i === index ? nieuw.dataUrl : p)));
-        setImageFiles(prev => prev.map((f, i) => (i === index ? nieuw.file : f)));
-      }).catch(() => { /* oude versie blijft staan */ });
-    });
-  }, [model, modelSleutel, aantalFotos]);
-
   const removeImage = (index: number) => {
     setImagePreviews(prev => prev.filter((_, i) => i !== index));
     setImageFiles(prev => prev.filter((_, i) => i !== index));
     setFotoCheck(prev => prev.filter((_, i) => i !== index));
     verwerkVersie.current = verwerkVersie.current.filter((_, i) => i !== index);
-    uitsneden.current = uitsneden.current.filter((_, i) => i !== index);
     imageCountRef.current = Math.max(0, imageCountRef.current - 1);
     if (selectedImageIndex >= index && selectedImageIndex > 0) {
       setSelectedImageIndex(selectedImageIndex - 1);
@@ -666,7 +632,6 @@ export default function SellPage() {
           key={`${uitknipIndex}-${verwerkVersie.current[uitknipIndex]}`}
           bron={imagePreviews[uitknipIndex]}
           subcategorie={subCategory}
-          model={model}
           onGebruik={(uitsnede) => vervangDoorUitsnede(uitknipIndex, uitsnede)}
           onAnnuleer={() => removeImage(uitknipIndex)}
         />

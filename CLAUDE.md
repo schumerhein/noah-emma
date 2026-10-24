@@ -46,12 +46,6 @@ Dit is een eigen, lokale implementatie — geen Fashn.ai (dat is een toekomstige
    rustige achtergrond. Alleen de uitsnede wordt geüpload; daarna draait de gezichtscontrole
    nog op het resultaat. De wasm-bestanden komen via `postinstall`
    (`scripts/kopieer-mediapipe.mjs`) in `public/mediapipe/`, de modellen van Google Storage.
-   Bij een bovenkant of 'alles' komt standaard het hoofd van Noah/Emma erop
-   (`src/lib/noahEmmaHoofd.ts`, eigen SVG in logostijl): Noah bij jongenskleding, Emma bij
-   meisjeskleding, anders volgens het kindprofiel. Het hoofd groeit mee met de maat (baby →
-   12 jaar: gezichtsvorm, ogen, haar in vier fases) en staat op de plek van het echte gezicht,
-   de nek achter de kraag. Verandert de verkoper daarna categorie of maat, dan werkt het
-   verkoopscherm de foto bij. De gezichtscontrole draait op de versie zónder getekend hoofd.
 5. **Genkit-flows** (`src/ai/flows/`):
    - `privacy-blurring-for-product-photos.ts` — blurt gezichten op productfoto's (losse
      laag bovenop bovenstaande pipeline)

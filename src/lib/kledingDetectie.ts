@@ -108,7 +108,7 @@ export async function bepaalKledingCrop(img: HTMLImageElement): Promise<KledingC
  * aanroeper de foto kan weigeren in plaats van 'm ongecontroleerd door te
  * laten ("bij twijfel weigeren").
  */
-export async function telGezichten(img: HTMLImageElement | HTMLCanvasElement): Promise<number> {
+export async function telGezichten(img: HTMLImageElement): Promise<number> {
   await laadModellen();
   const faceapi = await import('face-api.js');
   const detecties = await faceapi.detectAllFaces(

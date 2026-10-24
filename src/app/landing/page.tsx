@@ -4,7 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { MarketingHeader } from "@/components/marketing/MarketingHeader";
 import { StickyCta } from "@/components/marketing/StickyCta";
 import { MarketingPaginaMarker } from "@/components/marketing/MarketingModus";
-import { SITE_URL, OG_AFBEELDING } from "@/components/marketing/links";
+import { SITE_URL, OG_AFBEELDING, SOCIALS } from "@/components/marketing/links";
 import {
   AfsluitendeCta, Eyebrow, Faq, Groeimodel, HeroKnoppen, Kaarten, MarketingFooter, PRODUCTEN, SCHADUW, Sectie, SectieKop, SwipeKaart, UspLijst, type Vraag,
 } from "@/components/marketing/Blokken";
@@ -79,7 +79,7 @@ export default function LandingPage() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@graph": [
-              { "@type": "Organization", "@id": `${SITE_URL}/#organisatie`, name: "Noah & Emma", url: `${SITE_URL}/`, logo: `${SITE_URL}/icon.svg`, email: "info@noah-emma.nl" },
+              { "@type": "Organization", "@id": `${SITE_URL}/#organisatie`, name: "Noah & Emma", url: `${SITE_URL}/`, logo: `${SITE_URL}/icon.svg`, email: "info@noah-emma.nl", sameAs: SOCIALS.map((s) => s.href) },
               { "@type": "WebSite", "@id": `${SITE_URL}/#website`, name: "Noah & Emma", url: `${SITE_URL}/`, inLanguage: "nl-NL", publisher: { "@id": `${SITE_URL}/#organisatie` } },
             ],
           }),

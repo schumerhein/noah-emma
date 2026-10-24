@@ -5,9 +5,9 @@
 export const PREMIUM_PRIJS = 0.99;
 
 export const BOOST_TIERS = {
-  fast: { naam: "Snel", dagen: 3, prijs: 0.99 },
-  popular: { naam: "Populair", dagen: 7, prijs: 2.99 },
-  max: { naam: "Maximaal", dagen: 14, prijs: 4.99 },
+  fast: { naam: "Snel", dagen: 3, prijs: 0.49 },
+  popular: { naam: "Populair", dagen: 7, prijs: 0.99 },
+  max: { naam: "Maximaal", dagen: 14, prijs: 1.49 },
 } as const;
 
 export type BoostTier = keyof typeof BOOST_TIERS;

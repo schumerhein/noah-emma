@@ -9,12 +9,14 @@ import { FeedbackProvider } from "@/components/FeedbackProvider";
 /**
  * De app zelf is ontworpen als mobiele swipe-app en wordt daarom altijd
  * in een "telefoonframe" (max-w-md, rand, schaduw) getoond, ook op desktop.
- * De marketingpagina (/landing) is een volwaardige desktop-website en
- * moet dat frame — en de app-header/onderbalk — niet erven.
+ * De marketingpagina's (/landing en de SEO-landingspagina's) zijn volwaardige
+ * websites en moeten dat frame — en de app-header/onderbalk — niet erven.
  */
+const MARKETING_PATHS = ["/landing", "/2e-hands-kinderkleding"];
+
 export function AppFrame({ children, forceMarketing = false }: { children: React.ReactNode; forceMarketing?: boolean }) {
   const pathname = usePathname();
-  const isMarketing = forceMarketing || pathname === "/landing";
+  const isMarketing = forceMarketing || MARKETING_PATHS.includes(pathname);
   // Altijd aanroepen (Rules of Hooks) — AppFrame blijft over navigaties heen
   // gemonteerd, ook wanneer isMarketing wisselt.
   const { ongelezen } = useInboxMeldingen();

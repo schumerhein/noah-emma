@@ -456,7 +456,7 @@ export default function SellerPage({ params }: { params: Promise<{ id: string }>
 
       {/* Actiemenu (melden / blokkeren) */}
       {toonActieMenu && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm px-4 pb-8" onClick={() => setToonActieMenu(false)}>
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/40 backdrop-blur-sm px-4 pb-[calc(2rem+env(safe-area-inset-bottom))]" onClick={() => setToonActieMenu(false)}>
           <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md p-4 space-y-2 shadow-2xl" onClick={e => e.stopPropagation()}>
             <button
               onClick={() => { setToonActieMenu(false); setToonMeldModal(true); }}
@@ -485,7 +485,7 @@ export default function SellerPage({ params }: { params: Promise<{ id: string }>
 
       {/* Meld Modal */}
       {toonMeldModal && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm px-4 pb-8">
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/40 backdrop-blur-sm px-4 pb-[calc(2rem+env(safe-area-inset-bottom))]">
           <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl">
             <div className="flex items-start justify-between">
               <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">Gebruiker melden</h2>

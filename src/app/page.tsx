@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -12,7 +11,6 @@ import { useToast } from "@/hooks/use-toast";
 import { PremiumModal } from "@/components/PremiumModal";
 import { Heart, ShoppingBag, X, Zap } from "lucide-react";
 import { LEGE_FEED_VOORKEUREN, scoreVoorkeurMatch, type FeedVoorkeuren } from "@/lib/feedVoorkeuren";
-import { leesRecentBekekenIds } from "@/lib/recentBekeken";
 import { OpenBeoordelingen } from "@/components/OpenBeoordelingen";
 import { NoahEmmaLogo } from "@/components/Header";
 import { SwipeStapel, type SwipeListing, type SwipeRichting, type SwipeStapelHandle } from "@/components/SwipeStapel";
@@ -50,7 +48,6 @@ export default function Home() {
   const SWIPE_LIMIET = 10;
   const [toonPremiumModal, setToonPremiumModal] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
-  const [recentBekekenItems, setRecentBekekenItems] = useState<Pick<Listing, "id" | "titel" | "prijs" | "maat" | "foto_urls">[]>([]);
 
   // Paginering van de "normale" (niet-gepromote) feed — zonder dit was de
   // feed hard afgekapt op de eerste 50 resultaten, en liet een herbezoek na
@@ -86,7 +83,6 @@ export default function Home() {
     if (actief) setKind(actief);
     laadKindFallback(actief?.id);
     checkPremiumEnSwipes();
-    laadRecentBekeken();
 
     // Extra herberekening van de viewporthoogte kort na binnenkomst: na
     // een navigatie vanaf /login (met het toetsenbord nog open/sluitend)
@@ -141,30 +137,6 @@ export default function Home() {
         .maybeSingle();
       swipesRef.current = teller?.aantal || 0;
       setSwipesVandaag(swipesRef.current);
-    }
-  };
-
-  const laadRecentBekeken = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const ids = leesRecentBekekenIds(user.id);
-    if (ids.length === 0) return;
-
-    const { data: profiel } = await supabase.from("profiles").select("privacy_instellingen").eq("id", user.id).single();
-    if (profiel?.privacy_instellingen?.recent_bekeken_tonen === false) return;
-
-    const { data } = await supabase
-      .from("listings")
-      .select("id, titel, prijs, maat, foto_urls, actief")
-      .in("id", ids)
-      .eq("actief", true);
-
-    if (data) {
-      // Zelfde volgorde als de kijkgeschiedenis (meest recent eerst).
-      const volgorde = new Map(ids.map((id, i) => [id, i]));
-      const gesorteerd = [...data].sort((a, b) => (volgorde.get(a.id) ?? 0) - (volgorde.get(b.id) ?? 0));
-      setRecentBekekenItems(gesorteerd);
     }
   };
 
@@ -385,49 +357,48 @@ export default function Home() {
   return (
     <div className="flex flex-col verloop-merk dark:bg-none dark:bg-background-dark relative overflow-hidden" style={{ height: 'calc(var(--echte-vh, 100dvh) - 5rem - env(safe-area-inset-bottom))' }}>
 
-      {/* Header — het kind-filter staat op een eigen regel: naast titel,
-          logo en teller past het op een telefoon niet op één rij. */}
-      <header className="pt-12 pb-3 px-6 z-10 shrink-0">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <NoahEmmaLogo size={30} />
-            <h1 className="text-[26px] font-extrabold text-slate-900 dark:text-white leading-none truncate">Ontdekken</h1>
-          </div>
-          {/* Swipe teller — de dagelijkse limiet geldt niet voor gasten (die
-              worden pas bij een concrete actie naar inloggen gestuurd), dus
-              toon in plaats daarvan een duidelijke inlog-uitnodiging. */}
-          {isGast ? (
-            <Link href="/login" className="shrink-0 flex items-center min-h-[36px] px-4 rounded-full bg-slate-900 text-white text-xs font-bold whitespace-nowrap shadow-zacht">
-              Log in
-            </Link>
-          ) : !isPremium && (
+      {/* Header — compact gehouden zodat de foto op de kaart zo groot mogelijk
+          is. Met een kind ingesteld vervangt het kind-filter de titel (die
+          blijft voor schermlezers); "Ontdekken" staat ook al in het menu. */}
+      <header className="pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-2.5 px-5 z-10 shrink-0 flex items-center justify-between gap-2.5">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <NoahEmmaLogo size={30} />
+          <h1 className={cn("text-[26px] font-extrabold text-slate-900 dark:text-white leading-none truncate", kind && "sr-only")}>Ontdekken</h1>
+          {kind && (
             <button
-              onClick={() => setToonPremiumModal(true)}
-              aria-label="Swipes over vandaag"
-              className="shrink-0 flex items-center gap-1 min-h-[36px] px-3 rounded-full bg-white dark:bg-slate-800 shadow-zacht"
+              onClick={() => setFilterOpKind(f => !f)}
+              aria-pressed={filterOpKind}
+              className={cn(
+                "min-w-0 flex items-center min-h-[36px] px-3 rounded-full border text-xs font-extrabold tracking-tight transition-all",
+                filterOpKind
+                  ? "bg-primary text-white border-primary shadow-[0_10px_20px_-10px_hsl(var(--primary)/0.8)]"
+                  : "bg-white text-primary-dark border-primary/30"
+              )}
             >
-              <Zap className="w-3.5 h-3.5 text-amber-500" />
-              <span className="text-xs font-bold text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                {Math.max(0, SWIPE_LIMIET - swipesVandaag)}/{SWIPE_LIMIET}
+              <span className="mr-1.5 text-sm leading-none shrink-0">
+                {kind.geslacht === "meisje" ? "👧" : kind.geslacht === "jongen" ? "👦" : "🧒"}
               </span>
+              <span className="truncate">{kind.naam || "Kind"} · {filterOpKind ? `Maat ${kind.maat}` : "alle maten"}</span>
             </button>
           )}
         </div>
-        {kind && (
+        {/* Swipe teller — de dagelijkse limiet geldt niet voor gasten (die
+            worden pas bij een concrete actie naar inloggen gestuurd), dus
+            toon in plaats daarvan een duidelijke inlog-uitnodiging. */}
+        {isGast ? (
+          <Link href="/login" className="shrink-0 flex items-center min-h-[36px] px-4 rounded-full bg-slate-900 text-white text-xs font-bold whitespace-nowrap shadow-zacht">
+            Log in
+          </Link>
+        ) : !isPremium && (
           <button
-            onClick={() => setFilterOpKind(f => !f)}
-            aria-pressed={filterOpKind}
-            className={cn(
-              "mt-3 flex items-center min-h-[34px] px-3 rounded-full border text-xs font-extrabold tracking-tight whitespace-nowrap transition-all",
-              filterOpKind
-                ? "bg-primary text-white border-primary shadow-[0_10px_20px_-10px_hsl(var(--primary)/0.8)]"
-                : "bg-white text-primary-dark border-primary/30"
-            )}
+            onClick={() => setToonPremiumModal(true)}
+            aria-label="Swipes over vandaag"
+            className="shrink-0 flex items-center gap-1 min-h-[36px] px-3 rounded-full bg-white dark:bg-slate-800 shadow-zacht"
           >
-            <span className="mr-1.5 text-sm leading-none">
-              {kind.geslacht === "meisje" ? "👧" : kind.geslacht === "jongen" ? "👦" : "🧒"}
+            <Zap className="w-3.5 h-3.5 text-amber-500" />
+            <span className="text-xs font-bold text-slate-600 dark:text-slate-300 whitespace-nowrap">
+              {Math.max(0, SWIPE_LIMIET - swipesVandaag)}/{SWIPE_LIMIET}
             </span>
-            <span>{kind.naam || "Kind"} · {filterOpKind ? `Maat ${kind.maat}` : "alle maten"}</span>
           </button>
         )}
       </header>
@@ -453,30 +424,8 @@ export default function Home() {
         </div>
       )}
 
-            {/* Recent bekeken */}
-      {recentBekekenItems.length > 0 && (
-        <div className="shrink-0 pb-2">
-          <p className="px-6 text-[11px] font-bold text-primary uppercase tracking-[0.14em] mb-1.5">Onlangs bekeken</p>
-          <div className="flex gap-2 overflow-x-auto no-scrollbar px-6">
-            {recentBekekenItems.map(item => (
-              <Link key={item.id} href={`/product/${item.id}`} className="shrink-0">
-                <div className="w-14 h-14 rounded-2xl overflow-hidden bg-white dark:bg-slate-800 border-2 border-white shadow-zacht relative">
-                  {item.foto_urls?.[0] ? (
-                    <Image src={item.foto_urls[0]} alt={item.titel} fill className="object-cover" />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="material-icons-round text-slate-300 text-lg">image</span>
-                    </div>
-                  )}
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Main */}
-      <main className="flex-1 min-h-0 px-5 flex flex-col pt-2 touch-none overflow-hidden">
+      <main className="flex-1 min-h-0 px-4 flex flex-col pt-1 touch-none overflow-hidden">
 
         {loading && (
           <div className="flex-1 flex items-center justify-center">
@@ -539,11 +488,11 @@ export default function Home() {
             </div>
 
             {/* Actieknoppen */}
-            <div className="flex items-center justify-center gap-6 py-5 shrink-0">
+            <div className="flex items-center justify-center gap-6 pt-4 pb-3 shrink-0">
               <button
                 onClick={() => stapelRef.current?.swipe("left")}
                 aria-label="Volgende"
-                className="w-16 h-16 rounded-full bg-white dark:bg-slate-800 border border-slate-900/10 shadow-[0_12px_30px_-14px_rgba(36,26,46,0.35)] flex items-center justify-center text-slate-600 active:scale-90 transition-transform"
+                className="w-[60px] h-[60px] rounded-full bg-white dark:bg-slate-800 border border-slate-900/10 shadow-[0_12px_30px_-14px_rgba(36,26,46,0.35)] flex items-center justify-center text-slate-600 active:scale-90 transition-transform"
               >
                 <X className="w-7 h-7" strokeWidth={2.5} />
               </button>
@@ -551,7 +500,7 @@ export default function Home() {
               <Link
                 href={`/product/${current.id}`}
                 aria-label="Bekijk product"
-                className="w-14 h-14 rounded-full bg-slate-900 shadow-[0_12px_30px_-14px_rgba(36,26,46,0.6)] flex items-center justify-center text-white active:scale-90 transition-transform"
+                className="w-[52px] h-[52px] rounded-full bg-slate-900 shadow-[0_12px_30px_-14px_rgba(36,26,46,0.6)] flex items-center justify-center text-white active:scale-90 transition-transform"
               >
                 <ShoppingBag className="w-6 h-6" />
               </Link>
@@ -559,7 +508,7 @@ export default function Home() {
               <button
                 onClick={() => stapelRef.current?.swipe("right")}
                 aria-label="Bewaren"
-                className="w-16 h-16 rounded-full bg-primary shadow-[0_14px_28px_-12px_hsl(var(--primary)/0.8)] flex items-center justify-center text-white active:scale-90 transition-transform"
+                className="w-[60px] h-[60px] rounded-full bg-primary shadow-[0_14px_28px_-12px_hsl(var(--primary)/0.8)] flex items-center justify-center text-white active:scale-90 transition-transform"
               >
                 <Heart className="w-7 h-7 fill-white" />
               </button>

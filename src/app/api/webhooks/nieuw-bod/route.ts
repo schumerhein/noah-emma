@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { stuurEmail, emailSjabloon } from "@/lib/email";
+import { stuurEmail, emailSjabloon, escapeHtml } from "@/lib/email";
 import { magEmailKrijgen } from "@/lib/notificatieVoorkeuren";
 
 // Wordt aangeroepen door een Supabase Database Webhook op INSERT in
@@ -37,10 +37,12 @@ export async function POST(request: Request) {
     naar: verkoper.email,
     onderwerp: `${bieder_naam} doet een bod van €${bedrag}`,
     html: emailSjabloon({
-      titel: `Nieuw bod op "${listing.titel}"`,
-      tekst: `${bieder_naam} biedt €${bedrag} op je advertentie "${listing.titel}". Bekijk het bod in je berichten.`,
+      titel: `Nieuw bod op "${escapeHtml(listing.titel)}"`,
+      tekst: `${escapeHtml(bieder_naam)} biedt €${bedrag} op je advertentie "${escapeHtml(listing.titel)}". Open je berichten om het bod te accepteren of af te wijzen.`,
       knopTekst: "Bekijk bod",
-      knopUrl: `${origin}/product/${listing.id}`,
+      // Het gesprek bestaat op dit moment vaak nog niet (het bod wordt eerst
+      // opgeslagen), dus naar de inbox; daar staat het bod bovenaan.
+      knopUrl: `${origin}/messages`,
     }),
   });
 

@@ -246,7 +246,7 @@ export default function ModeratiePage() {
 
       {/* Afkeur modal */}
       {afkeurItem && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm px-4 pb-8">
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/40 backdrop-blur-sm px-4 pb-[calc(2rem+env(safe-area-inset-bottom))]">
           <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl">
             <div className="flex items-start justify-between">
               <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">Advertentie afkeuren</h2>

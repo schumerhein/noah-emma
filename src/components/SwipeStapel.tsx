@@ -88,7 +88,7 @@ const onderPositie = (diepte: number, voortgang = 0) => {
   // diepte 1 = direct onder de bovenste kaart; voortgang 0..1 = hoe ver de
   // bovenste kaart al weggesleept is (dan schuift deze alvast naar voren).
   const d = Math.max(0, diepte - voortgang);
-  return `translate3d(0, ${d * 22}px, 0) scale(${1 - d * 0.04})`;
+  return `translate3d(0, ${d * 16}px, 0) scale(${1 - d * 0.03})`;
 };
 
 export function SwipeStapel({ listings, magSwipen, onSwipe, onOpen, ref }: SwipeStapelProps) {
@@ -342,10 +342,10 @@ function SwipeKaart({ listing, kaartRef, prioriteit }: { listing: SwipeListing; 
     <div
       ref={kaartRef}
       style={{ willChange: "transform", WebkitUserSelect: "none" }}
-      className="absolute inset-0 flex flex-col rounded-[32px] bg-white dark:bg-slate-800 p-2.5 shadow-[0_30px_60px_-28px_rgba(36,26,46,0.5)] cursor-grab active:cursor-grabbing"
+      className="absolute inset-0 flex flex-col rounded-[30px] bg-white dark:bg-slate-800 p-2 shadow-[0_30px_60px_-28px_rgba(36,26,46,0.5)] cursor-grab active:cursor-grabbing"
     >
       {/* Foto */}
-      <div className="relative flex-1 min-h-0 rounded-[24px] overflow-hidden bg-slate-100 dark:bg-slate-700 pointer-events-none">
+      <div className="relative flex-1 min-h-0 rounded-[23px] overflow-hidden bg-slate-100 dark:bg-slate-700 pointer-events-none">
         {listing.foto_urls?.[0] ? (
           <Image
             src={listing.foto_urls[0]}
@@ -396,25 +396,25 @@ function SwipeKaart({ listing, kaartRef, prioriteit }: { listing: SwipeListing; 
       </div>
 
       {/* Info */}
-      <div className="shrink-0 px-2.5 pt-3 pb-1.5 pointer-events-none">
+      <div className="shrink-0 px-2 pt-2.5 pb-1 pointer-events-none">
         <h3 className="font-headline text-[19px] font-extrabold leading-tight tracking-tight text-slate-900 dark:text-white truncate">{listing.titel}</h3>
         <p className="mt-0.5 text-[13px] text-slate-600 dark:text-slate-300 truncate">
           {listing.conditie}
           {listing.merk ? ` · ${listing.merk}` : ""}
         </p>
-        <div className="mt-2.5 flex items-center gap-2.5">
+        <div className="mt-2 flex items-center gap-2">
           {p?.avatar_url ? (
-            <Image src={p.avatar_url} alt="" width={32} height={32} className="w-8 h-8 rounded-full object-cover shrink-0" draggable={false} />
+            <Image src={p.avatar_url} alt="" width={28} height={28} className="w-7 h-7 rounded-full object-cover shrink-0" draggable={false} />
           ) : (
-            <span className="w-8 h-8 rounded-full bg-[#FFEAF1] flex items-center justify-center text-sm font-extrabold text-[#D63D74] shrink-0">
+            <span className="w-7 h-7 rounded-full bg-[#FFEAF1] flex items-center justify-center text-xs font-extrabold text-[#D63D74] shrink-0">
               {(p?.naam || "?").charAt(0).toUpperCase()}
             </span>
           )}
           <div className="min-w-0 flex-1">
             <span className="block text-[13px] font-bold text-slate-800 dark:text-slate-100 truncate">{p?.naam || "Gebruiker"}</span>
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1 min-w-0">
               <Sterren waarde={beoordeling} />
-              <span className="text-[11px] font-semibold text-slate-500">
+              <span className="text-[11px] font-semibold text-slate-500 truncate">
                 {beoordeling > 0 ? `${beoordeling.toFixed(1).replace(".", ",")} (${p?.totaal_beoordelingen ?? 0})` : "Nog geen reviews"}
               </span>
             </span>

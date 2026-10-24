@@ -336,7 +336,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     setBodBezig(false);
     setBodVerstuurd(true);
     setToonBodModal(false);
-    toast({ title: `Bod van €${bedrag.toFixed(2).replace(".", ",")} verstuurd!`, description: "De verkoper ontvangt je bod via de chat." });
+    toast({ title: `Bod van €${bedrag.toFixed(2).replace(".", ",")} verstuurd!`, description: "De verkoper kan je bod accepteren of afwijzen. Het antwoord zie je in de chat." });
     if (convId) router.push(`/messages/${convId}`);
   };
 

@@ -51,6 +51,10 @@ Dit is een eigen, lokale implementatie — geen Fashn.ai (dat is een toekomstige
 
 ## Reviews (kernfunctie)
 
+- Biedingen: de verkoper accepteert of wijst een bod af in de chat (`biedingen.status`
+  openstaand → geaccepteerd/afgewezen, alleen die overgang; `biedingen-accepteren.sql`).
+  Zolang een bod openstaat ziet de koper géén "Ik heb dit gekocht"; die knop verschijnt pas
+  na acceptatie (of als de verkoper in de chat heeft gereageerd) en vraagt eerst bevestiging.
 - Review alleen na een afgeronde deal (`conversations.afgerond`), afgedwongen in RLS via
   `mag_review_geven()`. De verkoper rondt af; de koper kan "Ik heb dit gekocht" melden
   (`koper_bevestigd_op`), waarna de verkoper bevestigt. Zie `reviews-verplicht-na-deal.sql`.

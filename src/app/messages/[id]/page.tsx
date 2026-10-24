@@ -19,6 +19,18 @@ type Message = {
   created_at: string;
 };
 
+// Het meest recente bod van de koper in dit gesprek. De verkoper
+// accepteert of wijst af (biedingen-accepteren.sql); pas na acceptatie kan
+// de koper melden dat de koop rond is.
+type Bod = {
+  id: string;
+  bedrag: number;
+  status: "openstaand" | "geaccepteerd" | "afgewezen";
+  created_at: string;
+};
+
+const euro = (bedrag: number) => `€${Number(bedrag).toFixed(2).replace(".", ",")}`;
+
 type Conversation = {
   id: string;
   buyer_id: string;
@@ -55,6 +67,9 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
   const [dealBezig, setDealBezig] = useState(false);
   const [alBeoordeeld, setAlBeoordeeld] = useState(false);
   const [geblokkeerd, setGeblokkeerd] = useState(false);
+  const [laatsteBod, setLaatsteBod] = useState<Bod | null>(null);
+  const [bodBezig, setBodBezig] = useState(false);
+  const [toonGekochtModal, setToonGekochtModal] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -127,8 +142,8 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
       setAlBeoordeeld(!!bestaand);
     }
 
-    // Laad berichten
-    await laadBerichten();
+    // Laad berichten en het laatste bod
+    await Promise.all([laadBerichten(), laadBod(conv.listing_id, conv.buyer_id)]);
 
     // Markeer berichten als gelezen
     await supabase
@@ -152,6 +167,9 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
       }, (payload) => {
         const nieuw = payload.new as Message;
         setMessages(prev => prev.some(m => m.id === nieuw.id) ? prev : [...prev, nieuw]);
+        // Een nieuw bod of een antwoord daarop komt als bericht binnen; ververs
+        // dan ook de bodstatus, zodat de balk bovenin meteen klopt.
+        laadBod(conv.listing_id, conv.buyer_id);
         if (nieuw.sender_id !== user.id) {
           supabase.from("messages").update({ gelezen: true }).eq("id", nieuw.id);
         }
@@ -159,6 +177,50 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
       .subscribe();
 
     onChannel(channel);
+  };
+
+  const laadBod = async (listingId: string | null, koperId: string) => {
+    if (!listingId) return;
+    const { data } = await supabase
+      .from("biedingen")
+      .select("id, bedrag, status, created_at")
+      .eq("listing_id", listingId)
+      .eq("bieder_id", koperId)
+      .order("created_at", { ascending: false })
+      .limit(1);
+    setLaatsteBod((data?.[0] as Bod | undefined) ?? null);
+  };
+
+  // Verkoper: bod accepteren of afwijzen. Het antwoord gaat ook als bericht de
+  // chat in, zodat de koper het (ook per mail) te zien krijgt.
+  const reageerOpBod = async (accepteren: boolean) => {
+    if (!laatsteBod || !currentUserId || !conversation) return;
+    setBodBezig(true);
+    const status = accepteren ? "geaccepteerd" : "afgewezen";
+    const { data, error } = await supabase
+      .from("biedingen")
+      .update({ status })
+      .eq("id", laatsteBod.id)
+      .eq("status", "openstaand")
+      .select("id");
+    if (error || !data?.length) {
+      toast({ variant: "destructive", title: "Dat lukte niet", description: "Dit bod is misschien al beantwoord. Probeer het opnieuw." });
+      setBodBezig(false);
+      laadBod(conversation.listing_id, conversation.buyer_id);
+      return;
+    }
+    const bedrag = euro(laatsteBod.bedrag);
+    const tekst = accepteren
+      ? `✅ Ik accepteer je bod van ${bedrag}! Laten we afspreken hoe je betaalt en het ophaalt.`
+      : `Ik ga helaas niet akkoord met je bod van ${bedrag}. Je kunt een nieuw bod doen of verder chatten.`;
+    await supabase.from("messages").insert({ conversation_id: id, sender_id: currentUserId, tekst });
+    await supabase.from("conversations").update({
+      last_message: accepteren ? `Bod van ${bedrag} geaccepteerd` : `Bod van ${bedrag} afgewezen`,
+      last_message_at: new Date().toISOString(),
+    }).eq("id", id);
+    setLaatsteBod({ ...laatsteBod, status });
+    setBodBezig(false);
+    await laadBerichten();
   };
 
   const laadBerichten = async () => {
@@ -267,6 +329,7 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
     });
     setConversation(prev => prev ? { ...prev, koper_bevestigd_op: nu } : prev);
     setDealBezig(false);
+    setToonGekochtModal(false);
     await laadBerichten();
   };
 
@@ -295,6 +358,8 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
   const initials = naam.charAt(0).toUpperCase();
   const isVerkoper = currentUserId === conversation?.listing?.user_id;
   const dealAfgerond = conversation?.afgerond === true;
+  const verkoperHeeftGereageerd = messages.some(m => m.sender_id === conversation?.seller_id);
+  const afgesprokenPrijs = laatsteBod?.status === "geaccepteerd" ? laatsteBod.bedrag : conversation?.listing?.prijs;
 
   // Groepeer berichten per dag
   const berichtenPerDag: { datum: string; berichten: Message[] }[] = [];
@@ -375,41 +440,102 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
         </Link>
       )}
 
-      {/* Nog geen deal: koper meldt "gekocht", verkoper bevestigt */}
+      {/* Bod en koop. Volgorde: bod → verkoper accepteert of wijst af →
+          samen afspreken → koper meldt "gekocht" → verkoper bevestigt de deal.
+          De koper ziet "Ik heb dit gekocht" dus niet zolang een bod openstaat. */}
       {!dealAfgerond && conversation?.listing && !conversation.listing.verkocht && otherUserId && (
         isVerkoper ? (
-          conversation.koper_bevestigd_op && (
+          laatsteBod?.status === "openstaand" ? (
+            <div className="shrink-0 bg-white dark:bg-zinc-900 border-b border-slate-900/[0.08] dark:border-zinc-800 px-4 py-3 space-y-2.5">
+              <p className="text-sm text-slate-700 dark:text-slate-200">
+                <span className="font-bold">{naam}</span> biedt{" "}
+                <span className="font-headline text-base font-extrabold text-slate-900 dark:text-white">{euro(laatsteBod.bedrag)}</span>
+                <span className="text-slate-500"> · vraagprijs {euro(conversation.listing.prijs)}</span>
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => reageerOpBod(false)}
+                  disabled={bodBezig}
+                  className="flex-1 h-11 rounded-full border border-slate-900/15 bg-white dark:bg-zinc-800 text-slate-700 dark:text-slate-200 font-bold text-sm active:scale-[0.98] transition-transform disabled:opacity-50"
+                >
+                  Afwijzen
+                </button>
+                <button
+                  onClick={() => reageerOpBod(true)}
+                  disabled={bodBezig}
+                  className="flex-1 h-11 rounded-full bg-emerald-500 text-white font-bold text-sm flex items-center justify-center gap-1.5 active:scale-[0.98] transition-transform disabled:opacity-50"
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  Accepteren
+                </button>
+              </div>
+            </div>
+          ) : conversation.koper_bevestigd_op ? (
             <div className="shrink-0 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-100 dark:border-amber-800/30 px-4 py-3 space-y-2">
               <p className="text-xs font-bold text-amber-800 dark:text-amber-300">
                 {naam} geeft aan dit gekocht te hebben. Klopt dat? Bevestig de deal, dan kunnen jullie elkaar beoordelen.
               </p>
               <button
                 onClick={() => setToonDealModal(true)}
-                className="w-full flex items-center justify-center gap-2 bg-emerald-500 text-white font-bold text-sm py-2.5 rounded-xl active:scale-[0.98] transition-transform"
+                className="w-full flex items-center justify-center gap-2 bg-emerald-500 text-white font-bold text-sm py-2.5 rounded-full active:scale-[0.98] transition-transform"
               >
                 <CheckCircle className="w-4 h-4" />
                 Bevestig de deal
               </button>
             </div>
-          )
+          ) : laatsteBod?.status === "geaccepteerd" ? (
+            <div className="shrink-0 bg-emerald-50 dark:bg-emerald-900/20 border-b border-emerald-100 dark:border-emerald-800/30 px-4 py-3">
+              <p className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                Je hebt het bod van {euro(laatsteBod.bedrag)} geaccepteerd. Tik op &ldquo;Verkocht&rdquo; zodra jullie de deal hebben gedaan.
+              </p>
+            </div>
+          ) : null
         ) : conversation.koper_bevestigd_op ? (
           <div className="shrink-0 bg-slate-50 dark:bg-zinc-900 border-b border-slate-100 dark:border-zinc-800 px-4 py-3">
             <p className="text-xs font-bold text-slate-500 dark:text-slate-400">
               Je hebt aangegeven dit gekocht te hebben. Zodra {naam} de deal bevestigt, kun je een beoordeling geven.
             </p>
           </div>
-        ) : (
-          <div className="shrink-0 px-4 py-2 bg-white dark:bg-zinc-900 border-b border-slate-100 dark:border-zinc-800">
+        ) : laatsteBod?.status === "openstaand" ? (
+          <div className="shrink-0 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-100 dark:border-amber-800/30 px-4 py-3">
+            <p className="text-xs font-bold text-amber-800 dark:text-amber-300">
+              ⏳ Je bod van {euro(laatsteBod.bedrag)} is verstuurd. {naam} kan het accepteren of afwijzen; het antwoord zie je hier in de chat.
+            </p>
+          </div>
+        ) : laatsteBod?.status === "geaccepteerd" ? (
+          <div className="shrink-0 bg-emerald-50 dark:bg-emerald-900/20 border-b border-emerald-100 dark:border-emerald-800/30 px-4 py-3 space-y-2">
+            <p className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
+              🎉 {naam} heeft je bod van {euro(laatsteBod.bedrag)} geaccepteerd. Spreek samen af hoe je betaalt en het ophaalt.
+            </p>
             <button
-              onClick={meldGekocht}
+              onClick={() => setToonGekochtModal(true)}
               disabled={dealBezig}
-              className="w-full flex items-center justify-center gap-2 border-2 border-emerald-200 text-emerald-600 dark:text-emerald-400 font-bold text-sm py-2 rounded-xl active:scale-[0.98] transition-transform disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 border border-emerald-300 bg-white dark:bg-zinc-900 text-emerald-700 dark:text-emerald-400 font-bold text-sm py-2 rounded-full active:scale-[0.98] transition-transform disabled:opacity-50"
             >
               <CheckCircle className="w-4 h-4" />
-              Ik heb dit gekocht
+              Ik heb het product gekocht
             </button>
           </div>
-        )
+        ) : (laatsteBod?.status === "afgewezen" || verkoperHeeftGereageerd) ? (
+          <div className="shrink-0 px-4 py-2.5 bg-white dark:bg-zinc-900 border-b border-slate-100 dark:border-zinc-800 space-y-2">
+            {laatsteBod?.status === "afgewezen" && (
+              <p className="text-xs font-bold text-slate-600 dark:text-slate-300">
+                {naam} heeft je bod van {euro(laatsteBod.bedrag)} afgewezen.{" "}
+                <Link href={`/product/${conversation.listing.id}`} className="text-primary underline underline-offset-2">Nieuw bod doen</Link>
+              </p>
+            )}
+            {verkoperHeeftGereageerd && (
+              <button
+                onClick={() => setToonGekochtModal(true)}
+                disabled={dealBezig}
+                className="w-full flex items-center justify-center gap-2 border border-emerald-200 text-emerald-600 dark:text-emerald-400 font-bold text-sm py-2 rounded-full active:scale-[0.98] transition-transform disabled:opacity-50"
+              >
+                <CheckCircle className="w-4 h-4" />
+                Ik heb dit gekocht
+              </button>
+            )}
+          </div>
+        ) : null
       )}
 
       {/* Deal afgerond banner + review knop */}
@@ -549,9 +675,53 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
         </div>
       </footer>
 
+      {/* Koper: eerst bevestigen voordat "gekocht" naar de verkoper gaat */}
+      {toonGekochtModal && (
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/40 backdrop-blur-sm px-4 pb-[calc(2rem+env(safe-area-inset-bottom))]">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md p-6 space-y-5 shadow-2xl">
+            <div className="flex items-start justify-between">
+              <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
+                <CheckCircle className="w-6 h-6 text-emerald-600" />
+              </div>
+              <button onClick={() => setToonGekochtModal(false)} aria-label="Sluiten" className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                <X className="w-4 h-4 text-slate-500" />
+              </button>
+            </div>
+            <div>
+              <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">Heb je het product gekocht?</h2>
+              <p className="text-slate-500 text-sm mt-1 leading-relaxed">
+                Bevestig dit pas als jullie de koop samen rond hebben. <strong>{naam}</strong> krijgt dan een verzoek om de deal te bevestigen; daarna kunnen jullie elkaar beoordelen.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setToonGekochtModal(false)}
+                className="flex-1 h-13 py-3.5 rounded-full border border-slate-900/15 text-slate-600 font-bold text-sm"
+              >
+                Nog niet
+              </button>
+              <button
+                onClick={meldGekocht}
+                disabled={dealBezig}
+                className="flex-1 h-13 py-3.5 rounded-full bg-emerald-500 text-white font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
+              >
+                {dealBezig ? (
+                  <span className="material-icons-round animate-spin text-sm">progress_activity</span>
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4" />
+                    Ja, gekocht
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Deal afronden modal */}
       {toonDealModal && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm px-4 pb-8">
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/40 backdrop-blur-sm px-4 pb-[calc(2rem+env(safe-area-inset-bottom))]">
           <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md p-6 space-y-5 shadow-2xl">
             <div className="flex items-start justify-between">
               <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
@@ -577,7 +747,10 @@ export default function ChatDetailPage({ params }: { params: Promise<{ id: strin
               )}
               <div>
                 <p className="font-bold text-slate-800 dark:text-white text-sm">{conversation?.listing?.titel}</p>
-                <p className="text-primary font-black">€{conversation?.listing?.prijs.toFixed(2).replace(".", ",")}</p>
+                <p className="text-primary font-black">
+                  {afgesprokenPrijs != null ? euro(afgesprokenPrijs) : ""}
+                  {laatsteBod?.status === "geaccepteerd" && <span className="ml-1.5 text-xs font-bold text-slate-500">(geaccepteerd bod)</span>}
+                </p>
               </div>
             </div>
 

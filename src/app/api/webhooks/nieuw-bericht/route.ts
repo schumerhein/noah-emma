@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { stuurEmail, emailSjabloon } from "@/lib/email";
+import { stuurEmail, emailSjabloon, escapeHtml } from "@/lib/email";
 import { magEmailKrijgen } from "@/lib/notificatieVoorkeuren";
 
 // Wordt aangeroepen door een Supabase Database Webhook op INSERT in
@@ -48,29 +48,35 @@ export async function POST(request: Request) {
 
   const { data: afzenderProfiel } = await supabaseAdmin.from("profiles").select("naam").eq("id", bericht.sender_id).single();
   const listing = conversation.listings as unknown as { titel: string } | null;
-  const afzenderNaam = afzenderProfiel?.naam || "Iemand";
+  // Namen en titels komen van gebruikers: escapen voor de HTML van de mail.
+  const afzenderNaamRuw = afzenderProfiel?.naam || "Iemand";
+  const afzenderNaam = escapeHtml(afzenderNaamRuw);
+  const titel = listing?.titel ? escapeHtml(listing.titel) : null;
+  const tekst = typeof bericht.tekst === "string" ? bericht.tekst.trim() : "";
+  const citaat = tekst ? escapeHtml(tekst.length > 280 ? `${tekst.slice(0, 277)}…` : tekst) : undefined;
   const origin = process.env.NEXT_PUBLIC_SITE_URL || "https://noah-emma.nl";
 
   await stuurEmail({
     naar: ontvanger.email,
     onderwerp: isDealGesloten
       ? `Deal gesloten voor "${listing?.titel ?? "je advertentie"}"`
-      : `${afzenderNaam} heeft je een bericht gestuurd`,
+      : `${afzenderNaamRuw} heeft je een bericht gestuurd`,
     html: isDealGesloten
       ? emailSjabloon({
           titel: "Deal gesloten! 🎉",
-          tekst: listing?.titel
-            ? `${afzenderNaam} heeft de deal voor "${listing.titel}" afgerond. Vergeet niet een review achter te laten.`
+          tekst: titel
+            ? `${afzenderNaam} heeft de deal voor "${titel}" afgerond. Vergeet niet een review achter te laten.`
             : `${afzenderNaam} heeft jullie deal afgerond. Vergeet niet een review achter te laten.`,
           knopTekst: "Bekijk gesprek",
           knopUrl: `${origin}/messages/${conversation.id}`,
         })
       : emailSjabloon({
           titel: `Nieuw bericht van ${afzenderNaam}`,
-          tekst: listing?.titel
-            ? `${afzenderNaam} heeft je een bericht gestuurd over "${listing.titel}".`
+          tekst: titel
+            ? `${afzenderNaam} heeft je een bericht gestuurd over "${titel}".`
             : `${afzenderNaam} heeft je een bericht gestuurd.`,
-          knopTekst: "Bekijk gesprek",
+          citaat,
+          knopTekst: "Beantwoorden",
           knopUrl: `${origin}/messages/${conversation.id}`,
         }),
   });

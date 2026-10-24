@@ -39,6 +39,13 @@ Dit is een eigen, lokale implementatie — geen Fashn.ai (dat is een toekomstige
    opgegeven maat van het kind.
 4. **Veiligheidsgarantie:** de uitsnede begint altijd ónder de kin — het echte gezicht van
    het kind komt dus nooit in een advertentie terecht.
+4b. **Kledingstuk uitknippen** (`src/lib/kledingUitknippen.ts`, `src/components/KledingUitknipper.tsx`)
+   — staat er een gezicht op een verkoopfoto, dan wordt die niet meer simpelweg geweigerd:
+   MediaPipe (selfie_multiclass + pose_landmarker, WebAssembly) knipt op het toestel alleen
+   de kleding uit (boven/onder/alles, gesplitst op heuphoogte en kleurnaad) en zet die op een
+   rustige achtergrond. Alleen de uitsnede wordt geüpload; daarna draait de gezichtscontrole
+   nog op het resultaat. De wasm-bestanden komen via `postinstall`
+   (`scripts/kopieer-mediapipe.mjs`) in `public/mediapipe/`, de modellen van Google Storage.
 5. **Genkit-flows** (`src/ai/flows/`):
    - `privacy-blurring-for-product-photos.ts` — blurt gezichten op productfoto's (losse
      laag bovenop bovenstaande pipeline)

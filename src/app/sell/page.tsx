@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Camera, ArrowRight, Loader2, Plus, Sparkles, ChevronRight, ChevronLeft, Check, Zap, Star, Rocket, ShieldAlert } from "lucide-react";
+import { X, Camera, ArrowRight, Loader2, Plus, Sparkles, ChevronRight, ChevronLeft, Check, Zap, Star, Rocket, ShieldAlert, Scissors } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { cn, normaliseerPrijsInvoer } from "@/lib/utils";
@@ -18,6 +18,7 @@ import { BOOST_TIERS, type BoostTier } from "@/lib/prijzen";
 import { CATEGORY_HIERARCHY } from "@/lib/categorieen";
 import { verkleinAfbeelding } from "@/lib/afbeelding";
 import { controleerFoto } from "@/lib/fotoVeiligheid";
+import { KledingUitknipper } from "@/components/KledingUitknipper";
 
 const MAX_FOTOS = 8;
 const KLEDING_CATEGORIEEN = ["Meisjeskleding", "Jongenskleding"];
@@ -28,7 +29,8 @@ export default function SellPage() {
   const [imageFiles, setImageFiles] = useState<File[]>([]);           // bestanden (voor upload)
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);     // previews
   // Privacycontrole per foto: alleen foto's met status "ok" mogen geüpload worden.
-  const [fotoCheck, setFotoCheck] = useState<{ status: "bezig" | "ok" | "geweigerd"; reden: string | null }[]>([]);
+  // "uitknippen": er staat een kind op; de verkoper kiest eerst de uitsnede.
+  const [fotoCheck, setFotoCheck] = useState<{ status: "bezig" | "ok" | "geweigerd" | "uitknippen"; reden: string | null }[]>([]);
   // Per foto een uniek versienummer: schuiven de indexen na het verwijderen
   // van een foto, dan wordt een lopende controle genegeerd in plaats van dat
   // die op de verkeerde foto terechtkomt.
@@ -76,12 +78,17 @@ export default function SellPage() {
     const versie = ++laatsteVersie.current;
     verwerkVersie.current[index] = versie;
     const isActueel = () => verwerkVersie.current[index] === versie;
-    const zetStatus = (status: "bezig" | "ok" | "geweigerd", reden: string | null = null) =>
+    const zetStatus = (status: "bezig" | "ok" | "geweigerd" | "uitknippen", reden: string | null = null) =>
       setFotoCheck(prev => { const n = [...prev]; n[index] = { status, reden }; return n; });
 
     zetStatus("bezig");
     const controle = await controleerFoto(dataUrl, "none");
     if (!isActueel()) return;
+    // Kind op de foto: niet weigeren, maar het kledingstuk laten uitknippen.
+    if (!controle.ok && controle.aantalGezichten) {
+      zetStatus("uitknippen");
+      return;
+    }
     if (!controle.ok) {
       zetStatus("geweigerd", controle.reden);
       toast({ variant: "destructive", title: "Foto niet toegestaan", description: controle.reden });
@@ -121,6 +128,17 @@ export default function SellPage() {
     });
   };
 
+  // De uitsnede vervangt de originele foto: alleen het kledingstuk gaat mee
+  // met de upload, de foto met het kind blijft op het toestel.
+  const vervangDoorUitsnede = (index: number, uitsnede: { file: File; dataUrl: string }) => {
+    verwerkVersie.current[index] = ++laatsteVersie.current;
+    setImagePreviews(prev => prev.map((p, i) => (i === index ? uitsnede.dataUrl : p)));
+    setImageFiles(prev => prev.map((f, i) => (i === index ? uitsnede.file : f)));
+    setFotoCheck(prev => prev.map((c, i) => (i === index ? { status: "ok", reden: null } : c)));
+    setSelectedImageIndex(index);
+  };
+  const uitknipIndex = fotoCheck.findIndex(f => f.status === "uitknippen");
+
   const removeImage = (index: number) => {
     setImagePreviews(prev => prev.filter((_, i) => i !== index));
     setImageFiles(prev => prev.filter((_, i) => i !== index));
@@ -147,6 +165,10 @@ export default function SellPage() {
     }
     if (!mainCategory) {
       toast({ variant: "destructive", title: "Oeps!", description: "Kies een categorie, anders is je advertentie niet terug te vinden." });
+      return;
+    }
+    if (fotoCheck.some(f => f.status === "uitknippen")) {
+      toast({ variant: "destructive", title: "Even geduld", description: "Kies eerst welk kledingstuk we uit je foto knippen." });
       return;
     }
     if (fotoCheck.some(f => f.status === "bezig")) {
@@ -279,6 +301,14 @@ export default function SellPage() {
                   </div>
                 )}
 
+                {/* Kind op de foto: wordt uitgeknipt (venster staat open) */}
+                {fotoCheck[selectedImageIndex]?.status === "uitknippen" && (
+                  <div className="absolute inset-0 z-[5] bg-slate-900/70 backdrop-blur-xl flex flex-col items-center justify-center text-center px-8 gap-2">
+                    <Scissors className="w-9 h-9 text-white" />
+                    <p className="text-sm font-bold text-white">Kledingstuk uitknippen…</p>
+                  </div>
+                )}
+
                 {/* Badge eigen foto modus */}
                 <div className="absolute top-4 left-4 bg-black/30 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5">
                   <Camera className="w-3.5 h-3.5" />
@@ -288,11 +318,18 @@ export default function SellPage() {
             ) : (
               <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer">
                 <Camera className="w-12 h-12 text-primary mb-2" />
-                <span className="text-sm font-bold text-slate-500">Klik om foto's toe te voegen</span>
+                <span className="text-sm font-bold text-slate-500">Klik om foto&apos;s toe te voegen</span>
                 <input type="file" multiple accept="image/*" className="hidden" onChange={handleImageUpload} />
               </label>
             )}
           </div>
+
+          <p className="flex items-start gap-2 text-xs text-slate-500 leading-relaxed">
+            <Scissors className="w-4 h-4 text-primary shrink-0 mt-px" />
+            <span>
+              <strong className="text-slate-700 dark:text-slate-200">Draagt je kind het op de foto?</strong> Geen probleem: wij knippen het kledingstuk eruit, op je eigen telefoon. Het gezicht van je kind komt nooit online.
+            </span>
+          </p>
 
           <div className="flex gap-2 overflow-x-auto pb-2">
             {imagePreviews.map((img, idx) => (
@@ -308,6 +345,11 @@ export default function SellPage() {
                 {fotoCheck[idx]?.status === "geweigerd" && (
                   <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center">
                     <ShieldAlert className="w-5 h-5 text-red-400" />
+                  </div>
+                )}
+                {fotoCheck[idx]?.status === "uitknippen" && (
+                  <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center">
+                    <Scissors className="w-5 h-5 text-white" />
                   </div>
                 )}
                 {fotoCheck[idx]?.status === "bezig" && (
@@ -583,6 +625,17 @@ export default function SellPage() {
           )}
         </Button>
       </main>
+
+      {/* Kind op een foto: eerst het kledingstuk uitknippen (één foto tegelijk). */}
+      {uitknipIndex >= 0 && (
+        <KledingUitknipper
+          key={`${uitknipIndex}-${verwerkVersie.current[uitknipIndex]}`}
+          bron={imagePreviews[uitknipIndex]}
+          subcategorie={subCategory}
+          onGebruik={(uitsnede) => vervangDoorUitsnede(uitknipIndex, uitsnede)}
+          onAnnuleer={() => removeImage(uitknipIndex)}
+        />
+      )}
     </div>
   );
 }

@@ -45,3 +45,6 @@ firebase-debug.log
 firestore-debug.log
 # voorbeeld-env mag wél in git
 !.env.example
+
+# MediaPipe-wasm, gekopieerd door scripts/kopieer-mediapipe.mjs
+/public/mediapipe/

@@ -6,6 +6,8 @@ import { ChevronLeft, ChevronRight, Send } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import Image from "next/image";
+import { useFeedback } from "@/components/FeedbackProvider";
+import { useToast } from "@/hooks/use-toast";
 
 type RecenteTransactie = {
   id: string;
@@ -21,6 +23,9 @@ export default function HelpdeskPage() {
   const [transacties, setTransacties] = useState<RecenteTransactie[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const [verstuurd, setVerstuurd] = useState(false);
+  const [bezig, setBezig] = useState(false);
+  const { openFeedback } = useFeedback();
+  const { toast } = useToast();
 
   useEffect(() => {
     (async () => {
@@ -40,10 +45,35 @@ export default function HelpdeskPage() {
     })();
   }, []);
 
-  const verstuurVraag = () => {
-    if (!vraag.trim()) return;
-    setVerstuurd(true);
-    // In productie: verstuur naar support systeem
+  const verstuurVraag = async () => {
+    if (!vraag.trim() || bezig) return;
+
+    // Zonder account kunnen we niet per e-mail reageren — het feedbackvenster
+    // vraagt dan om een e-mailadres.
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      openFeedback({ type: "anders", bericht: vraag });
+      return;
+    }
+
+    setBezig(true);
+    try {
+      const res = await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({
+          type: "anders",
+          bericht: `[Helpdesk-vraag] ${vraag}`,
+          pagina: window.location.pathname,
+        }),
+      });
+      if (!res.ok) throw new Error();
+      setVerstuurd(true);
+    } catch {
+      toast({ variant: "destructive", title: "Versturen mislukt", description: "Probeer het zo nog eens." });
+    } finally {
+      setBezig(false);
+    }
   };
 
   return (
@@ -76,7 +106,7 @@ export default function HelpdeskPage() {
                   />
                   <button
                     onClick={verstuurVraag}
-                    disabled={!vraag.trim()}
+                    disabled={!vraag.trim() || bezig}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-primary disabled:text-slate-300"
                   >
                     <Send className="w-4 h-4" />

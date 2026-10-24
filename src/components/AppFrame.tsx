@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { Header } from "@/components/Header";
 import { Navigation } from "@/components/Navigation";
 import { useInboxMeldingen } from "@/hooks/use-inbox-meldingen";
+import { FeedbackProvider } from "@/components/FeedbackProvider";
 
 /**
  * De app zelf is ontworpen als mobiele swipe-app en wordt daarom altijd
@@ -18,17 +19,22 @@ export function AppFrame({ children, forceMarketing = false }: { children: React
   // gemonteerd, ook wanneer isMarketing wisselt.
   const { ongelezen } = useInboxMeldingen();
 
-  if (isMarketing) {
-    return <>{children}</>;
-  }
-
+  // De provider staat om beide takken heen, zodat elke knop in de app (ook op
+  // de marketingpagina) het feedbackvenster kan openen; het zwevende tabje
+  // zelf is alleen in de app zichtbaar.
   return (
-    <div className="max-w-md mx-auto relative border-x border-border/50 shadow-2xl min-h-screen flex flex-col overflow-x-hidden">
-      <Header />
-      <main className="flex-1 overflow-y-auto pb-safe-bottom pt-safe-top">
-        {children}
-      </main>
-      <Navigation ongelezen={ongelezen} />
-    </div>
+    <FeedbackProvider tabTonen={!isMarketing}>
+      {isMarketing ? (
+        children
+      ) : (
+        <div className="max-w-md mx-auto relative border-x border-border/50 shadow-2xl min-h-screen flex flex-col overflow-x-hidden">
+          <Header />
+          <main className="flex-1 overflow-y-auto pb-safe-bottom pt-safe-top">
+            {children}
+          </main>
+          <Navigation ongelezen={ongelezen} />
+        </div>
+      )}
+    </FeedbackProvider>
   );
 }

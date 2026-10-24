@@ -8,11 +8,12 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   Heart, ChevronRight, Baby, Edit2, LogOut, Bell, Package, Star, Plus, X, Settings, Umbrella,
-  HelpCircle, Headphones, Sliders, FileText, Cookie, CheckCircle2, Rocket
+  HelpCircle, Headphones, Sliders, FileText, Cookie, CheckCircle2, Rocket, MessageSquareHeart, Inbox
 } from "lucide-react";
 import { slaActiefKindOp, leesActiefKind } from "@/components/ThemeProvider";
 import { groeiCheck, lengteBijMaat } from "@/lib/groei";
 import { OpenBeoordelingen } from "@/components/OpenBeoordelingen";
+import { useFeedback } from "@/components/FeedbackProvider";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
@@ -94,6 +95,8 @@ export default function ProfilePage() {
   const [actiefKindId, setActiefKindId] = useState<string | null>(null);
   const [avatarUploaden, setAvatarUploaden] = useState(false);
   const [wachtendCount, setWachtendCount] = useState(0);
+  const [nieuweFeedbackCount, setNieuweFeedbackCount] = useState(0);
+  const { openFeedback } = useFeedback();
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -183,6 +186,13 @@ export default function ProfilePage() {
       setProfile(profileRes.data);
       setVakantiestand(profileRes.data.vakantiestand === true);
       setWachtendCount(wachtend);
+      if (profileRes.data.is_admin) {
+        const { count: feedbackCount } = await supabase
+          .from("feedback")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "nieuw");
+        setNieuweFeedbackCount(feedbackCount || 0);
+      }
     }
     if (kinderenRes.data) {
       setKinderen(kinderenRes.data);
@@ -797,7 +807,10 @@ export default function ProfilePage() {
             { icon: <Package className="w-5 h-5" />, label: "Bestellingen", href: "/orders" },
             { icon: <Settings className="w-5 h-5" />, label: "Instellingen", href: "/instellingen" },
             ...(profile?.is_admin
-              ? [{ icon: <CheckCircle2 className="w-5 h-5" />, label: "Moderatie (beheer)", href: "/admin/moderatie", badge: wachtendCount }]
+              ? [
+                  { icon: <CheckCircle2 className="w-5 h-5" />, label: "Moderatie (beheer)", href: "/admin/moderatie", badge: wachtendCount },
+                  { icon: <Inbox className="w-5 h-5" />, label: "Feedback (beheer)", href: "/admin/feedback", badge: nieuweFeedbackCount },
+                ]
               : []),
           ].map(({ icon, label, href, badge }) => (
             <Link key={label} href={href}>
@@ -854,6 +867,18 @@ export default function ProfilePage() {
               </div>
             </Link>
           ))}
+          <button type="button" onClick={() => openFeedback()} className="w-full text-left">
+            <div className="flex items-center gap-4 p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 active:scale-[0.98] transition-transform mb-2">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                <MessageSquareHeart className="w-5 h-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className="font-semibold text-slate-700 dark:text-slate-200 block">Feedback geven</span>
+                <span className="text-xs text-slate-400">Werkt iets niet of kan het beter?</span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-slate-300" />
+            </div>
+          </button>
 
           {/* Juridisch & info */}
           <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 pt-4 pb-1">Info</h2>

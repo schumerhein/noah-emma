@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useFeedback } from "@/components/FeedbackProvider";
 
 export default function NotFound() {
+  const { openFeedback } = useFeedback();
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-5 px-8 text-center bg-white dark:bg-slate-900">
       <div className="flex items-center gap-1 text-6xl">
@@ -19,6 +21,12 @@ export default function NotFound() {
       >
         Terug naar Ontdekken
       </Link>
+      <button
+        onClick={() => openFeedback({ type: "bug", bericht: "Deze pagina kon ik niet vinden: " + (typeof window !== "undefined" ? window.location.pathname : "") + "\n\n" })}
+        className="text-sm font-bold text-slate-400"
+      >
+        Klopt dit niet? Laat het ons weten
+      </button>
     </div>
   );
 }

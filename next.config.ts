@@ -24,6 +24,15 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [{ source: '/over', destination: '/over-ons', permanent: true }];
   },
+  // Het .vercel.app-adres toont dezelfde site; houd het uit Google zodat alleen
+  // www.noah-emma.nl geïndexeerd wordt.
+  async headers() {
+    return [{
+      source: '/:path*',
+      has: [{ type: 'host', value: '.*\\.vercel\\.app' }],
+      headers: [{ key: 'X-Robots-Tag', value: 'noindex' }],
+    }];
+  },
   images: {
     remotePatterns: [
       {

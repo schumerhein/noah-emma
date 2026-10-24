@@ -3,10 +3,10 @@ import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
 import { MarketingHeader } from "@/components/marketing/MarketingHeader";
 import { StickyCta } from "@/components/marketing/StickyCta";
-import { LOGIN_URL, SIGNUP_URL } from "@/components/marketing/links";
+import { LOGIN_URL, SIGNUP_URL, SITE_URL } from "@/components/marketing/links";
 import { MarketingFooter, SwipeKaart } from "@/components/marketing/Blokken";
 
-const PAGINA_URL = "https://noah-emma.nl/2e-hands-kinderkleding";
+const PAGINA_URL = `${SITE_URL}/2e-hands-kinderkleding`;
 
 export const metadata: Metadata = {
   title: "2e hands kinderkleding kopen en verkopen | Noah & Emma",
@@ -105,7 +105,7 @@ const STRUCTURED_DATA = {
     {
       "@type": "BreadcrumbList",
       itemListElement: [
-        { "@type": "ListItem", position: 1, name: "Home", item: "https://noah-emma.nl/" },
+        { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_URL}/` },
         { "@type": "ListItem", position: 2, name: "2e hands kinderkleding", item: PAGINA_URL },
       ],
     },

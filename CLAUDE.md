@@ -54,7 +54,11 @@ Dit is een eigen, lokale implementatie — geen Fashn.ai (dat is een toekomstige
 6. **AI-moderatie** (`src/lib/aiModeratie.ts`, `src/app/api/webhooks/ai-moderatie/`) — elke
    advertentie die op 'wachtend' komt, wordt via een Supabase-webhook door Gemini beoordeeld:
    goedkeuren → live, afkeuren → verkoper ziet reden, twijfel → handmatige wachtrij
-   (`/admin/moderatie`). Zie `ai-moderatie.sql`.
+   (`/admin/moderatie`). Zie `ai-moderatie.sql`. Lukt de AI niet (bv. Gemini te druk bij veel
+   advertenties tegelijk), dan probeert de SDK het een paar keer en daarna een pg_cron-
+   herhaalronde elke 2 minuten (`ai-moderatie-opnieuw-proberen.sql`, `{"taak":"opnieuw"}`).
+   Bij afkeuren (AI of admin) krijgt de verkoper een mail met de reden (`src/lib/afkeurMelding.ts`)
+   en een melding in Inbox → Notificaties; de reden staat ook bovenaan de bewerkpagina.
 
 ## Reviews (kernfunctie)
 
@@ -109,6 +113,10 @@ src/lib/              → Supabase client, avatar-compositie, groeicurve, utils
 - Swipen op Ontdekken zit in `src/components/SwipeStapel.tsx`: de sleepbeweging past de
   kaart direct in de DOM aan (geen React-state per frame), flick-snelheid telt mee, en
   weggeswipete kaarten vliegen als losse laag uit zodat je meteen door kunt.
+- Juridische teksten staan op één plek (`src/lib/juridischeTeksten.ts`): de website toont ze op
+  `/voorwaarden`, `/privacy`, enz., de app in eigen opmaak onder `/instellingen/juridisch`, zodat
+  je vanuit de app niet op de website belandt. Hulp, feedback en juridische info staan in de app
+  alleen op de profielpagina, niet nog eens in Instellingen.
 - `TESTPLAN.md` bevat een handmatig testscript voor de volledige cyclus (registratie →
   advertentie → moderatie → chat/bod → deal → review → melden/blokkeren).
 - Fase: Next.js web-prototype (fase 1 uit de productvisie). React Native/Expo-versie en

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { ChevronLeft, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -87,7 +88,7 @@ export default function VoorkeurenPage() {
         {/* Meer info */}
         <p className="text-xs text-slate-400 leading-relaxed">
           Meer informatie? Lees ons{" "}
-          <a href="/cookies" className="text-primary font-bold">cookiebeleid</a>.
+          <Link href="/instellingen/juridisch/cookies" className="text-primary font-bold">cookiebeleid</Link>.
         </p>
       </main>
 

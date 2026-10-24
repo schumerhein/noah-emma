@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { MARKETING_PATHS } from "@/components/marketing/links";
 import { bewaarCookieKeuze, leesCookieKeuze, openCookieMelding, opOpenCookieMelding, type CookieKeuze } from "@/lib/cookieToestemming";
 
 /**
@@ -10,6 +12,10 @@ import { bewaarCookieKeuze, leesCookieKeuze, openCookieMelding, opOpenCookieMeld
  */
 export function CookieMelding() {
   const [tonen, setTonen] = useState(false);
+  // In de app blijf je in de app; op de website (en de homepage, die voor
+  // bezoekers de website is) ga je naar de websiteversie.
+  const pathname = usePathname();
+  const cookieLink = pathname === "/" || MARKETING_PATHS.includes(pathname) ? "/cookies" : "/instellingen/juridisch/cookies";
 
   useEffect(() => {
     setTonen(leesCookieKeuze() === null);
@@ -29,7 +35,7 @@ export function CookieMelding() {
         <p className="font-headline font-extrabold text-[17px] text-[#241A2E] dark:text-white">Mogen we meten hoe je de site gebruikt?</p>
         <p className="mt-1.5 text-sm leading-relaxed text-[#5B4F63] dark:text-slate-300">
           Met analytische cookies van Google Analytics zien we welke pagina&apos;s goed werken. We gebruiken nooit advertentiecookies.{" "}
-          <Link href="/cookies" className="font-semibold text-[#1C7FA8] underline underline-offset-2">Cookiebeleid</Link>
+          <Link href={cookieLink} className="font-semibold text-[#1C7FA8] underline underline-offset-2">Cookiebeleid</Link>
         </p>
         <div className="mt-4 flex flex-col-reverse sm:flex-row gap-2 sm:justify-end">
           <button type="button" onClick={() => kies("essentieel")} className="min-h-[44px] px-5 rounded-full border border-[#241A2E]/15 dark:border-slate-600 text-sm font-bold text-[#241A2E] dark:text-white">

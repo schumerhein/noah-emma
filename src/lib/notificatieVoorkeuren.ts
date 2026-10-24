@@ -1,6 +1,8 @@
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
-export type MeldingType = "nieuw_bericht" | "nieuw_bod" | "deal_gesloten" | "beoordelingen";
+// advertentie_afgekeurd heeft (bewust) geen eigen schakelaar: alleen
+// "alle e-mail uit" houdt die mail tegen.
+export type MeldingType = "nieuw_bericht" | "nieuw_bod" | "deal_gesloten" | "beoordelingen" | "advertentie_afgekeurd";
 
 // Bepaalt of gebruiker `userId` een e-mail mag krijgen voor meldingtype
 // `type`. Standaard AAN: een ontbrekende instelling (nooit aangeraakt in de

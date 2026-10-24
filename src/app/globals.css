@@ -91,6 +91,13 @@
     @apply bg-background text-foreground font-body;
     touch-action: manipulation;
   }
+  /* Pagina's die precies één scherm vullen (Ontdekken): het document zelf
+     scrollt niet, en trekken aan de rand geeft geen rubberband. */
+  html.scroll-vast,
+  html.scroll-vast body {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
   /* Koppen in de app in Manrope, net als op de website; lopende tekst
      blijft Inter. :where() houdt de specificiteit op 0, zodat een
      font-/tracking-klasse op de kop zelf altijd voorgaat. De

@@ -7,7 +7,6 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { useFeedback } from "@/components/FeedbackProvider";
 
 type Item = {
   label: string;
@@ -25,7 +24,6 @@ function InstellingenInner() {
   const router = useRouter();
   const params = useSearchParams();
   const { toast } = useToast();
-  const { openFeedback } = useFeedback();
   const [toonVerwijderModal, setToonVerwijderModal] = useState(false);
   const [verwijderTekst, setVerwijderTekst] = useState("");
   const [verwijderBezig, setVerwijderBezig] = useState(false);
@@ -64,6 +62,8 @@ function InstellingenInner() {
     router.push("/login");
   };
 
+  // Hulp, feedback en juridische informatie staan op de profielpagina
+  // (Hulp / Info); hier alleen echte instellingen, zodat niets dubbel staat.
   const secties: Sectie[] = [
     {
       items: [
@@ -85,22 +85,6 @@ function InstellingenInner() {
       items: [
         { label: "Privacy-instellingen", href: "/instellingen/privacy-instelling" },
         { label: "Geblokkeerde gebruikers", href: "/instellingen/geblokkeerd" },
-      ],
-    },
-    {
-      header: "Hulp & feedback",
-      items: [
-        { label: "Helpdesk", href: "/helpdesk" },
-        { label: "Feedback geven", onClick: () => openFeedback() },
-      ],
-    },
-    {
-      header: "Juridisch",
-      items: [
-        { label: "Privacyverklaring", href: "/privacy" },
-        { label: "Algemene voorwaarden", href: "/voorwaarden" },
-        { label: "Cookiebeleid", href: "/cookies" },
-        { label: "Over Noah & Emma", href: "/over-ons" },
       ],
     },
     {

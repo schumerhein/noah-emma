@@ -2,70 +2,18 @@ import Link from "next/link";
 import { MarketingHeader } from "@/components/marketing/MarketingHeader";
 import { MarketingPaginaMarker } from "@/components/marketing/MarketingModus";
 import { AfsluitendeCta, Kruimelpad, MarketingFooter, SCHADUW, StructuredData } from "@/components/marketing/Blokken";
+import { JuridischeTekst, anker } from "@/components/JuridischeTekst";
+import { JURIDISCHE_DOCUMENTEN, type JuridischDocument } from "@/lib/juridischeTeksten";
 
 // Websiteversie van de juridische pagina's (privacy, voorwaarden, cookies,
-// community). Ook zonder account te lezen, in de huisstijl van de site.
+// community). Ook zonder account te lezen, in de huisstijl van de site. De
+// teksten zelf staan in src/lib/juridischeTeksten.ts; de app toont dezelfde
+// teksten onder /instellingen/juridisch.
 
-export interface JuridischeSectie {
-  titel: string;
-  tekst: string;
-}
+export const JURIDISCHE_PAGINAS = JURIDISCHE_DOCUMENTEN.map((d) => ({ titel: d.naam, tekst: d.kort, href: d.pad }));
 
-export const JURIDISCHE_PAGINAS = [
-  { titel: "Algemene voorwaarden", tekst: "De regels voor kopen en verkopen via Noah & Emma.", href: "/voorwaarden" },
-  { titel: "Privacyverklaring", tekst: "Hoe we jouw gegevens verwerken en beschermen.", href: "/privacy" },
-  { titel: "Cookiebeleid", tekst: "Welke cookies we gebruiken en waarom.", href: "/cookies" },
-  { titel: "Communityrichtlijnen", tekst: "Gedragsregels voor een veilige plek voor ouders.", href: "/community" },
-];
-
-const anker = (titel: string) =>
-  titel.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-
-/** Zet platte tekst om in alinea's en opsommingen (regels die met "• " beginnen). */
-function Tekst({ tekst }: { tekst: string }) {
-  return (
-    <>
-      {tekst.split(/\n\s*\n/).map((blok, i) => {
-        const regels = blok.split("\n").map((r) => r.trim()).filter(Boolean);
-        const punten = regels.filter((r) => r.startsWith("•"));
-        const kop = regels.filter((r) => !r.startsWith("•"));
-        return (
-          <div key={i} className="mt-4 first:mt-0">
-            {kop.map((r, j) => <p key={j} className="leading-relaxed text-[#3F3447]">{r}</p>)}
-            {punten.length > 0 && (
-              <ul className="mt-2 flex flex-col gap-2">
-                {punten.map((r, j) => (
-                  <li key={j} className="flex gap-2.5 leading-relaxed text-[#3F3447]">
-                    <span aria-hidden="true" className="mt-[9px] w-1.5 h-1.5 rounded-full bg-[#D63D74] shrink-0" />
-                    <span>{r.replace(/^•\s*/, "")}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        );
-      })}
-    </>
-  );
-}
-
-export function JuridischePagina({
-  naam,
-  pad,
-  titel,
-  intro,
-  datum,
-  secties,
-  extra,
-}: {
-  naam: string;
-  pad: string;
-  titel: string;
-  intro: string;
-  datum: string;
-  secties: JuridischeSectie[];
-  extra?: React.ReactNode;
-}) {
+export function JuridischePagina({ inhoud, extra }: { inhoud: JuridischDocument; extra?: React.ReactNode }) {
+  const { naam, pad, titel, intro, datum, secties } = inhoud;
   return (
     <div className="font-body bg-[#FFF9FA] text-[#241A2E] min-h-screen antialiased">
       <MarketingPaginaMarker />
@@ -98,7 +46,7 @@ export function JuridischePagina({
             <section key={s.titel} id={anker(s.titel)} className="scroll-mt-24 pt-10 sm:pt-12">
               <h2 className="font-headline font-extrabold text-[22px] sm:text-[26px] tracking-tight">{s.titel}</h2>
               <div className="mt-3 text-[16px]">
-                <Tekst tekst={s.tekst} />
+                <JuridischeTekst tekst={s.tekst} tekstKlasse="text-[#3F3447]" bolletjeKlasse="bg-[#D63D74]" />
               </div>
             </section>
           ))}

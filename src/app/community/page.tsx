@@ -1,8 +1,12 @@
-"use client";
+import type { Metadata } from "next";
+import { JuridischePagina } from "@/components/marketing/JuridischePagina";
+import { SITE_URL } from "@/components/marketing/links";
 
-import { useRouter } from "next/navigation";
-import { ChevronLeft, Users } from "lucide-react";
-
+export const metadata: Metadata = {
+  title: "Communityrichtlijnen | Noah & Emma",
+  description: "De gedragsregels van Noah & Emma: eerlijk handelen, respectvol contact, nooit kindergezichten en wat je doet als iets niet klopt.",
+  alternates: { canonical: `${SITE_URL}/community` },
+};
 const SECTIES = [
   {
     titel: "1. Wees eerlijk en respectvol",
@@ -63,45 +67,15 @@ Bij strafbare feiten doen wij melding bij de bevoegde autoriteiten. Vragen over 
   },
 ];
 
-export default function CommunityPage() {
-  const router = useRouter();
-
+export default function CommunityPagina() {
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-900 pb-20">
-      <header className="px-5 pt-14 pb-5 border-b border-slate-100 dark:border-slate-800 sticky top-0 z-20 bg-white dark:bg-slate-900">
-        <div className="flex items-center gap-4">
-          <button onClick={() => router.back()} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-            <ChevronLeft className="w-5 h-5 text-slate-600 dark:text-slate-300" />
-          </button>
-          <h1 className="text-xl font-black text-slate-900 dark:text-white">Richtlijnen voor de community</h1>
-        </div>
-      </header>
-
-      <main className="px-5 pt-6 pb-10 max-w-2xl mx-auto space-y-8">
-        {/* Intro */}
-        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-5 flex items-start gap-4">
-          <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-800 flex items-center justify-center shrink-0">
-            <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-          </div>
-          <div>
-            <p className="font-bold text-sm text-blue-800 dark:text-blue-200">Samen houden we het veilig</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-              Deze gedragsregels zorgen ervoor dat Noah &amp; Emma een veilige en fijne marktplaats blijft voor alle ouders — en vooral voor hun kinderen.
-            </p>
-          </div>
-        </div>
-
-        <p className="text-xs text-slate-400">Laatste wijziging: 1 juni 2025</p>
-
-        {SECTIES.map(sectie => (
-          <section key={sectie.titel} className="space-y-3">
-            <h2 className="text-base font-black text-slate-900 dark:text-white">{sectie.titel}</h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-line">
-              {sectie.tekst}
-            </p>
-          </section>
-        ))}
-      </main>
-    </div>
+    <JuridischePagina
+      naam="Communityrichtlijnen"
+      pad="/community"
+      titel="Richtlijnen voor de community"
+      intro="Deze gedragsregels zorgen ervoor dat Noah & Emma een veilige en fijne plek blijft voor alle ouders, en vooral voor hun kinderen."
+      datum="Laatste wijziging: 1 juni 2025"
+      secties={SECTIES}
+    />
   );
 }

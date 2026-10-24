@@ -19,5 +19,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     pagina("/privacy", 0.2, "yearly"),
     pagina("/voorwaarden", 0.2, "yearly"),
     pagina("/cookies", 0.2, "yearly"),
+    pagina("/community", 0.2, "yearly"),
+    pagina("/wettelijk", 0.2, "yearly"),
   ];
 }

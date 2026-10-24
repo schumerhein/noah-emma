@@ -52,6 +52,9 @@ Afkeuren bij:
 6. Contactgegevens of omleiding buiten het platform in tekst of foto: telefoonnummers, e-mailadressen, links naar websites of sociale media, "app me op ...".
 7. Spam, nep of misleiding: onzintekst, een foto die niet bij de tekst past, stockfoto's/screenshots van een webshop in plaats van het echte artikel, een duidelijk onrealistische prijs (bijv. 0,01 of 9999 euro voor een rompertje).
 
+Geen probleem (gewoon goedkeuren als de rest klopt):
+- Een uitgeknipt kledingstuk op een effen achtergrond met erboven een getekend kinderhoofdje (Noah of Emma, het eigen illustratiemodel van het platform). Dat is geen echt kind.
+
 Twijfel bij:
 - Een echt kind dat kleding draagt maar waarvan het gezicht niet herkenbaar is (het platform werkt liever zonder echte kinderen; een mens beslist).
 - Foto's die zo onscherp of donker zijn dat je het artikel niet kunt beoordelen.
